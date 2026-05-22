@@ -1,1031 +1,624 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>网络升级 · 中兴问天BE7200 MAX</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Noto+Sans+SC:wght@300;400;500;600;700;900&display=swap');
-
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
-:root {
-    --bg: #0a0a0f;
-    --bg-card: #0f0f1a;
-    --bg-elevated: #13131f;
-    --text-primary: #e8e8f0;
-    --text-secondary: #8a8a9e;
-    --text-muted: #555566;
-    --accent: #00d4ff;
-    --accent-dim: rgba(0, 212, 255, 0.1);
-    --accent-glow: rgba(0, 212, 255, 0.4);
-    --purple: #a855f7;
-    --purple-dim: rgba(168, 85, 247, 0.1);
-    --green: #22d3ee;
-    --border: rgba(255,255,255,0.06);
-    --border-hover: rgba(0, 212, 255, 0.2);
-}
-
-html {
-    scroll-behavior: smooth;
-}
-
-body {
-    font-family: 'Inter', 'Noto Sans SC', -apple-system, sans-serif;
-    background: var(--bg);
-    color: var(--text-primary);
-    overflow-x: hidden;
-    line-height: 1.6;
-}
-
-/* Canvas Background */
-#bg-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 0;
-    pointer-events: none;
-}
-
-/* Noise Overlay */
-.noise {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    opacity: 0.03;
-    z-index: 1;
-    pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-}
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.2); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(0,212,255,0.4); }
-
-/* Content Wrapper */
-.content {
-    position: relative;
-    z-index: 2;
-}
-
-/* Navigation */
-.nav {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    padding: 20px 40px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: linear-gradient(to bottom, rgba(10,10,15,0.9), transparent);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-}
-
-.nav-logo {
-    font-size: 13px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-}
-
-.nav-logo span {
-    color: var(--accent);
-}
-
-.nav-status {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    color: var(--text-muted);
-    letter-spacing: 1px;
-}
-
-.nav-status::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #22c55e;
-    box-shadow: 0 0 8px #22c55e;
-    animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.6; transform: scale(0.8); }
-}
-
-/* Hero Section */
-.hero {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 120px 20px 80px;
-    position: relative;
-}
-
-.hero-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 20px;
-    border: 1px solid var(--border);
-    border-radius: 100px;
-    font-size: 12px;
-    letter-spacing: 2px;
-    color: var(--text-secondary);
-    margin-bottom: 40px;
-    background: var(--bg-card);
-    backdrop-filter: blur(10px);
-    animation: fadeInUp 0.8s ease-out;
-}
-
-.hero-badge .dot {
-    width: 6px;
-    height: 6px;
-    background: var(--accent);
-    border-radius: 50%;
-    box-shadow: 0 0 10px var(--accent-glow);
-    animation: blink 2s infinite;
-}
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-}
-
-.hero-title {
-    font-size: clamp(36px, 8vw, 80px);
-    font-weight: 900;
-    line-height: 1.05;
-    letter-spacing: -2px;
-    margin-bottom: 24px;
-    background: linear-gradient(135deg, #fff 0%, #a0a0b0 50%, var(--accent) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    animation: fadeInUp 0.8s ease-out 0.1s both;
-}
-
-.hero-subtitle {
-    font-size: clamp(14px, 2vw, 18px);
-    color: var(--text-secondary);
-    max-width: 560px;
-    margin-bottom: 48px;
-    line-height: 1.8;
-    animation: fadeInUp 0.8s ease-out 0.2s both;
-}
-
-.hero-date {
-    display: flex;
-    gap: 32px;
-    margin-bottom: 60px;
-    animation: fadeInUp 0.8s ease-out 0.3s both;
-}
-
-.date-item {
-    text-align: center;
-}
-
-.date-item .label {
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-}
-
-.date-item .value {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--text-primary);
-}
-
-.hero-arrow {
-    position: absolute;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
-    animation: bounce 2s infinite;
-}
-
-.hero-arrow svg {
-    width: 24px;
-    height: 24px;
-    stroke: var(--text-muted);
-    stroke-width: 1.5;
-    fill: none;
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(8px); }
-}
-
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(30px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-/* Section Base */
-.section {
-    padding: 100px 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-.section-header {
-    margin-bottom: 60px;
-}
-
-.section-tag {
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: var(--accent);
-    text-transform: uppercase;
-    margin-bottom: 16px;
-}
-
-.section-title {
-    font-size: clamp(28px, 5vw, 48px);
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -1px;
-}
-
-/* Compare Section */
-.compare {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 0;
-    align-items: stretch;
-    margin-bottom: 40px;
-}
-
-.compare-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 40px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.compare-card:hover {
-    border-color: var(--border-hover);
-    transform: translateY(-4px);
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
-}
-
-.compare-card.old::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--text-muted), transparent);
-    opacity: 0.5;
-}
-
-.compare-card.new::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    box-shadow: 0 0 20px var(--accent-glow);
-}
-
-.compare-card .card-label {
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: var(--text-muted);
-    margin-bottom: 8px;
-}
-
-.compare-card .card-name {
-    font-size: 24px;
-    font-weight: 800;
-    margin-bottom: 4px;
-}
-
-.compare-card.old .card-name { color: var(--text-secondary); }
-.compare-card.new .card-name { 
-    background: linear-gradient(135deg, #fff, var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.compare-card .card-price {
-    font-size: 14px;
-    color: var(--text-muted);
-    margin-bottom: 24px;
-}
-
-.compare-card .spec-list {
-    list-style: none;
-}
-
-.compare-card .spec-list li {
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 14px;
-    color: var(--text-secondary);
-    display: flex;
-    justify-content: space-between;
-}
-
-.compare-card .spec-list li:last-child { border-bottom: none; }
-
-.compare-card .spec-list .spec-val {
-    color: var(--text-primary);
-    font-weight: 600;
-}
-
-.compare-arrow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 20px;
-}
-
-.compare-arrow svg {
-    width: 32px;
-    height: 32px;
-    stroke: var(--accent);
-    stroke-width: 1.5;
-    fill: none;
-    filter: drop-shadow(0 0 8px var(--accent-glow));
-}
-
-/* Features Grid */
-.features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-}
-
-.feature-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 32px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    cursor: default;
-}
-
-.feature-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, var(--accent), transparent);
-    opacity: 0;
-    transition: opacity 0.5s;
-}
-
-.feature-card:hover::before { opacity: 1; }
-
-.feature-card:hover {
-    border-color: var(--border-hover);
-    transform: translateY(-6px);
-    box-shadow: 0 24px 64px rgba(0,0,0,0.5);
-}
-
-.feature-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    background: var(--accent-dim);
-    border: 1px solid rgba(0,212,255,0.15);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 20px;
-    font-size: 20px;
-    transition: all 0.5s;
-}
-
-.feature-card:hover .feature-icon {
-    background: rgba(0,212,255,0.15);
-    box-shadow: 0 0 20px var(--accent-glow);
-}
-
-.feature-title {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 10px;
-}
-
-.feature-desc {
-    font-size: 14px;
-    color: var(--text-secondary);
-    line-height: 1.7;
-}
-
-.feature-stat {
-    margin-top: 20px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    gap: 24px;
-}
-
-.stat-item .stat-val {
-    font-size: 28px;
-    font-weight: 800;
-    background: linear-gradient(135deg, var(--accent), var(--purple));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    line-height: 1;
-}
-
-.stat-item .stat-label {
-    font-size: 11px;
-    color: var(--text-muted);
-    margin-top: 4px;
-    letter-spacing: 1px;
-}
-
-/* Stats Section */
-.stats-section {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 24px;
-    padding: 60px 40px;
-    position: relative;
-    overflow: hidden;
-}
-
-.stats-section::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at 50% 50%, var(--accent-dim), transparent 60%);
-    opacity: 0.3;
-    pointer-events: none;
-}
-
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 40px;
-    position: relative;
-    z-index: 1;
-}
-
-.stat-block {
-    text-align: center;
-}
-
-.stat-block .stat-number {
-    font-size: clamp(40px, 6vw, 64px);
-    font-weight: 900;
-    line-height: 1;
-    background: linear-gradient(135deg, #fff, var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 8px;
-}
-
-.stat-block .stat-desc {
-    font-size: 14px;
-    color: var(--text-secondary);
-}
-
-/* Timeline */
-.timeline {
-    position: relative;
-    padding-left: 40px;
-}
-
-.timeline::before {
-    content: '';
-    position: absolute;
-    left: 8px;
-    top: 8px;
-    bottom: 8px;
-    width: 1px;
-    background: linear-gradient(to bottom, var(--accent), var(--purple), transparent);
-}
-
-.timeline-item {
-    position: relative;
-    padding-bottom: 40px;
-    animation: fadeInUp 0.6s ease-out both;
-}
-
-.timeline-item:nth-child(1) { animation-delay: 0.1s; }
-.timeline-item:nth-child(2) { animation-delay: 0.2s; }
-.timeline-item:nth-child(3) { animation-delay: 0.3s; }
-
-.timeline-item::before {
-    content: '';
-    position: absolute;
-    left: -36px;
-    top: 4px;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--bg);
-    border: 2px solid var(--accent);
-    box-shadow: 0 0 12px var(--accent-glow);
-}
-
-.timeline-item.active::before {
-    background: var(--accent);
-    animation: pulse 2s infinite;
-}
-
-.timeline-item .time-label {
-    font-size: 12px;
-    color: var(--accent);
-    font-weight: 600;
-    letter-spacing: 1px;
-    margin-bottom: 4px;
-}
-
-.timeline-item .time-title {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 6px;
-}
-
-.timeline-item .time-desc {
-    font-size: 14px;
-    color: var(--text-secondary);
-    line-height: 1.7;
-}
-
-/* Footer */
-.footer {
-    text-align: center;
-    padding: 80px 20px;
-    border-top: 1px solid var(--border);
-}
-
-.footer-logo {
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 4px;
-    color: var(--text-muted);
-    margin-bottom: 16px;
-}
-
-.footer-text {
-    font-size: 13px;
-    color: var(--text-muted);
-    max-width: 400px;
-    margin: 0 auto;
-    line-height: 1.8;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .nav { padding: 16px 20px; }
-    .compare { grid-template-columns: 1fr; gap: 20px; }
-    .compare-arrow { transform: rotate(90deg); padding: 10px 0; }
-    .section { padding: 60px 16px; }
-    .stats-section { padding: 40px 24px; }
-    .hero-date { flex-direction: column; gap: 16px; }
-    .features-grid { grid-template-columns: 1fr; }
-}
-
-/* Reveal Animation */
-.reveal {
-    opacity: 0;
-    transform: translateY(40px);
-    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
-</style>
-</head>
-<body>
-
-<canvas id="bg-canvas"></canvas>
-<div class="noise"></div>
-
-<div class="content">
-
-<!-- Navigation -->
-<nav class="nav">
-    <div class="nav-logo">NET<span>UPGRADE</span></div>
-    <div class="nav-status">系统正常运行</div>
-</nav>
-
-<!-- Hero -->
-<section class="hero">
-    <div class="hero-badge">
-        <span class="dot"></span>
-        WiFi 不停机升级预告
-    </div>
-    <h1 class="hero-title">网络基础设施<br>全面升级</h1>
-    <p class="hero-subtitle">
-        从腾达云霄 BE5100 升级至中兴问天 BE7200 MAX<br>
-        更强大的信号覆盖，更低的多人游戏延迟
-    </p>
-    <div class="hero-date">
-        <div class="date-item">
-            <div class="label">开始时间</div>
-            <div class="value">4月24日 23:00</div>
-        </div>
-        <div class="date-item">
-            <div class="label">预计完成</div>
-            <div class="value">4月25日 07:15</div>
-        </div>
-    </div>
-    <div class="hero-arrow">
-        <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-    </div>
-</section>
-
-<!-- Compare -->
-<section class="section">
-    <div class="section-header reveal">
-        <div class="section-tag">Equipment</div>
-        <h2 class="section-title">设备更替</h2>
-    </div>
-    <div class="compare reveal">
-        <div class="compare-card old">
-            <div class="card-label">当前设备</div>
-            <div class="card-name">腾达云霄 BE5100</div>
-            <div class="card-price">入手价 193.6 元</div>
-            <ul class="spec-list">
-                <li><span>天线</span><span class="spec-val">5 根</span></li>
-                <li><span>FEM 放大器</span><span class="spec-val">5 颗</span></li>
-                <li><span>无线规格</span><span class="spec-val">WiFi 7 · 5011Mbps</span></li>
-                <li><span>内存</span><span class="spec-val">512MB</span></li>
-                <li><span>芯片</span><span class="spec-val">MT7981B</span></li>
-            </ul>
-        </div>
-        <div class="compare-arrow">
-            <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </div>
-        <div class="compare-card new">
-            <div class="card-label">升级目标</div>
-            <div class="card-name">中兴问天 BE7200 MAX</div>
-            <div class="card-price">优惠后 629 元</div>
-            <ul class="spec-list">
-                <li><span>天线</span><span class="spec-val">8 根高增益</span></li>
-                <li><span>FEM 放大器</span><span class="spec-val">8 颗独立</span></li>
-                <li><span>无线规格</span><span class="spec-val">WiFi 7 · 7200Mbps</span></li>
-                <li><span>内存</span><span class="spec-val">1GB DDR4</span></li>
-                <li><span>芯片</span><span class="spec-val">ZX279133 自研</span></li>
-            </ul>
-        </div>
-    </div>
-</section>
-
-<!-- Features -->
-<section class="section">
-    <div class="section-header reveal">
-        <div class="section-tag">Performance</div>
-        <h2 class="section-title">核心升级</h2>
-    </div>
-    <div class="features-grid">
-        <div class="feature-card reveal">
-            <div class="feature-icon">📡</div>
-            <div class="feature-title">信号覆盖增强</div>
-            <div class="feature-desc">
-                8 根高增益天线配合 8 颗独立 FEM 功率放大器，采用中兴自研"干将"天线技术。穿墙能力大幅提升，宿舍每个角落都能锁定高速信号。
-            </div>
-            <div class="feature-stat">
-                <div class="stat-item">
-                    <div class="stat-val">8</div>
-                    <div class="stat-label">天线 / FEM</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-val">300㎡</div>
-                    <div class="stat-label">覆盖能力</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="feature-card reveal">
-            <div class="feature-icon">⚡</div>
-            <div class="feature-title">芯片性能翻倍</div>
-            <div class="feature-desc">
-                中兴自研 ZX279133 芯片，集成 10 核 64 线程 NPU 加速引擎。转发能力提升 400% 以上，配合 1GB 大内存，高负载下依然稳定输出。
-            </div>
-            <div class="feature-stat">
-                <div class="stat-item">
-                    <div class="stat-val">10核</div>
-                    <div class="stat-label">64线程 NPU</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-val">1GB</div>
-                    <div class="stat-label">DDR4 内存</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="feature-card reveal">
-            <div class="feature-icon">🎮</div>
-            <div class="feature-title">游戏延迟优化</div>
-            <div class="feature-desc">
-                内置游戏加速引擎，支持硬件 QoS 精确限速。MLO 多链路聚合技术让设备同时连接双频段，开启后丢包率从 6.3% 降至 0.57%。
-            </div>
-            <div class="feature-stat">
-                <div class="stat-item">
-                    <div class="stat-val">~20ms</div>
-                    <div class="stat-label">游戏延迟</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-val">0.57%</div>
-                    <div class="stat-label">MLO 丢包率</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="feature-card reveal">
-            <div class="feature-icon">👥</div>
-            <div class="feature-title">多人并发优化</div>
-            <div class="feature-desc">
-                8 空间流设计，MU-MIMO 技术让多设备无需排队等待。实测 70 台终端连续 12 小时高负载运行，平均延迟仅 5.54ms，多人同时游戏互不干扰。
-            </div>
-            <div class="feature-stat">
-                <div class="stat-item">
-                    <div class="stat-val">512</div>
-                    <div class="stat-label">最大带机量</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-val">5.54ms</div>
-                    <div class="stat-label">高负载延迟</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="feature-card reveal">
-            <div class="feature-icon">🔄</div>
-            <div class="feature-title">MLO 双频聚合</div>
-            <div class="feature-desc">
-                WiFi 7 核心特性，2.4GHz 与 5GHz 双频段智能协同传输。设备同时连接两个频段，自动选择最优信道，抗干扰能力显著增强。
-            </div>
-            <div class="feature-stat">
-                <div class="stat-item">
-                    <div class="stat-val">双频</div>
-                    <div class="stat-label">同时传输</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-val">46%</div>
-                    <div class="stat-label">延迟降低</div>
-                </div>
-            </div>
-        </div>
-
-        <div class="feature-card reveal">
-            <div class="feature-icon">💡</div>
-            <div class="feature-title">RGB 电竞灯效</div>
-            <div class="feature-desc">
-                "问天三号"飞船造型，灵感源自甲骨文。1600 万色智能 RGB 灯效，闪烁频率随网络状态联动，竞技氛围拉满。86904mm² 超大散热片，零噪音运行。
-            </div>
-            <div class="feature-stat">
-                <div class="stat-item">
-                    <div class="stat-val">1600万</div>
-                    <div class="stat-label">RGB 色域</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-val">0dB</div>
-                    <div class="stat-label">运行噪音</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Stats -->
-<section class="section">
-    <div class="stats-section reveal">
-        <div class="stats-grid">
-            <div class="stat-block">
-                <div class="stat-number">7200</div>
-                <div class="stat-desc">Mbps 双频并发速率</div>
-            </div>
-            <div class="stat-block">
-                <div class="stat-number">8×8</div>
-                <div class="stat-desc">天线 + FEM 组合</div>
-            </div>
-            <div class="stat-block">
-                <div class="stat-number">~20</div>
-                <div class="stat-desc">ms 游戏延迟级别</div>
-            </div>
-            <div class="stat-block">
-                <div class="stat-number">512</div>
-                <div class="stat-desc">台设备稳定带机</div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Timeline -->
-<section class="section">
-    <div class="section-header reveal">
-        <div class="section-tag">Schedule</div>
-        <h2 class="section-title">升级安排</h2>
-    </div>
-    <div class="timeline reveal">
-        <div class="timeline-item active">
-            <div class="time-label">4月24日 23:00</div>
-            <div class="time-title">升级开始</div>
-            <div class="time-desc">
-                开始替换路由器设备。WiFi 信号不会中断，设备将自动重连至新网络。NFC 碰碰连功能保持生效，密码不变。
-            </div>
-        </div>
-        <div class="timeline-item">
-            <div class="time-label">4月25日 凌晨</div>
-            <div class="time-title">配置迁移</div>
-            <div class="time-desc">
-                完成新路由器配置导入，优化信道参数，开启 MLO 双频聚合与游戏加速引擎。NFC 卡片数据重新写入，确保碰碰连正常生效。
-            </div>
-        </div>
-        <div class="timeline-item">
-            <div class="time-label">4月25日 07:15</div>
-            <div class="time-title">升级完成</div>
-            <div class="time-desc">
-                全部配置生效，网络进入正常运行状态。如遇连接异常，请尝试重新连接 WiFi 或联系管理员。
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- Footer -->
-<footer class="footer">
-    <div class="footer-logo">NPS NETWORK</div>
-    <div class="footer-text">
-        密码保持不变 · NFC 碰碰连正常生效<br>
-        升级过程不影响 WiFi 正常使用 · 设备自动重连
-    </div>
-</footer>
-
-</div>
-
-<script>
-// Canvas Background Animation
-const canvas = document.getElementById('bg-canvas');
-const ctx = canvas.getContext('2d');
-
-let width, height;
-let particles = [];
-let connections = [];
-let mouse = { x: 0, y: 0 };
-
-function resize() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-}
-
-class Particle {
-    constructor() {
-        this.x = Math.random() * width;
-        this.y = Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 0.3;
-        this.vy = (Math.random() - 0.5) * 0.3;
-        this.radius = Math.random() * 1.5 + 0.5;
-        this.opacity = Math.random() * 0.5 + 0.2;
-    }
-
-    update() {
-        this.x += this.vx;
-        this.y += this.vy;
-
-        if (this.x < 0 || this.x > width) this.vx *= -1;
-        if (this.y < 0 || this.y > height) this.vy *= -1;
-
-        // Mouse interaction
-        const dx = mouse.x - this.x;
-        const dy = mouse.y - this.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        if (dist < 150) {
-            const force = (150 - dist) / 150;
-            this.vx -= dx * force * 0.001;
-            this.vy -= dy * force * 0.001;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <title>GLcn Hallo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6d7aea;
+            --primary-dark: #5a67d8;
+            --secondary: #7c5aa0;
+            --accent: #ec8bf7;
+            --accent-secondary: #f5576c;
+            --dark: #1a1a2e;
+            --darker: #16213e;
+            --darkest: #0f172a;
+            --text: #e2e8f0;
+            --text-light: #a0aec0;
+            --text-muted: #718096;
+            --white: #ffffff;
+            --success: #4ade80;
+            --warning: #f59e0b;
+            --danger: #f87171;
+            
+            --transition-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --transition-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+            
+            --duration-fast: 0.25s;
+            --duration-normal: 0.4s;
+            --duration-slow: 0.6s;
+            
+            --border-radius: 16px;
+            --border-radius-lg: 24px;
+            
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.15);
+            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.2);
+            --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.3);
+            --shadow-glow: 0 0 30px rgba(102, 126, 234, 0.4);
         }
-    }
 
-    draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(0, 212, 255, ${this.opacity})`;
-        ctx.fill();
-    }
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-function initParticles() {
-    particles = [];
-    const count = Math.min(Math.floor(width * height / 15000), 100);
-    for (let i = 0; i < count; i++) {
-        particles.push(new Particle());
-    }
-}
+        html {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
 
-function drawConnections() {
-    for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-            const dx = particles[i].x - particles[j].x;
-            const dy = particles[i].y - particles[j].y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 50%, var(--secondary) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+        }
 
-            if (dist < 120) {
-                const opacity = (1 - dist / 120) * 0.15;
-                ctx.beginPath();
-                ctx.moveTo(particles[i].x, particles[i].y);
-                ctx.lineTo(particles[j].x, particles[j].y);
-                ctx.strokeStyle = `rgba(0, 212, 255, ${opacity})`;
-                ctx.lineWidth = 0.5;
-                ctx.stroke();
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(102, 126, 234, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(118, 75, 162, 0.08) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 480px;
+            text-align: center;
+            padding: 2rem;
+            animation: fadeInUp 1s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .title {
+            font-size: clamp(2.5rem, 8vw, 3.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 3rem;
+            letter-spacing: 0.05em;
+            filter: drop-shadow(0 4px 20px rgba(102, 126, 234, 0.3));
+            animation: titleGlow 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes titleGlow {
+            from { filter: drop-shadow(0 0 5px rgba(102, 126, 234, 0.3)); }
+            to { filter: drop-shadow(0 0 25px rgba(102, 126, 234, 0.6)); }
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            align-items: center;
+        }
+
+        .main-btn {
+            width: 100%;
+            max-width: 320px;
+            padding: 1.2rem 2rem;
+            border: none;
+            border-radius: var(--border-radius-lg);
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--white);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--duration-normal) var(--transition-bounce);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .main-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            z-index: -1;
+            transition: all var(--duration-normal) var(--transition-smooth);
+        }
+
+        .main-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left var(--duration-slow) var(--transition-smooth);
+        }
+
+        .main-btn:hover::after {
+            left: 100%;
+        }
+
+        .main-btn:hover {
+            transform: translateY(-5px) scale(1.03);
+            box-shadow: var(--shadow-xl), var(--shadow-glow);
+        }
+
+        .main-btn:active {
+            transform: translateY(-2px) scale(0.98);
+        }
+
+        .main-btn.secondary::before {
+            background: linear-gradient(135deg, var(--secondary), var(--accent-secondary));
+        }
+
+        .main-btn.secondary:hover {
+            box-shadow: var(--shadow-xl), 0 0 30px rgba(240, 147, 251, 0.4);
+        }
+
+        .main-btn i {
+            font-size: 1.3rem;
+        }
+
+        /* 返回按钮 - outline 风格 */
+        .back-btn {
+            width: 100%;
+            max-width: 320px;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius-lg);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--duration-normal) var(--transition-bounce);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .back-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left var(--duration-slow) var(--transition-smooth);
+        }
+
+        .back-btn:hover::after {
+            left: 100%;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.25);
+            color: var(--white);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .back-btn:active {
+            transform: translateY(-1px) scale(0.98);
+        }
+
+        .back-btn i {
+            font-size: 1.2rem;
+        }
+
+        /* 弹窗通用 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(15px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--duration-normal) var(--transition-smooth);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: rgba(26, 26, 46, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: var(--border-radius-lg);
+            padding: 2.5rem;
+            max-width: 420px;
+            width: 90%;
+            transform: scale(0.9) translateY(30px);
+            transition: all var(--duration-slow) var(--transition-bounce);
+            position: relative;
+            box-shadow: var(--shadow-xl);
+            text-align: center;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2rem;
+            color: var(--white);
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+            animation: iconPulse 2s ease-in-out infinite;
+        }
+
+        .modal-icon.blue {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+        }
+
+        .modal-icon.purple {
+            background: linear-gradient(135deg, var(--secondary), var(--accent-secondary));
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(102, 126, 234, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 30px rgba(102, 126, 234, 0.6); }
+        }
+
+        .modal-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--white);
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-subtitle {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-info-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: var(--border-radius);
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--warning);
+            transition: all var(--duration-normal) var(--transition-smooth);
+            word-break: break-all;
+            text-align: left;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .modal-info-box:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: scale(1.02);
+            box-shadow: var(--shadow-md);
+        }
+
+        .modal-info-box i {
+            color: var(--accent);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .modal-info-box .url-text {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .modal-hint {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin: 1rem 0 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-weight: 600;
+        }
+
+        .modal-hint i {
+            font-size: 1.1rem;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 0.9rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all var(--duration-fast) var(--transition-bounce);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .modal-btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: var(--shadow-glow), 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .modal-btn-secondary {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-light);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .modal-btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            color: var(--white);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: var(--shadow-md);
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 1.5rem;
+            }
+            
+            .title {
+                margin-bottom: 2.5rem;
+            }
+            
+            .main-btn {
+                padding: 1.1rem 1.5rem;
+                font-size: 1.1rem;
+            }
+            
+            .back-btn {
+                padding: 0.9rem 1.5rem;
+                font-size: 1rem;
+            }
+            
+            .modal-content {
+                padding: 2rem 1.2rem;
+            }
+            
+            .modal-footer {
+                gap: 0.75rem;
+            }
+            
+            .modal-info-box {
+                font-size: 1rem;
+                padding: 0.8rem 1rem;
             }
         }
-    }
-}
 
-function animate() {
-    ctx.clearRect(0, 0, width, height);
-
-    // Draw gradient background
-    const gradient = ctx.createRadialGradient(width/2, height/2, 0, width/2, height/2, width);
-    gradient.addColorStop(0, 'rgba(0, 212, 255, 0.02)');
-    gradient.addColorStop(1, 'transparent');
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, width, height);
-
-    particles.forEach(p => {
-        p.update();
-        p.draw();
-    });
-
-    drawConnections();
-    requestAnimationFrame(animate);
-}
-
-window.addEventListener('resize', () => {
-    resize();
-    initParticles();
-});
-
-window.addEventListener('mousemove', (e) => {
-    mouse.x = e.clientX;
-    mouse.y = e.clientY;
-});
-
-resize();
-initParticles();
-animate();
-
-// Scroll Reveal
-const reveals = document.querySelectorAll('.reveal');
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
+        ::selection {
+            background: rgba(102, 126, 234, 0.3);
+            color: var(--white);
         }
-    });
-}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-reveals.forEach(el => observer.observe(el));
+        *:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">GLcn Hallo</h1>
+        
+        <div class="btn-group">
+            <button class="main-btn" id="officialBtn" aria-label="访问官网">
+                <i class="fas fa-globe"></i>
+                官网
+            </button>
+            
+            <button class="main-btn secondary" id="downloadBtn" aria-label="下载客户端">
+                <i class="fas fa-download"></i>
+                下载客户端
+            </button>
 
-// Smooth scroll for nav
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        document.querySelector(this.getAttribute('href')).scrollIntoView({
-            behavior: 'smooth'
-        });
-    });
-});
-</script>
+            <button class="back-btn" id="backBtn" aria-label="关闭页面">
+                <i class="fas fa-arrow-left"></i>
+                返回
+            </button>
+        </div>
+    </div>
 
+    <!-- 官网访问弹窗 -->
+    <div class="modal-overlay" id="officialModal" aria-hidden="true">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="officialModalTitle">
+            <div class="modal-icon blue">
+                <i class="fas fa-globe"></i>
+            </div>
+            <h2 class="modal-title" id="officialModalTitle">官网访问</h2>
+            <p class="modal-subtitle">请用浏览器打开</p>
+            
+            <div class="modal-info-box">
+                <i class="fas fa-link"></i>
+                <span class="url-text">https://glcn26.github.io/</span>
+            </div>
+            
+            <div class="modal-hint">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>提示：不要客户端内打开</span>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="officialCancel">
+                    <i class="fas fa-times"></i>
+                    取消
+                </button>
+                <button class="modal-btn modal-btn-primary" id="officialConfirm">
+                    <i class="fas fa-external-link-alt"></i>
+                    直接访问
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 下载提示弹窗 -->
+    <div class="modal-overlay" id="downloadModal" aria-hidden="true">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="downloadModalTitle">
+            <div class="modal-icon purple">
+                <i class="fas fa-lock"></i>
+            </div>
+            <h2 class="modal-title" id="downloadModalTitle">下载客户端</h2>
+            <p class="modal-subtitle">请使用以下密码访问下载页面</p>
+            
+            <div class="modal-info-box">
+                <i class="fas fa-key"></i>
+                <span>密码 6666</span>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-secondary" id="downloadCancel">
+                    <i class="fas fa-times"></i>
+                    取消
+                </button>
+                <button class="modal-btn modal-btn-primary" id="downloadConfirm">
+                    <i class="fas fa-external-link-alt"></i>
+                    确认跳转
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const officialModal = document.getElementById('officialModal');
+            const downloadModal = document.getElementById('downloadModal');
+            const officialBtn = document.getElementById('officialBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const backBtn = document.getElementById('backBtn');
+            const officialCancel = document.getElementById('officialCancel');
+            const officialConfirm = document.getElementById('officialConfirm');
+            const downloadCancel = document.getElementById('downloadCancel');
+            const downloadConfirm = document.getElementById('downloadConfirm');
+            const OFFICIAL_URL = 'https://glcn26.github.io/';
+            const DOWNLOAD_URL = 'https://wwr.lanzoui.com/b018813w5a';
+
+            function showModal(modal) {
+                modal.classList.add('active');
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('modal-open');
+            }
+
+            function hideModal(modal) {
+                modal.classList.remove('active');
+                modal.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('modal-open');
+            }
+
+            officialBtn.addEventListener('click', function() {
+                showModal(officialModal);
+            });
+
+            officialCancel.addEventListener('click', function() {
+                hideModal(officialModal);
+            });
+
+            officialConfirm.addEventListener('click', function() {
+                hideModal(officialModal);
+                window.open(OFFICIAL_URL, '_blank');
+            });
+
+            downloadBtn.addEventListener('click', function() {
+                showModal(downloadModal);
+            });
+
+            downloadCancel.addEventListener('click', function() {
+                hideModal(downloadModal);
+            });
+
+            downloadConfirm.addEventListener('click', function() {
+                hideModal(downloadModal);
+                window.open(DOWNLOAD_URL, '_blank');
+            });
+
+            backBtn.addEventListener('click', function() {
+                window.close();
+                // 如果浏览器阻止关闭，则尝试返回上一页
+                if (window.history.length > 1) {
+                    window.history.back();
+                }
+            });
+
+            [officialModal, downloadModal].forEach(function(modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) hideModal(modal);
+                });
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (officialModal.classList.contains('active')) hideModal(officialModal);
+                    if (downloadModal.classList.contains('active')) hideModal(downloadModal);
+                }
+            });
+        })();
+    </script>
 </body>
 </html>
