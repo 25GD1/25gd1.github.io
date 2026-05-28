@@ -371,34 +371,6 @@ a{color:inherit;text-decoration:none}
 .assignment-disc-count{
   font-size:12px;color:var(--muted);display:flex;align-items:center;gap:4px;
 }
-
-/* iOS PWA 提示 */
-.ios-pwa-banner{
-  background:linear-gradient(135deg,#1D4ED8,#7C3AED);
-  color:#fff;
-  padding:12px 16px;
-  display:none;
-  align-items:center;
-  gap:10px;
-  font-size:13px;
-  font-weight:600;
-  position:sticky;
-  top:var(--header-h);
-  z-index:99;
-  line-height:1.4;
-}
-.ios-pwa-banner button{
-  margin-left:auto;
-  background:rgba(255,255,255,.2);
-  color:#fff;
-  border:none;
-  padding:5px 12px;
-  border-radius:8px;
-  font-size:12px;
-  font-weight:700;
-  white-space:nowrap;
-  flex-shrink:0;
-}
 </style>
 </head>
 <body>
@@ -429,13 +401,6 @@ a{color:inherit;text-decoration:none}
       <button id="login-btn" class="btn btn-ghost btn-sm" onclick="showLogin()">管理员登录</button>
     </div>
   </header>
-
-  <!-- iOS 添加到主屏幕提示 -->
-  <div id="ios-pwa-banner" class="ios-pwa-banner">
-    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
-    <span>推荐点击 浏览器 底部 <b>分享</b> → <b>添加到主屏幕</b>，获得 APP 体验</span>
-    <button onclick="dismissIOSPWA()">知道了</button>
-  </div>
 
   <!-- ── 内容区 ── -->
   <main class="content">
@@ -481,7 +446,7 @@ a{color:inherit;text-decoration:none}
           <svg width="36" height="36" fill="none" stroke="#fff" stroke-width="1.8" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
         </div>
         <div class="client-hero-title">GLCN 客户端</div>
-        <div class="client-hero-sub">班级作业发布系统 · 安卓版<br>实时作业通知 · 多端同步</div>
+        <div class="client-hero-sub">班级作业发布系统 · 安卓版<br>实时作业通知 · AI功能 · 多端同步</div>
         <button class="btn btn-primary" id="download-btn" onclick="downloadClient()" style="margin-top:6px;border-radius:25px;padding:13px 28px;font-size:15px;box-shadow:0 4px 16px rgba(0,0,0,.2)">
           <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           下载安卓客户端
@@ -497,7 +462,7 @@ a{color:inherit;text-decoration:none}
           </div>
           <div class="list-item" style="cursor:default">
             <div class="item-icon" style="background:#F3F0FF"><svg width="20" height="20" fill="none" stroke="#7C3AED" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
-            <div class="item-body"><div class="item-title">AI 功能<span class="tag tag-gray" style="margin-left:6px;font-size:10px">即将上线</span></div><div class="item-meta">文本生成 · 网页解析 · 视频生成</div></div>
+            <div class="item-body"><div class="item-title">AI 功能</div><div class="item-meta">文本生成 · 网页解析 </div></div>
           </div>
           <div class="list-item" style="cursor:default">
             <div class="item-icon" style="background:#ECFDF5"><svg width="20" height="20" fill="none" stroke="#059669" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
@@ -505,7 +470,7 @@ a{color:inherit;text-decoration:none}
           </div>
           <div class="list-item" style="cursor:default;border-bottom:none">
             <div class="item-icon" style="background:#FFFBEB"><svg width="20" height="20" fill="none" stroke="#D97706" stroke-width="2" viewBox="0 0 24 24"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg></div>
-            <div class="item-body"><div class="item-title">象棋残局<span class="tag tag-gray" style="margin-left:6px;font-size:10px">即将上线</span></div><div class="item-meta">100 道经典残局 · 排行榜</div></div>
+            <div class="item-body"><div class="item-title">象棋残局</div><div class="item-meta">100 道经典残局 · 排行榜</div></div>
           </div>
         </div>
         <!-- 版权 -->
@@ -928,7 +893,7 @@ function updateAdminUI(){
     document.getElementById('admin-name-text').textContent = adminInfo.username;
 
     // 作业工具栏：有 assignments 权限时显示
-    const hasAssignPerm = (adminInfo.permissions?.assignments && adminInfo.permissions.assignments !== false) || adminInfo.role === 'superadmin';
+    const hasAssignPerm = adminInfo.permissions?.assignments && adminInfo.permissions.assignments !== false;
     if(hasAssignPerm){
       assignToolbar.style.display = 'flex';
       buildAdminSubjectFilter();
@@ -1035,7 +1000,7 @@ function buildAdminSubjectFilter(){
   const c = document.getElementById('assignment-subject-filter-admin');
   if(!adminInfo || !c) return;
   const perm = adminInfo.permissions?.assignments;
-  if(adminInfo.role !== 'superadmin' && (!perm || perm === false)) return;
+  if(!perm || perm === false) return;
 
   // 超管或 all 权限：显示科目下拉
   let subjects = allSubjects;
@@ -1678,25 +1643,6 @@ function downloadClient(){
 }
 
 // ════════════════════════════════════════════
-// iOS 添加到主屏幕提示
-// ════════════════════════════════════════════
-function checkIOSPWA(){
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  const isStandalone = window.navigator.standalone === true;
-  const dismissed = localStorage.getItem('glcn_ios_pwa_dismissed');
-  if(isIOS && !isStandalone && !dismissed){
-    const banner = document.getElementById('ios-pwa-banner');
-    if(banner) banner.style.display = 'flex';
-  }
-}
-function dismissIOSPWA(){
-  localStorage.setItem('glcn_ios_pwa_dismissed', '1');
-  const banner = document.getElementById('ios-pwa-banner');
-  if(banner) banner.style.display = 'none';
-}
-
-// ════════════════════════════════════════════
 // 初始化
 // ════════════════════════════════════════════
 async function init(){
@@ -1705,7 +1651,6 @@ async function init(){
   await loadSubjects();
   loadAssignments();
   loadClientPage(); // 预加载下载地址
-  checkIOSPWA();
 }
 
 init();
