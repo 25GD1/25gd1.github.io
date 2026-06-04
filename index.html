@@ -500,7 +500,7 @@ input[type=checkbox].toggle-cb{display:none}
       <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;padding-top:8px;border-top:1px solid var(--border)">超管 · 管理下载链接</div>
       <div style="display:flex;flex-direction:column;gap:8px">
         <div class="field">
-          <label>APK 下载地址</label>
+          <label>软件下载链接设置</label>
           <input id="client-url-input" type="url" placeholder="https://..."/>
         </div>
         <button class="btn btn-primary btn-sm" onclick="saveClientUrl()">保存链接</button>
@@ -852,7 +852,7 @@ function updateAdminUI(){
     if(hasAssign){
       const chipsEl=document.getElementById('assignments-perm-chips');
       if(assignPerm==='all'||adminInfo.role==='superadmin'){
-        chipsEl.innerHTML='<span class="perm-chip">全科目</span>';
+        chipsEl.innerHTML='<span class="perm-chip">全科目权限</span>';
       }else if(Array.isArray(assignPerm)){
         const names=allSubjects.filter(s=>assignPerm.includes(s.id)).map(s=>s.name);
         chipsEl.innerHTML=names.map(n=>`<span class="perm-chip">${esc(n)}</span>`).join('');
@@ -1390,7 +1390,7 @@ async function loadClientUrlForAdmin(){
 }
 async function saveClientUrl(){
   const url=document.getElementById('client-url-input').value.trim();
-  if(!url){showToast('请输入下载链接');return}
+  if(!url){showToast('下载链接输入');return}
   try{
     await sb.from('app_settings').upsert({key:'client_download_url',value:url},{onConflict:'key'});
     showToast('下载链接已更新 ✓');
