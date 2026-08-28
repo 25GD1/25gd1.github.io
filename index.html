@@ -1,2835 +1,1423 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
-    <title>GLcn - Hello</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary: #6d7aea;
-            --primary-dark: #5a67d8;
-            --secondary: #7c5aa0;
-            --accent: #ec8bf7;
-            --accent-secondary: #f5576c;
-            --dark: #1a1a2e;
-            --darker: #16213e;
-            --darkest: #0f172a;
-            --light: #f8fafc;
-            --lighter: #e2e8f0;
-            --text: #e2e8f0;
-            --text-light: #a0aec0;
-            --text-muted: #718096;
-            --white: #ffffff;
-            --success: #4ade80;
-            --warning: #f59e0b;
-            --danger: #f87171;
-            --info: #60a5fa;
-            --subject-chinese: #e53e3e;
-            --subject-math: #3182ce;
-            --subject-english: #38a169;
-            --subject-physics: #d69e2e;
-            --subject-chemistry: #805ad5;
-            --subject-politics: #dd6b20;
-            --subject-other: #718096;
-            
-            --transition-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            --transition-spring: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-            --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
-            --transition-ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            
-            --duration-fast: 0.25s;
-            --duration-normal: 0.4s;
-            --duration-slow: 0.6s;
-            --duration-mega-slow: 0.8s;
-            
-            --border-radius: 16px;
-            --border-radius-sm: 8px;
-            --border-radius-lg: 24px;
-            --border-radius-xl: 32px;
-            
-            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
-            --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.15);
-            --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.2);
-            --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.3);
-            --shadow-glow: 0 0 30px rgba(102, 126, 234, 0.4);
-            
-            --spacing-xs: 0.5rem;
-            --spacing-sm: 1rem;
-            --spacing-md: 1.5rem;
-            --spacing-lg: 2rem;
-            --spacing-xl: 3rem;
-            --spacing-xxl: 4rem;
-        }
-
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        html { 
-            scroll-behavior: smooth; 
-            scroll-padding-top: 70px;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Microsoft YaHei', 'PingFang SC', sans-serif;
-            background: var(--dark);
-            color: var(--text);
-            line-height: 1.6;
-            overflow-x: hidden;
-            font-size: clamp(0.95rem, 4vw, 1.05rem);
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-            transition: all var(--duration-normal) var(--transition-smooth);
-        }
-
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(102, 126, 234, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(118, 75, 162, 0.08) 0%, transparent 50%),
-                radial-gradient(circle at 40% 80%, rgba(240, 147, 251, 0.04) 0%, transparent 50%);
-            animation: backgroundShift 25s ease-in-out infinite;
-            z-index: -1;
-            will-change: transform;
-        }
-
-        @keyframes backgroundShift {
-            0%, 100% { opacity: 0.3; transform: rotate(0deg) scale(1); }
-            50% { opacity: 0.6; transform: rotate(3deg) scale(1.05); }
-        }
-
-        #particles-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-            pointer-events: none;
-            will-change: transform;
-        }
-
-        body.performance-mode .particle-glow {
-            filter: blur(0.5px) drop-shadow(0 0 8px currentColor);
-        }
-
-        .navbar {
-            position: fixed; top: 0; width: 100%;
-            background: rgba(26, 26, 46, 0.8);
-            backdrop-filter: blur(20px) saturate(180%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-            z-index: 1000; 
-            transition: all var(--duration-normal) var(--transition-smooth);
-            transform: translateY(0);
-            will-change: transform;
-        }
-        
-        .navbar-container {
-            max-width: 1200px; margin: 0 auto;
-            display: flex; justify-content: space-between; align-items: center;
-            padding: var(--spacing-sm) clamp(1rem, 5vw, 2rem);
-            min-height: 70px;
-        }
-        
-        .logo {
-            font-size: clamp(1.6rem, 5vw, 1.8rem); font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            display: flex; align-items: center; gap: 0.5rem;
-            transition: all var(--duration-slow) var(--transition-spring);
-            cursor: pointer;
-        }
-        
-        .logo:hover {
-            transform: scale(1.05) translateY(-2px);
-            filter: drop-shadow(0 0 15px rgba(102, 126, 234, 0.4));
-        }
-        
-        .nav-menu {
-            display: flex; gap: clamp(1rem, 3vw, 2.5rem); 
-            list-style: none;
-        }
-        
-        .nav-menu li {
-            cursor: pointer; color: rgba(255, 255, 255, 0.8); 
-            font-weight: 500; padding: var(--spacing-xs) 0; 
-            position: relative; transition: all var(--duration-normal) var(--transition-spring);
-            user-select: none;
-        }
-        
-        .nav-menu li::after {
-            content: ''; position: absolute; bottom: 0; left: 0;
-            width: 0; height: 2px; border-radius: 1px;
-            background: linear-gradient(90deg, var(--primary), var(--accent));
-            transition: all var(--duration-normal) var(--transition-bounce);
-        }
-        
-        .nav-menu li:hover::after, 
-        .nav-menu li.active::after { width: 100%; }
-        
-        .nav-menu li:hover {
-            color: var(--white);
-            transform: translateY(-2px) scale(1.02);
-        }
-
-        .nav-menu li.active {
-            color: var(--primary);
-            transform: translateY(-1px);
-        }
-        
-        .mobile-toggle {
-            display: none; 
-            background: rgba(255, 255, 255, 0.2); 
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: white; font-size: 1.5rem; cursor: pointer;
-            padding: 0.5rem 1rem; min-width: 88px; min-height: 44px;
-            border-radius: var(--border-radius-lg); transition: all var(--duration-fast) var(--transition-bounce);
-            display: flex; align-items: center; gap: 0.5rem; justify-content: center;
-        }
-        
-        .mobile-toggle:hover {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(102, 126, 234, 0.4);
-        }
-
-        .mobile-toggle:active { transform: scale(0.95); }
-
-        .mobile-toggle span {
-            font-size: 0.9rem; font-weight: 500;
-            white-space: nowrap;
-        }
-
-        .page {
-            display: none; flex: 1;
-            padding: var(--spacing-md);
-            opacity: 0; transform: translateY(20px);
-            transition: all var(--duration-mega-slow) var(--transition-smooth);
-            height: auto; min-height: calc(100vh - 70px);
-        }
-        
-        .page.active { 
-            display: block; 
-            opacity: 1; 
-            transform: translateY(0);
-        }
-        
-        .page.fade-out {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-
-        .hero {
-            background: linear-gradient(135deg, var(--darker) 0%, var(--dark) 50%, var(--secondary) 100%);
-            color: white; text-align: center; 
-            padding: clamp(2rem, 6vw, 4rem) clamp(1rem, 5vw, 2rem);
-            position: relative; overflow: hidden;
-            border-radius: var(--border-radius-lg);
-            margin: var(--spacing-sm) auto;
-            box-shadow: var(--shadow-xl);
-            max-width: 1200px;
-        }
-        
-        .hero::before {
-            content: '';
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(102, 126, 234, 0.15) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(240, 147, 251, 0.15) 0%, transparent 50%);
-            animation: heroPulse 8s var(--transition-smooth) infinite;
-            z-index: 1;
-        }
-        
-        @keyframes heroPulse {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.6; transform: scale(1.02); }
-        }
-
-        .hero-content {
-            position: relative; z-index: 1;
-            width: 100%; display: flex;
-            flex-direction: column; align-items: center;
-        }
-
-        .hero h1 {
-            font-size: clamp(1.8rem, 6vw, 2.8rem); font-weight: 800; 
-            margin-bottom: 1rem; line-height: 1.2;
-            position: relative; z-index: 1;
-            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            animation: fadeInUp 1s var(--transition-ease-out) forwards;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        #beijingTime {
-            font-size: clamp(2rem, 8vw, 3.2rem); font-weight: 800;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            text-align: center; letter-spacing: 0.05em;
-            animation: timeGlow 2s var(--transition-smooth) infinite alternate;
-        }
-
-        @keyframes timeGlow {
-            from { filter: drop-shadow(0 0 5px rgba(102, 126, 234, 0.3)); }
-            to { filter: drop-shadow(0 0 20px rgba(102, 126, 234, 0.6)); }
-        }
-
-        .time-date {
-            font-size: clamp(1rem, 3vw, 1.4rem); color: rgba(255, 255, 255, 0.85);
-            margin-bottom: 1.5rem;
-            animation: fadeInUp 1s var(--transition-ease-out) forwards 0.3s;
-        }
-
-        .uptime-display {
-            font-size: clamp(0.9rem, 2.5vw, 1.1rem); color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 1.5rem; background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: var(--border-radius);
-            padding: var(--spacing-sm) var(--spacing-md); display: flex;
-            align-items: center; gap: var(--spacing-sm); justify-content: center;
-            width: fit-content; margin-left: auto; margin-right: auto; text-align: center;
-            transition: all var(--duration-normal) var(--transition-smooth);
-            animation: fadeInUp 1s var(--transition-ease-out) forwards 0.6s;
-        }
-
-        .uptime-display:hover {
-            background: rgba(255, 255, 255, 0.12);
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .uptime-icon {
-            font-size: 1.2rem; color: var(--success);
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 0.7; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.1); }
-        }
-
-        .ua-display {
-            background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: var(--border-radius);
-            padding: var(--spacing-sm) var(--spacing-md); margin-top: 1rem;
-            display: flex; align-items: center; gap: var(--spacing-sm);
-            font-size: clamp(0.9rem, 2.5vw, 1.1rem); color: rgba(255, 255, 255, 0.9);
-            transition: all var(--duration-normal) var(--transition-smooth); justify-content: center;
-            width: fit-content; margin-left: auto; margin-right: auto; text-align: center;
-            animation: fadeInUp 1s var(--transition-ease-out) forwards 1s;
-        }
-
-        .ua-display:hover {
-            background: rgba(255, 255, 255, 0.12);
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .ua-icon {
-            font-size: 1.2rem; color: var(--accent);
-        }
-
-        .stn-studio-display {
-            position: relative; margin-top: 1.5rem; padding: 1rem 2rem;
-            background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 50px;
-            font-size: clamp(1.1rem, 3vw, 1.5rem); font-weight: 700; color: var(--white);
-            text-align: center; animation: fadeInUp 1s var(--transition-ease-out) forwards 0.9s, stnGlow 3s ease-in-out infinite;
-            transition: all var(--duration-normal) var(--transition-smooth); overflow: hidden;
-        }
-
-        .stn-studio-display::before {
-            content: '';
-            position: absolute; top: 50%; left: 50%;
-            width: 120%; height: 120%;
-            transform: translate(-50%, -50%);
-            background: conic-gradient(from 0deg, transparent, rgba(102, 126, 234, 0.3), rgba(240, 147, 251, 0.3), transparent);
-            animation: stnRotate 4s linear infinite; z-index: -1; border-radius: 50px;
-        }
-
-        .stn-studio-display::after {
-            content: ''; position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px;
-            background: var(--dark); border-radius: 48px; z-index: -1;
-        }
-
-        @keyframes stnRotate {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-
-        @keyframes stnGlow {
-            0%, 100% { box-shadow: 0 0 20px rgba(102, 126, 234, 0.3); }
-            50% { box-shadow: 0 0 30px rgba(72, 187, 120, 0.6), 0 0 40px rgba(240, 147, 251, 0.3); }
-        }
-
-        .stn-studio-display:hover {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-        }
-
-        .content-section {
-            padding-top: 70px; min-height: 100vh;
-            display: flex; flex-direction: column;
-        }
-
-        .feature-card {
-            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--border-radius-lg);
-            padding: var(--spacing-xl); text-align: center;
-            transition: all var(--duration-normal) var(--transition-bounce);
-            position: relative; overflow: hidden;
-            margin: var(--spacing-md) auto; max-width: 800px;
-        }
-
-        .feature-card::before {
-            content: '';
-            position: absolute; top: 0; left: -100%;
-            width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.08), transparent);
-            transition: left var(--duration-mega-slow) var(--transition-smooth);
-        }
-
-        .feature-card:hover::before { left: 100%; }
-
-        .feature-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: var(--shadow-xl), var(--shadow-glow);
-            border-color: rgba(102, 126, 234, 0.3);
-        }
-
-        .feature-icon {
-            font-size: 4rem; color: var(--primary);
-            margin-bottom: var(--spacing-md);
-            transition: all var(--duration-normal) var(--transition-bounce);
-            display: inline-block;
-        }
-
-        .feature-card:hover .feature-icon {
-            transform: scale(1.1) rotate(5deg);
-            color: var(--accent);
-        }
-
-        .feature-title {
-            font-size: 1.5rem; font-weight: 700;
-            margin-bottom: var(--spacing-sm); color: var(--white);
-        }
-
-        .feature-description {
-            color: var(--text-light); line-height: 1.6;
-        }
-
-        .announcement-content {
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            min-height: calc(100vh - 300px); padding: var(--spacing-lg) 0;
-        }
-
-        .modal-overlay {
-            position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(10px);
-            display: flex; align-items: center; justify-content: center;
-            z-index: 2000; opacity: 0; visibility: hidden;
-            transition: all var(--duration-normal) var(--transition-smooth);
-        }
-
-        .modal-overlay.active {
-            opacity: 1; visibility: visible;
-        }
-
-        .modal-content {
-            background: rgba(26, 26, 46, 0.95); backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--border-radius-lg);
-            padding: var(--spacing-xl); max-width: 500px;
-            width: 90%; max-height: 80vh; overflow-y: auto;
-            transform: scale(0.8) translateY(50px);
-            transition: all var(--duration-slow) var(--transition-bounce);
-            position: relative;
-        }
-
-        .modal-overlay.active .modal-content {
-            transform: scale(1) translateY(0);
-        }
-
-        .modal-header {
-            display: flex; align-items: center; justify-content: space-between;
-            margin-bottom: var(--spacing-lg); padding-bottom: var(--spacing-md);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        .modal-title {
-            font-size: 1.5rem; font-weight: 700;
-            color: var(--white); display: flex;
-            align-items: center; gap: var(--spacing-sm);
-        }
-
-        .modal-close {
-            background: none; border: none; color: var(--text-light);
-            font-size: 1.5rem; cursor: pointer; padding: var(--spacing-xs);
-            border-radius: var(--border-radius-sm); transition: all var(--duration-fast) var(--transition-smooth);
-        }
-
-        .modal-close:hover {
-            color: var(--white); background: rgba(255, 255, 255, 0.1);
-        }
-
-        .modal-body {
-            color: var(--text-light); line-height: 1.6;
-        }
-
-        .modal-body h4 {
-            color: var(--white); margin-bottom: var(--spacing-sm);
-            font-size: 1.1rem;
-        }
-
-        .modal-body p { margin-bottom: var(--spacing-md); }
-
-        .modal-body .info-grid {
-            display: grid; grid-template-columns: 1fr 1fr;
-            gap: var(--spacing-md); margin: var(--spacing-md) 0;
-        }
-
-        .modal-body .info-item {
-            background: rgba(255, 255, 255, 0.05); padding: var(--spacing-sm);
-            border-radius: var(--border-radius-sm); border-left: 3px solid var(--primary);
-        }
-
-        .modal-body .info-label {
-            font-size: 0.8rem; color: var(--text-muted);
-            margin-bottom: 0.25rem;
-        }
-
-        .modal-body .info-value {
-            color: var(--white); font-weight: 600;
-        }
-
-        .modal-footer {
-            margin-top: var(--spacing-lg); padding-top: var(--spacing-md);
-            border-top: 1px solid rgba(255, 255, 255, 0.1); text-align: center;
-        }
-
-        .modal-button {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            border: none; color: white; padding: var(--spacing-sm) var(--spacing-lg);
-            border-radius: var(--border-radius); font-weight: 600;
-            cursor: pointer; transition: all var(--duration-fast) var(--transition-bounce);
-        }
-
-        .modal-button:hover {
-            transform: translateY(-2px) scale(1.03);
-            box-shadow: var(--shadow-glow);
-        }
-
-        footer {
-            background: var(--darkest); color: rgba(255, 255, 255, 0.8);
-            padding: var(--spacing-lg) clamp(1rem, 5vw, 2rem); text-align: center;
-            position: relative; overflow: hidden; margin-top: auto;
-        }
-        
-        footer::before {
-            content: ''; position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: radial-gradient(circle at 50% 0%, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
-        }
-        
-        .footer-content { 
-            max-width: 1200px; margin: 0 auto; 
-            position: relative; z-index: 1;
-            transition: all var(--duration-normal) var(--transition-smooth);
-        }
-        
-        .footer-content:hover {
-            color: var(--white);
-            transform: translateY(-2px);
-        }
-
-        @media (max-width: 768px) {
-            .nav-menu {
-                position: fixed; top: 70px; left: -100%;
-                width: 100%; height: calc(100vh - 70px); 
-                background: rgba(26, 26, 46, 0.95);
-                flex-direction: column; align-items: center; justify-content: flex-start;
-                padding-top: var(--spacing-xl); transition: left 0.5s var(--transition-bounce);
-                backdrop-filter: blur(20px); border-top: 1px solid rgba(255, 255, 255, 0.1);
-            }
-            
-            .nav-menu li { 
-                width: 80%; text-align: center; 
-                padding: var(--spacing-md); margin: var(--spacing-xs) 0;
-                border-radius: var(--border-radius);
-                transition: all var(--duration-normal) var(--transition-smooth);
-            }
-
-            .nav-menu li:hover {
-                background: rgba(102, 126, 234, 0.1);
-                transform: translateX(5px);
-            }
-            
-            .nav-menu li::after {
-                left: 50%; transform: translateX(-50%);
-            }
-            
-            .nav-menu.active { left: 0; }
-            .mobile-toggle { display: flex; }
-
-            .hero {
-                margin: var(--spacing-xs) auto;
-                padding: clamp(1.5rem, 5vw, 3rem) clamp(1rem, 4vw, 1.5rem);
-            }
-
-            #beijingTime { font-size: clamp(1.8rem, 6vw, 2.5rem); }
-            .time-date { font-size: clamp(0.9rem, 2.5vw, 1.1rem); }
-            .uptime-display { font-size: clamp(0.8rem, 2vw, 0.95rem); padding: var(--spacing-xs) var(--spacing-sm); }
-            .ua-display { font-size: clamp(0.8rem, 2vw, 0.95rem); padding: var(--spacing-xs) var(--spacing-sm); }
-            .stn-studio-display {
-                padding: 0.8rem 1.5rem;
-                font-size: clamp(0.95rem, 2.5vw, 1.2rem);
-            }
-
-            .modal-content {
-                width: 95%;
-                padding: var(--spacing-lg);
-                margin: var(--spacing-md);
-            }
-
-            .modal-body .info-grid { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 480px) {
-            .page { padding: var(--spacing-sm); }
-            .hero { padding: clamp(1.2rem, 4vw, 2.5rem) clamp(0.5rem, 3vw, 1rem); }
-            #beijingTime { font-size: clamp(1.6rem, 5vw, 2.2rem); }
-            .time-date { font-size: clamp(0.9rem, 2.5vw, 1.1rem); }
-            .uptime-display { font-size: clamp(0.75rem, 2vw, 0.9rem); }
-            .ua-display { font-size: clamp(0.8rem, 2vw, 0.95rem); }
-            .stn-studio-display {
-                padding: 0.6rem 1.2rem;
-                font-size: clamp(0.9rem, 2.5vw, 1.1rem);
-            }
-        }
-
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--dark); }
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(var(--primary), var(--accent));
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(var(--primary-dark), var(--accent-secondary));
-        }
-
-        ::selection {
-            background: rgba(102, 126, 234, 0.3);
-            color: var(--white);
-        }
-
-        *:focus {
-            outline: 2px solid var(--primary);
-            outline-offset: 2px;
-        }
-
-        .ua-pc { color: var(--primary); }
-        .ua-ios { color: var(--success); }
-        .ua-android { color: var(--warning); }
-        .ua-mobile { color: var(--accent); }
-        .ua-wechat { color: #07C160; }
-        .ua-qq { color: #12B7F5; }
-
-        .music-player {
-            position: fixed; bottom: var(--spacing-lg); right: var(--spacing-lg);
-            z-index: 999; opacity: 0; transform: scale(0);
-            transition: all var(--duration-slow) var(--transition-bounce);
-        }
-
-        .music-player.show {
-            opacity: 1; transform: scale(1);
-        }
-
-        body.compatibility-mode .music-player {
-            display: none !important;
-        }
-
-        .music-button {
-            width: 60px; height: 60px; border: none; border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2); color: var(--white);
-            font-size: 1.5rem; cursor: pointer; position: relative;
-            overflow: hidden; transition: all var(--duration-normal) var(--transition-bounce);
-            box-shadow: var(--shadow-lg); display: flex;
-            align-items: center; justify-content: center;
-        }
-
-        .music-button:hover {
-            transform: scale(1.1) rotate(10deg);
-            box-shadow: var(--shadow-xl), var(--shadow-glow);
-            background: rgba(255, 255, 255, 0.15);
-        }
-
-        .music-button:active { transform: scale(0.95); }
-
-        .music-button.playing {
-            animation: musicPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes musicPulse {
-            0%, 100% { box-shadow: var(--shadow-lg), 0 0 0 0 rgba(102, 126, 234, 0.4); }
-            50% { box-shadow: var(--shadow-xl), 0 0 0 10px rgba(102, 126, 234, 0); }
-        }
-
-        .music-button::before {
-            content: '';
-            position: absolute; top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            opacity: 0; transition: all var(--duration-normal) var(--transition-smooth);
-            z-index: -1;
-        }
-
-        .music-button:hover::before { opacity: 0.3; }
-
-        .page-content {
-            padding-top: 70px; min-height: 100vh;
-            display: flex; flex-direction: column;
-        }
-
-        .announcement-content {
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            min-height: calc(100vh - 300px); padding: var(--spacing-lg) 0;
-        }
-
-        .stagger-fade-in {
-            opacity: 0; transform: translateY(20px);
-            animation: staggerFadeIn 0.6s var(--transition-bounce) forwards;
-        }
-
-        @keyframes staggerFadeIn {
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .lyrics-container {
-            position: relative; max-width: 800px;
-            margin: 2rem auto; padding: 1rem;
-            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-lg); overflow: hidden;
-            transition: all var(--duration-normal) var(--transition-smooth);
-            transform: translateY(0);
-        }
-
-        body.compatibility-mode .lyrics-container {
-            display: none !important;
-        }
-
-        .lyrics-header {
-            display: flex; justify-content: space-between;
-            align-items: center; padding: 0 1rem 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            margin-bottom: 1rem;
-        }
-
-        .lyrics-title {
-            font-size: 1.3rem; font-weight: 700;
-            color: var(--white); display: flex;
-            align-items: center; gap: 0.5rem;
-        }
-
-        .lyrics-title i {
-            color: var(--accent);
-            animation: musicPulse 2s ease-in-out infinite;
-        }
-
-        .lyrics-toggle {
-            background: rgba(255, 255, 255, 0.1); border: none;
-            color: var(--text-light); padding: 0.5rem 1rem;
-            border-radius: var(--border-radius-sm); cursor: pointer;
-            transition: all var(--duration-fast) var(--transition-smooth);
-            font-size: 0.9rem;
-        }
-
-        .lyrics-toggle:hover {
-            background: rgba(255, 255, 255, 0.2); color: var(--white);
-            transform: translateY(-2px);
-        }
-
-        .lyrics-wrapper {
-            position: relative; height: 300px; overflow: hidden;
-            mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
-            transition: height var(--duration-normal) var(--transition-smooth);
-        }
-
-        .lyrics-lines {
-            position: absolute; width: 100%;
-            transition: transform 0.3s var(--transition-smooth);
-        }
-
-        .lyrics-line {
-            padding: 1rem 2rem; text-align: center;
-            color: var(--text-muted); font-size: 1.1rem;
-            line-height: 1.6; transition: all 0.4s var(--transition-bounce);
-            cursor: pointer; opacity: 0.7; transform: scale(0.95);
-            user-select: none;
-            position: relative;
-        }
-
-        .lyrics-line:hover {
-            color: var(--text-light); background: rgba(255, 255, 255, 0.03);
-            border-radius: var(--border-radius);
-            transform: scale(0.98);
-        }
-
-        .lyrics-line.active {
-            color: var(--white); font-size: 1.3rem; font-weight: 600;
-            opacity: 1; transform: scale(1);
-            text-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
-        }
-
-        .lyrics-line.active::before {
-            content: '♪'; position: absolute; left: 1rem;
-            color: var(--accent); animation: pulse 1s ease-in-out infinite;
-        }
-
-        .lyrics-line.active::after {
-            content: '♪'; position: absolute; right: 1rem;
-            color: var(--accent); animation: pulse 1s ease-in-out infinite;
-        }
-
-        .lyrics-progress {
-            position: absolute; bottom: 0; left: 0; right: 0;
-            height: 3px; background: rgba(255, 255, 255, 0.1);
-            border-radius: 0 0 var(--border-radius-lg) var(--border-radius-lg);
-            overflow: hidden;
-        }
-
-        .lyrics-progress-bar {
-            height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent));
-            width: 0%; transition: width 0.1s linear;
-            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
-        }
-
-        .lyrics-status {
-            display: flex; justify-content: center; align-items: center;
-            padding: 1rem; color: var(--text-muted); font-size: 0.9rem;
-            gap: 0.5rem; transition: all var(--duration-fast) var(--transition-smooth);
-        }
-
-        .lyrics-status i {
-            font-size: 1.1rem; transition: all var(--duration-fast) var(--transition-smooth);
-        }
-
-        .lyrics-status.loading i { animation: fa-spin 1s linear infinite; }
-        .lyrics-status.error { color: var(--danger); }
-        .lyrics-status.success { color: var(--success); }
-
-        .lyrics-container.collapsed {
-            transform: translateY(calc(100% - 60px)) scale(0.98);
-            box-shadow: var(--shadow-md);
-            opacity: 0.9;
-        }
-
-        .lyrics-container.collapsed .lyrics-wrapper {
-            height: 0;
-            opacity: 0;
-        }
-
-        .lyrics-container.collapsed .lyrics-progress { opacity: 0; }
-        .lyrics-container.collapsed .lyrics-status { padding: 0.5rem; }
-
-        @media (max-width: 768px) {
-            .lyrics-container {
-                margin: 1rem auto;
-                border-radius: var(--border-radius);
-            }
-            .lyrics-wrapper { height: 250px; }
-            .lyrics-line {
-                padding: 0.8rem 1.5rem;
-                font-size: 1rem;
-            }
-            .lyrics-line.active { font-size: 1.1rem; }
-            .lyrics-line.active::before, .lyrics-line.active::after { display: none; }
-            .lyrics-title { font-size: 1.1rem; }
-            .lyrics-toggle {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.8rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .lyrics-wrapper { height: 200px; }
-            .lyrics-line {
-                padding: 0.6rem 1rem;
-                font-size: 0.9rem;
-            }
-            .lyrics-line.active { font-size: 1rem; }
-        }
-
-        .music-button.lyrics-active {
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            animation: musicPulse 2s ease-in-out infinite;
-        }
-
-        .music-button.lyrics-active:hover {
-            box-shadow: var(--shadow-xl), 0 0 30px rgba(102, 126, 234, 0.6);
-        }
-
-        .history-content {
-            display: flex; flex-direction: column;
-            align-items: center; padding: var(--spacing-lg) 0;
-            min-height: calc(100vh - 300px);
-        }
-
-        .history-container {
-            max-width: 900px; margin: 0 auto;
-            padding: var(--spacing-lg) 0; width: 100%;
-        }
-
-        .current-version-banner {
-            margin-bottom: var(--spacing-xl);
-            padding: var(--spacing-lg);
-            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-lg);
-            width: 100%;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .current-version-header {
-            display: flex; justify-content: space-between;
-            align-items: center; margin-bottom: var(--spacing-md);
-            padding-bottom: var(--spacing-sm);
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
-            flex-wrap: wrap; gap: var(--spacing-sm);
-        }
-
-        .current-version-title {
-            font-size: 1.4rem; font-weight: 700; color: var(--warning);
-            display: flex; align-items: center; gap: var(--spacing-xs);
-        }
-
-        .current-version-title i { animation: fa-spin 2s linear infinite; }
-
-        .current-version-badge {
-            font-size: 0.9rem; font-weight: 600; color: var(--white);
-            background: linear-gradient(135deg, var(--warning), var(--accent));
-            padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--border-radius-sm);
-            box-shadow: var(--shadow-sm);
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        .current-version-text {
-            display: flex; align-items: center; gap: var(--spacing-sm);
-            color: var(--text-light); font-size: 0.95rem; line-height: 1.5;
-        }
-
-        .history-timeline {
-            position: relative; padding-left: var(--spacing-lg);
-            margin-left: auto;
-            margin-right: auto;
-            max-width: 800px;
-        }
-
-        .history-timeline::before {
-            content: '';
-            position: absolute; left: 0; top: 0;
-            height: 100%; width: 3px;
-            background: linear-gradient(to bottom, var(--primary), var(--accent));
-            border-radius: 2px;
-        }
-
-        .history-item {
-            position: relative; margin-bottom: var(--spacing-xl);
-            opacity: 0; transform: translateX(-20px);
-            animation: slideInLeft 0.6s var(--transition-smooth) forwards;
-        }
-
-        @keyframes slideInLeft {
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .history-item::before {
-            content: '';
-            position: absolute; left: -2.5rem; top: 1.5rem;
-            width: 16px; height: 16px; background: var(--primary);
-            border: 3px solid var(--dark); border-radius: 50%;
-            box-shadow: 0 0 10px var(--primary); z-index: 1;
-            transition: all var(--duration-normal) var(--transition-bounce);
-        }
-
-        .history-item:hover::before {
-            transform: scale(1.2);
-            box-shadow: 0 0 15px var(--accent);
-            background: var(--accent);
-        }
-
-        .history-card {
-            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--border-radius-lg);
-            padding: var(--spacing-lg); transition: all var(--duration-normal) var(--transition-bounce);
-            position: relative; overflow: hidden; box-shadow: var(--shadow-md);
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: var(--spacing-sm);
-        }
-
-        .history-card:hover {
-            transform: translateX(10px) scale(1.02);
-            box-shadow: var(--shadow-xl), var(--shadow-glow);
-            border-color: rgba(102, 126, 234, 0.3);
-        }
-
-        .history-header {
-            display: flex; justify-content: space-between;
-            align-items: center; margin-bottom: var(--spacing-sm);
-            flex-wrap: wrap; gap: var(--spacing-sm);
-        }
-
-        .history-date {
-            font-size: 1.1rem; font-weight: 600; color: var(--accent);
-            display: flex; align-items: center; gap: var(--spacing-xs);
-        }
-
-        .history-date i {
-            font-size: 0.9rem; color: var(--primary);
-        }
-
-        .history-version {
-            font-size: 1.2rem; font-weight: 700; color: var(--white);
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            padding: var(--spacing-xs) var(--spacing-sm); border-radius: var(--border-radius-sm);
-            box-shadow: var(--shadow-sm);
-            letter-spacing: 0.5px;
-        }
-
-        .history-changes {
-            list-style: none; padding-left: 0; margin: var(--spacing-sm) 0 0 0;
-        }
-
-        .history-change {
-            padding: var(--spacing-xs) 0; color: var(--text-light);
-            position: relative; padding-left: var(--spacing-md);
-            font-size: 0.95rem; line-height: 1.5;
-        }
-
-        .history-change::before {
-            content: '•'; position: absolute; left: 0;
-            color: var(--primary); font-weight: bold; font-size: 1.2rem;
-        }
-
-        .history-change:not(:last-child) {
-            border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
-        }
-
-        .history-banner {
-            text-align: center; margin-bottom: var(--spacing-xl);
-            padding: var(--spacing-lg);
-            background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-lg);
-            margin-left: auto;
-            margin-right: auto;
-            max-width: 800px;
-        }
-
-        .history-banner-icon {
-            font-size: 3rem; color: var(--accent);
-            margin-bottom: var(--spacing-md);
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        .history-banner-title {
-            font-size: 1.8rem; font-weight: 800;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: var(--spacing-sm);
-        }
-
-        .history-banner-subtitle {
-            color: var(--text-light); font-size: 1rem;
-        }
-
-        .feedback-section {
-            margin-top: var(--spacing-xl);
-            padding: 0 var(--spacing-md);
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        @media (max-width: 768px) {
-            .history-timeline { padding-left: var(--spacing-md); }
-            .history-item::before { left: -2rem; }
-            .history-banner {
-                margin: 0 var(--spacing-sm) var(--spacing-lg);
-                padding: var(--spacing-md);
-            }
-            .history-banner-title { font-size: 1.5rem; }
-            .history-banner-icon { font-size: 2.5rem; }
-            .current-version-banner { margin: 0 var(--spacing-sm) var(--spacing-lg); }
-            .history-card { padding: var(--spacing-md); }
-            .history-header { flex-direction: column; align-items: flex-start; }
-            .history-version { align-self: flex-start; }
-        }
-
-        @media (max-width: 480px) {
-            .history-timeline { padding-left: var(--spacing-sm); }
-            .history-item::before { left: -1.8rem; }
-            .history-date { font-size: 1rem; }
-            .history-version { font-size: 1.1rem; }
-        }
-
-        .ua-android { color: var(--warning); }
-        .ua-ios { color: var(--success); }
-
-        .mode-selector-modal {
-            position: fixed; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(26, 26, 46, 0.95); backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: var(--border-radius-lg);
-            padding: var(--spacing-xl); max-width: 400px;
-            width: 90%; z-index: 4000; box-shadow: var(--shadow-xl);
-        }
-
-        .mode-selector-modal h3 {
-            color: var(--white); text-align: center; margin-bottom: var(--spacing-lg);
-        }
-
-        .mode-btn {
-            width: 100%; padding: var(--spacing-md); margin-bottom: var(--spacing-sm);
-            border: none; border-radius: var(--border-radius); font-weight: 600;
-            cursor: pointer; transition: all var(--duration-fast) var(--transition-bounce);
-        }
-
-        .mode-btn.performance {
-            background: linear-gradient(135deg, var(--primary), var(--accent)); color: white;
-        }
-
-        .mode-btn.compatibility {
-            background: rgba(255, 255, 255, 0.08); color: var(--text-light);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        .mode-btn:hover { transform: translateY(-3px) scale(1.02); }
-        .mode-btn.performance:hover { box-shadow: var(--shadow-glow); }
-
-        body.compatibility-mode #particles-canvas,
-        body.compatibility-mode .music-player,
-        body.compatibility-mode .lyrics-container {
-            display: none !important;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
-
-        .download-content {
-            display: flex; flex-direction: column;
-            align-items: center; padding: var(--spacing-lg) 0;
-        }
-
-        .settings-modal { max-width: 500px; width: 90%; }
-        .settings-body { padding: 1.5rem 0; }
-
-        .setting-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: var(--border-radius-lg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all var(--duration-normal) var(--transition-bounce);
-        }
-
-        .setting-item:hover {
-            background: rgba(255, 255, 255, 0.08);
-            transform: translateX(5px);
-            box-shadow: var(--shadow-md);
-        }
-
-        .setting-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .setting-icon {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            border-radius: var(--border-radius);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: white;
-            box-shadow: var(--shadow-sm);
-            transition: all var(--duration-fast) var(--transition-bounce);
-        }
-
-        .setting-item:hover .setting-icon {
-            transform: scale(1.1) rotate(10deg);
-            box-shadow: var(--shadow-glow);
-        }
-
-        .setting-text { flex: 1; }
-
-        .setting-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--white);
-            margin-bottom: 0.25rem;
-        }
-
-        .setting-description {
-            font-size: 0.85rem;
-            color: var(--text-light);
-        }
-
-        .toggle-switch {
-            position: relative;
-            width: 140px;
-            height: 45px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            inset: 0;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border-radius: 45px;
-            transition: all var(--duration-normal) var(--transition-bounce);
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 8px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: var(--shadow-sm);
-        }
-
-        .toggle-slider::before {
-            content: '';
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            width: 41px;
-            height: 41px;
-            background: linear-gradient(135deg, var(--white), var(--lighter));
-            border-radius: 50%;
-            transition: all var(--duration-normal) var(--transition-bounce);
-            box-shadow: var(--shadow-md);
-            z-index: 2;
-        }
-
-        .toggle-switch input:checked + .toggle-slider::before {
-            transform: translateX(95px);
-            background: linear-gradient(135deg, var(--accent), var(--primary));
-        }
-
-        .toggle-switch input:checked + .toggle-slider {
-            background: rgba(102, 126, 234, 0.2);
-            border-color: rgba(102, 126, 234, 0.3);
-        }
-
-        .toggle-label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            position: relative;
-            z-index: 1;
-            transition: all var(--duration-fast) var(--transition-smooth);
-            padding: 0.25rem 0.5rem;
-            border-radius: var(--border-radius-sm);
-        }
-
-        .toggle-label.performance { color: var(--success); }
-        .toggle-label.compatibility { color: var(--warning); }
-
-        .toggle-switch input:not(:checked) + .toggle-slider .performance,
-        .toggle-switch input:checked + .toggle-slider .compatibility {
-            background: rgba(255, 255, 255, 0.15);
-            color: var(--white);
-            transform: scale(1.05);
-        }
-
-        .transition-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--darker), var(--dark));
-            z-index: 9999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: all var(--duration-normal) var(--transition-smooth);
-            backdrop-filter: blur(20px);
-        }
-
-        .transition-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .transition-content {
-            text-align: center;
-            background: var(--card-bg);
-            padding: 2rem;
-            border-radius: var(--border-radius-lg);
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow-xl);
-        }
-
-        .transition-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid var(--border-color);
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-            margin: 0 auto 1rem;
-        }
-
-        .transition-text {
-            color: var(--text-primary);
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        #settingsMenuItem i {
-            transition: all var(--duration-fast) var(--transition-bounce);
-        }
-
-        #settingsMenuItem:hover i {
-            transform: rotate(30deg) scale(1.2);
-        }
-
-        @media (max-width: 768px) {
-            .settings-modal {
-                width: 95%;
-                margin: 1rem;
-            }
-            .setting-item {
-                flex-direction: column;
-                gap: 1rem;
-                align-items: flex-start;
-            }
-            .toggle-switch { align-self: flex-end; }
-        }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<title>GLCN 班级管理</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --p:#2563EB;--pd:#1D4ED8;--pl:#EBF4FF;
+  --green:#059669;--red:#EF4444;--amber:#F59E0B;--purple:#7C3AED;
+  --bg:#F4F7FC;--card:#fff;--border:#E8EEF8;
+  --text:#0A1628;--t2:#3B5073;--muted:#8FA3BF;
+  --shadow-sm:0 1px 2px rgba(10,22,40,.06);
+  --shadow:0 4px 16px rgba(10,22,40,.06),0 1px 3px rgba(10,22,40,.04);
+  --shadow-lg:0 12px 32px rgba(10,22,40,.1),0 4px 8px rgba(10,22,40,.04);
+  --shadow-colored:0 8px 24px rgba(37,99,235,.18);
+  --r:16px;--r-sm:12px;
+  --nav:64px;--hdr:56px;
+  --safe-b:env(safe-area-inset-bottom,0px);
+  --ease-out-expo:cubic-bezier(0.16,1,0.3,1);
+  --ease-spring:cubic-bezier(0.32,0.72,0,1);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{cursor:pointer;border:none;background:none;font-family:inherit;font-size:14px;touch-action:manipulation}
+input,textarea,select{font-family:inherit;font-size:14px;-webkit-appearance:none;appearance:none}
+a{color:inherit;text-decoration:none}
+textarea{resize:vertical}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.94)}to{opacity:1;transform:scale(1)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes staggerFadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(12px) scale(0.96)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+
+#app{display:flex;flex-direction:column;height:100%;max-width:720px;margin:0 auto;background:var(--bg);position:relative;box-shadow:0 0 0 1px var(--border)}
+
+.hdr{
+  position:sticky;top:0;z-index:100;height:var(--hdr);
+  display:flex;align-items:center;padding:0 16px;gap:10px;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;transition:box-shadow .2s;
+}
+.hdr-scrolled{box-shadow:var(--shadow-sm)}
+.hdr-logo{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--p),var(--purple));display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--shadow-colored)}
+.hdr-logo span{font-size:16px;font-weight:800;color:#fff}
+.hdr-title{font-size:17px;font-weight:700;color:var(--text);flex:1;letter-spacing:-0.2px}
+.hdr-subtitle{font-size:11px;color:var(--muted);line-height:1.3}
+#admin-badge{display:none;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;background:var(--pl);cursor:pointer;transition:transform .15s,background .2s}
+#admin-badge:active{transform:scale(0.96)}
+#admin-badge span{font-size:12px;font-weight:700;color:var(--p);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#login-btn{padding:7px 16px;border-radius:99px;background:var(--p);color:#fff;font-size:12px;font-weight:700;flex-shrink:0;transition:all .15s;box-shadow:0 2px 8px rgba(37,99,235,.25)}
+#login-btn:active{transform:scale(0.96);box-shadow:0 1px 4px rgba(37,99,235,.2)}
+
+.ios-pwa-banner{
+  background:linear-gradient(135deg,#1D4ED8,#7C3AED);
+  color:#fff;
+  padding:12px 16px;
+  display:none;
+  align-items:center;
+  gap:10px;
+  font-size:13px;
+  font-weight:600;
+  position:sticky;
+  top:var(--hdr);
+  z-index:99;
+  line-height:1.4;
+  animation:slideUp .4s var(--ease-spring);
+}
+.ios-pwa-banner button{
+  margin-left:auto;
+  background:rgba(255,255,255,.2);
+  color:#fff;
+  border:none;
+  padding:6px 14px;
+  border-radius:8px;
+  font-size:12px;
+  font-weight:700;
+  white-space:nowrap;
+  flex-shrink:0;
+  cursor:pointer;
+  transition:background .15s;
+}
+.ios-pwa-banner button:active{background:rgba(255,255,255,.35)}
+
+#pc-tabs{display:none;gap:4px;padding:8px 16px 0;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);flex-shrink:0;border-bottom:1px solid var(--border)}
+.pc-tab{padding:8px 16px;border-radius:10px 10px 0 0;font-size:13px;font-weight:600;color:var(--muted);transition:all .18s;cursor:pointer;position:relative}
+.pc-tab:hover{color:var(--text);background:rgba(37,99,235,.04)}
+.pc-tab.active{color:var(--p);background:#fff}
+.pc-tab.active::after{content:'';position:absolute;bottom:0;left:12px;right:12px;height:2px;background:var(--p);border-radius:2px}
+@media(min-width:640px){
+  #pc-tabs{display:flex}
+  .bottom-nav{display:none!important}
+  #app{border-left:1px solid var(--border);border-right:1px solid var(--border)}
+  .list-wrap{padding:16px 24px}
+  .toolbar{padding:12px 24px}
+  .card{border-radius:var(--r)}
+  .client-hero{margin:16px 24px 0!important}
+  .ios-pwa-banner{top:var(--hdr)}
+}
+
+.pages{flex:1;overflow:hidden;position:relative}
+.page{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none;flex-direction:column;overscroll-behavior-y:contain}
+.page.active{display:flex;animation:fadeIn .35s var(--ease-out-expo)}
+.page.slide-right{animation:slideInRight .35s var(--ease-out-expo)}
+.page.slide-left{animation:slideInLeft .35s var(--ease-out-expo)}
+
+.bottom-nav{
+  height:calc(var(--nav) + var(--safe-b));
+  padding-bottom:var(--safe-b);
+  display:flex;align-items:stretch;
+  background:rgba(255,255,255,.96);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-top:1px solid var(--border);
+  flex-shrink:0;z-index:90;
+}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:10px;font-weight:600;color:var(--muted);transition:color .15s;cursor:pointer;position:relative;padding:8px 4px 4px}
+.nav-item.active{color:var(--p)}
+.nav-item:active{opacity:0.7}
+.nav-item svg{transition:transform .2s var(--ease-spring)}
+.nav-item.active svg{transform:scale(1.12)}
+.nav-icon{width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+
+.toolbar{display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);background:var(--card);flex-wrap:wrap;flex-shrink:0}
+.scroll-x{display:flex;overflow-x:auto;gap:8px;-ms-overflow-style:none;scrollbar-width:none;padding-bottom:2px;-webkit-overflow-scrolling:touch;scroll-snap-type:x mandatory}
+.scroll-x::-webkit-scrollbar{display:none}
+.scroll-x>*{scroll-snap-align:start}
+
+.list-wrap{display:flex;flex-direction:column;gap:12px;padding:12px 16px}
+.card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;transition:transform .2s,box-shadow .2s}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.list-item{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;transition:background .12s;position:relative}
+.list-item:active{background:#F8FAFF}
+.list-item::after{content:'';position:absolute;left:16px;right:16px;bottom:0;height:1px;background:var(--border)}
+.list-item:last-child::after{display:none}
+.item-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:transform .2s}
+.list-item:active .item-icon{transform:scale(0.92)}
+.item-body{flex:1;min-width:0}
+.item-title{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-0.1px}
+.item-meta{display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap;font-size: 11px;color: var(--muted);}
+.item-meta span{font-size:11px;color:var(--muted)}
+.item-arrow{font-size:18px;color:#D0DAE8;flex-shrink:0;transition:transform .2s, color .2s}
+.list-item:active .item-arrow{transform:translateX(3px);color:var(--p)}
+
+.skeleton{
+  background:linear-gradient(90deg,#f0f4fa 25%,#e8eef8 50%,#f0f4fa 75%);
+  background-size:200% 100%;
+  animation:shimmer 1.2s infinite;
+  border-radius:8px;
+}
+.skeleton-card{height:80px;border-radius:var(--r);margin-bottom:12px}
+
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:80px 24px;color:var(--muted);text-align:center;animation:fadeIn .5s ease}
+.empty svg{opacity:.35;transition:opacity .3s}
+.empty:hover svg{opacity:.5}
+.empty p{font-size:15px;font-weight:600;color:var(--t2)}
+.empty small{font-size:13px;opacity:.8;margin-top:4px}
+
+.spinner{display:flex;justify-content:center;padding:56px}
+.spin{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--p);border-radius:50%;animation:spin .7s linear infinite}
+
+.tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap;transition:all .15s}
+.tag-blue{background:var(--pl);color:var(--p)}
+.tag-green{background:#D1FAE5;color:var(--green)}
+.tag-red{background:#FEE2E2;color:var(--red)}
+.tag-amber{background:#FEF3C7;color:var(--amber)}
+.tag-purple{background:#EDE9FE;color:var(--purple)}
+.tag-gray{background:#F1F5F9;color:#64748B}
+.filter-btn{cursor:pointer;transition:all .15s;border:none}
+.filter-btn.active.tag-blue{background:var(--p);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border-radius:var(--r-sm);font-weight:600;font-size:13px;transition:all .15s;cursor:pointer;white-space:nowrap;position:relative;overflow:hidden}
+.btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,0);transition:background .15s}
+.btn:active::after{background:rgba(255,255,255,.1)}
+.btn-primary{background:var(--p);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25)}
+.btn-primary:hover{background:var(--pd);box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.btn-primary:active{transform:scale(0.96)}
+.btn-ghost{background:var(--pl);color:var(--p)}
+.btn-ghost:hover{background:#dbeafe}
+.btn-danger{background:#FEE2E2;color:var(--red)}
+.btn-sm{padding:6px 12px;font-size:12px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:200;display:none;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .25s}
+.overlay.show{display:flex;opacity:1}
+@media(min-width:640px){.overlay{align-items:center;background:rgba(0,0,0,.35)}}
+.sheet{
+  background:var(--card);width:100%;max-width:640px;
+  border-radius:24px 24px 0 0;
+  max-height:92vh;display:flex;flex-direction:column;
+  padding-bottom:calc(20px + var(--safe-b));
+  transform:translateY(100%);
+  transition:transform .35s var(--ease-spring);
+}
+.overlay.show .sheet{transform:translateY(0)}
+@media(min-width:640px){
+  .sheet{border-radius:var(--r);max-width:520px;max-height:86vh;transform:translateY(20px) scale(0.96);transition:transform .3s var(--ease-spring), opacity .2s}
+  .overlay.show .sheet{transform:translateY(0) scale(1)}
+}
+.sheet-handle{width:40px;height:5px;background:#E2E8F0;border-radius:99px;margin:14px auto 6px;transition:background .2s}
+.sheet:hover .sheet-handle{background:#CBD5E1}
+.sheet-hdr{display:flex;align-items:center;padding:16px 20px 12px;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sheet-hdr h3{flex:1;font-size:17px;font-weight:700;color:var(--text)}
+.sheet-close{width:32px;height:32px;border-radius:50%;background:#F1F5F9;display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:all .15s;font-size:16px;color:var(--muted)}
+.sheet-close:hover{background:#E2E8F0;color:var(--text)}
+.sheet-close:active{transform:scale(0.92)}
+.sheet-body{overflow-y:auto;padding:16px 20px;display:flex;flex-direction:column;gap:14px;flex:1;-webkit-overflow-scrolling:touch}
+
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:700;color:var(--t2)}
+.field input,.field textarea,.field select{
+  padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);
+  font-size:14px;background:var(--card);color:var(--text);outline:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+.field textarea{min-height:90px;line-height:1.6}
+.field-row{display:flex;gap:10px}
+.field-row>.field{flex:1}
+.form-err{font-size:12px;color:var(--red);font-weight:600;min-height:16px}
+.form-actions{display:flex;gap:8px;justify-content:flex-end;padding-top:4px}
+.toggle-row{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--t2);cursor:pointer}
+.toggle{width:44px;height:24px;border-radius:12px;background:#E2E8F0;position:relative;cursor:pointer;transition:background .25s;flex-shrink:0}
+.toggle.on{background:var(--p)}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.15);transition:transform .25s var(--ease-spring)}
+.toggle.on::after{transform:translateX(20px)}
+input[type=checkbox].toggle-cb{display:none}
+
+#detail-overlay{align-items:flex-end;justify-content:center}
+.detail-sheet{
+  background:var(--card);width:100%;max-width:640px;
+  border-radius:24px 24px 0 0;
+  max-height:94vh;display:flex;flex-direction:column;
+  padding-bottom:calc(20px + var(--safe-b));
+  transform:translateY(100%);
+  transition:transform .4s var(--ease-spring);
+}
+.overlay.show .detail-sheet{transform:translateY(0)}
+@media(min-width:640px){
+  #detail-overlay{align-items:center}
+  .detail-sheet{border-radius:var(--r);max-width:580px;max-height:88vh;transform:translateY(16px) scale(0.96);transition:transform .35s var(--ease-spring)}
+  .overlay.show .detail-sheet{transform:translateY(0) scale(1)}
+}
+.detail-head{padding:20px 20px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+.detail-title{font-size:18px;font-weight:700;color:var(--text);line-height:1.4;letter-spacing:-0.2px}
+.detail-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:8px}
+.detail-body{overflow-y:auto;padding:16px 20px;flex:1;display:flex;flex-direction:column;gap:16px;-webkit-overflow-scrolling:touch}
+.detail-content{font-size:14.5px;line-height:1.75;color:var(--t2);white-space:pre-wrap;word-break:break-word}
+.detail-footer{padding:12px 20px 4px;border-top:1px solid var(--border);display:flex;gap:10px;flex-wrap:wrap;flex-shrink:0}
+.attachment-link{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;background:var(--pl);border-radius:var(--r-sm);font-size:13px;font-weight:700;color:var(--p);text-decoration:none;margin-top:8px;align-self:flex-start;transition:all .15s}
+.attachment-link:hover{background:#dbeafe;transform:translateY(-1px)}
+.attachment-link:active{transform:scale(0.98)}
+
+.view-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--muted);background:#F8FAFF;padding:2px 8px;border-radius:99px}
+
+.disc-section-title{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;padding-bottom:8px;border-bottom:1px solid var(--border);margin-bottom:4px}
+.disc-list{display:flex;flex-direction:column;gap:12px}
+.disc-item{background:#F8FAFF;border-radius:var(--r-sm);padding:12px 14px;transition:all .15s}
+.disc-item:hover{background:#F4F7FF}
+.disc-author{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.disc-avatar{width:30px;height:30px;border-radius:99px;background:linear-gradient(135deg,var(--pl),#F3F0FF);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--p);flex-shrink:0}
+.disc-name{font-size:12px;font-weight:700;color:var(--t2)}
+.disc-time{font-size:11px;color:var(--muted);margin-left:auto}
+.disc-content{font-size:13.5px;color:var(--text);line-height:1.65;word-break:break-word}
+.disc-pinned{background:#FFFBEB;border:1px solid #FEF3C7}
+.disc-pinned-badge{font-size:10px;font-weight:800;color:var(--amber);background:#FEF3C7;padding:2px 8px;border-radius:99px}
+
+.client-hero{
+  margin:12px 16px 0;
+  background:linear-gradient(135deg,#1D4ED8,#7C3AED);
+  border-radius:20px;
+  padding:32px 24px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  text-align:center;
+  gap:10px;
+  position:relative;
+  overflow:hidden;
+  animation:slideUp .5s var(--ease-spring);
+}
+.client-hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.15) 0%,transparent 50%);
+  pointer-events:none;
+}
+.client-hero-logo{
+  width:64px;height:64px;border-radius:18px;
+  background:rgba(255,255,255,.18);
+  backdrop-filter:blur(4px);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:2px;
+  position:relative;
+  z-index:1;
+  transition:transform .3s var(--ease-spring);
+}
+.client-hero:active .client-hero-logo{transform:scale(0.92)}
+.client-hero-title{font-size:22px;font-weight:800;color:#fff;position:relative;z-index:1;letter-spacing:-0.3px}
+.client-hero-sub{font-size:13px;color:rgba(255,255,255,.85);line-height:1.5;position:relative;z-index:1;max-width:280px}
+.download-btn-light{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:12px 24px;border-radius:25px;
+  background:#fff;color:var(--p);
+  font-size:14px;font-weight:700;
+  box-shadow:0 4px 16px rgba(0,0,0,.2);
+  text-decoration:none;margin-top:6px;
+  position:relative;z-index:1;
+  transition:all .2s var(--ease-spring);
+}
+.download-btn-light:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.download-btn-light:active{transform:scale(0.96)}
+.client-info-card{margin:0 16px;background:var(--card);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden}
+.info-row{display:flex;align-items:center;padding:12px 16px;gap:10px;border-bottom:1px solid var(--border)}
+.info-row:last-child{border-bottom:none}
+.info-label{font-size:13px;color:var(--muted);flex:1}
+.info-value{font-size:13px;font-weight:700;color:var(--text)}
+.client-notes{margin:0 16px;font-size:12px;color:var(--muted);line-height:1.7;background:#F8FAFF;border-radius:var(--r-sm);padding:12px 14px}
+
+.admin-perm-bar{background:linear-gradient(135deg,var(--pl),#F3F0FF);border-bottom:1px solid rgba(37,99,235,.08);padding:10px 16px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.admin-perm-bar span{font-size:11px;font-weight:700;color:var(--p)}
+.perm-chip{padding:3px 10px;border-radius:99px;background:rgba(37,99,235,.08);color:var(--p);font-size:10px;font-weight:800}
+
+#login-overlay{align-items:flex-end;justify-content:center;transition:opacity .3s}
+#login-overlay.show{align-items:flex-end}
+@media(min-width:640px){#login-overlay.show{align-items:center}}
+.login-sheet{background:var(--card);width:100%;max-width:640px;border-radius:24px 24px 0 0;padding:24px 24px calc(28px + var(--safe-b));transform:translateY(100%);transition:transform .4s var(--ease-spring)}
+#login-overlay.show .login-sheet{transform:translateY(0)}
+@media(min-width:640px){.login-sheet{border-radius:var(--r);max-width:400px;padding:32px;transform:translateY(20px) scale(0.96);transition:transform .3s var(--ease-spring)} #login-overlay.show .login-sheet{transform:translateY(0) scale(1)}}
+.login-title{font-size:20px;font-weight:800;color:var(--text);margin-bottom:4px;letter-spacing:-0.3px}
+.login-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.login-form{display:flex;flex-direction:column;gap:14px}
+
+#confirm-overlay{align-items:center;justify-content:center}
+.confirm-box{background:var(--card);border-radius:var(--r);padding:28px;width:calc(100% - 48px);max-width:340px;box-shadow:var(--shadow-lg);transform:scale(0.96);transition:transform .25s var(--ease-spring)}
+#confirm-overlay.show .confirm-box{transform:scale(1)}
+.confirm-title{font-size:17px;font-weight:800;color:var(--text);margin-bottom:8px}
+.confirm-msg{font-size:14px;color:var(--t2);line-height:1.6;margin-bottom:24px}
+.confirm-actions{display:flex;gap:10px;justify-content:flex-end}
+
+#toast{position:fixed;bottom:calc(var(--nav) + 16px + var(--safe-b));left:50%;transform:translateX(-50%) translateY(12px);background:#1E293B;color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:none;pointer-events:none;white-space:nowrap;max-width:calc(100vw - 40px);text-align:center;box-shadow:0 4px 16px rgba(0,0,0,.25)}
+#toast.show{opacity:1;animation:toastIn .35s var(--ease-spring)}
+@media(min-width:640px){#toast{bottom:28px}}
+
+.stagger-item{animation:staggerFadeIn .45s var(--ease-out-expo) backwards}
+.stagger-item:nth-child(1){animation-delay:0ms}
+.stagger-item:nth-child(2){animation-delay:40ms}
+.stagger-item:nth-child(3){animation-delay:80ms}
+.stagger-item:nth-child(4){animation-delay:120ms}
+.stagger-item:nth-child(5){animation-delay:160ms}
+.stagger-item:nth-child(6){animation-delay:200ms}
+.stagger-item:nth-child(7){animation-delay:240ms}
+.stagger-item:nth-child(8){animation-delay:280ms}
+
+@media(max-width:639px){
+  .item-title{font-size:14px}
+  .detail-title{font-size:17px}
+  .client-hero-title{font-size:20px}
+  .client-hero{padding:24px 20px}
+  .client-hero-logo{width:56px;height:56px}
+}
+
+/* 修复：管理员菜单弹窗样式 */
+.admin-menu-sheet{
+  background:var(--card);width:100%;max-width:640px;
+  border-radius:24px 24px 0 0;
+  padding-bottom:calc(20px + var(--safe-b));
+  transform:translateY(100%);
+  transition:transform .35s var(--ease-spring);
+}
+.overlay.show .admin-menu-sheet{transform:translateY(0)}
+@media(min-width:640px){
+  .admin-menu-sheet{border-radius:var(--r);max-width:400px;padding:24px;transform:translateY(20px) scale(0.96)}
+  .overlay.show .admin-menu-sheet{transform:translateY(0) scale(1)}
+}
+.admin-menu-body{padding:20px;display:flex;flex-direction:column;gap:12px}
+.admin-menu-role-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 12px;border-radius:99px;
+  background:var(--pl);color:var(--p);
+  font-size:12px;font-weight:700;
+  align-self:flex-start;
+}
+</style>
 </head>
 <body>
-    <canvas id="particles-canvas"></canvas>
+<div id="app">
 
-    <nav class="navbar" id="navbar">
-        <div class="navbar-container">
-            <div class="logo">
-                <i class="fas fa-network-wired"></i>
-                GLcn
-            </div>
-            <ul class="nav-menu" id="navMenu">
-                <li data-page="home" class="active">首页</li>
-                <li data-page="history">关于我们</li>
-                <li data-page="settings" id="settingsMenuItem"><i class="fas fa-cog"></i> 设置</li>
-                <li onclick="window.open('https://stn2a.github.io', '_blank')">作业网页版</li>
-            </ul>
-            <button class="mobile-toggle" id="mobileToggle" aria-label="打开菜单">
-                <i class="fas fa-bars"></i>
-                <span>导航栏</span>
-            </button>
-        </div>
-    </nav>
+<header class="hdr" id="main-header">
+  <div class="hdr-logo"><span>G</span></div>
+  <div style="flex:1;min-width:0">
+    <div class="hdr-title">GLCN</div>
+    <div class="hdr-subtitle">班级作业查看</div>
+  </div>
+  <div id="admin-badge" onclick="toggleAdminMenu()">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span id="admin-name-text"></span>
+  </div>
+  <button id="login-btn" onclick="openLogin()">管理员登录</button>
+</header>
 
-    <div class="page-content">
-        <div class="page active" data-page="home" id="page-home">
-            <section class="hero">
-                <div class="hero-content">
-                    <h1>GLcn Hello</h1>
-                    <div id="beijingTime"></div>
-                    <div class="time-date" id="beijingDate"></div>
-                    <div class="uptime-display" id="uptimeDisplay">
-                        <i class="fas fa-shield-alt uptime-icon"></i>
-                        <span id="uptimeText">服务运行时间：...</span>
-                    </div>
-                    <div class="ua-display" id="uaDisplay">
-                        <i class="fas fa-device ua-icon" id="uaIcon"></i>
-                        <span id="uaText">当前访问UA: …</span>
-                    </div>
-                    <div class="stn-studio-display">
-                        STNStudio
-                    </div>
-                </div>
-            </section>
-            
-            <div class="lyrics-container collapsed" id="lyricsContainer">
-                <div class="lyrics-header">
-                    <div class="lyrics-title">
-                        <i class="fas fa-align-center"></i>
-                        <span id="lyricsTitle">歌词</span>
-                    </div>
-                    <button class="lyrics-toggle" id="lyricsToggle">
-                        <i class="fas fa-chevron-up"></i>
-                        <span>展开</span>
-                    </button>
-                </div>
-                
-                <div class="lyrics-wrapper">
-                    <div class="lyrics-lines" id="lyricsLines">
-                    </div>
-                </div>
-                
-                <div class="lyrics-progress">
-                    <div class="lyrics-progress-bar" id="lyricsProgressBar"></div>
-                </div>
-                
-                <div class="lyrics-status" id="lyricsStatus">
-                    <i class="fas fa-info-circle"></i>
-                    <span>点击音乐按钮开始播放</span>
-                </div>
-            </div>
-        </div>
+<div id="ios-pwa-banner" class="ios-pwa-banner">
+  <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+  <span>推荐点击 Safari 底部 <b>分享</b> → <b>添加到主屏幕</b>，获得 APP 体验</span>
+  <button onclick="dismissIOSPWA()">知道了</button>
+</div>
 
-        <div class="page" data-page="announcement" id="page-announcement">
-            <div class="announcement-content">
-                <div class="content-section">
-                    <div class="feature-card stagger-fade-in">
-                        <div class="feature-icon">
-                            <i class="fas fa-bullhorn"></i>
-                        </div>
-                        <h3 class="feature-title">公告</h3>
-                        <p class="feature-description">欢迎访问 GLcn 主页</p>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div id="pc-tabs">
+  <button class="pc-tab active" data-tab="assignments">作业</button>
+  <button class="pc-tab" data-tab="announcements">公告</button>
+  <button class="pc-tab" data-tab="discussions">讨论</button>
+  <button class="pc-tab" data-tab="client">客户端</button>
+</div>
 
-        <div class="page" data-page="history" id="page-history">
-            <div class="history-content">
-                <div class="history-container">
-                    <div class="history-banner stagger-fade-in">
-                        <div class="history-banner-icon">
-                            <i class="fas fa-code-branch"></i>
-                        </div>
-                        <h2 class="history-banner-title">关于我们</h2>
-                        <p class="history-banner-subtitle">记录每一次进步的足迹</p>
-                    </div>
-                    
-                    <div class="current-version-banner stagger-fade-in" style="animation-delay: 0.1s">
-                        <div class="current-version-header">
-                            <div class="current-version-title">
-                                <i class="fas fa-sync-alt"></i>
-                                全新客户端版本
-                            </div>
-                            <div class="current-version-badge">
-                                Version2.3
-                            </div>
-                        </div>
-                        <div class="current-version-text">
-                            <i class="fas fa-cog fa-spin"></i>
-                            请下载客户端
-                        </div>
-                    </div>
+<div class="pages">
 
-                    <div class="history-timeline" id="historyTimeline">
-                    </div>
-                    
-                    <div class="feedback-section">
-                        <div class="feature-card stagger-fade-in">
-                            <div class="feature-icon">
-                                <i class="fas fa-comment-dots"></i>
-                            </div>
-                            <h3 class="feature-title">用户反馈</h3>
-                            <p class="feature-description">您的意见对我们很重要，欢迎通过腾讯问卷提交反馈</p>
-                            <button class="modal-button" onclick="window.open('https://docs.qq.com/form/page/DT0hkWkRCYXNvcHFm', '_blank')">
-                                <i class="fas fa-external-link-alt"></i> 提交反馈
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <div class="page active" id="page-assignments">
+    <div id="assignments-admin-bar" class="admin-perm-bar" style="display:none">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>管理员模式</span>
+      <span id="assignments-perm-chips"></span>
+      <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openPublishAssignment()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        发布作业
+      </button>
+    </div>
+    <div class="toolbar">
+      <div class="scroll-x" id="subject-filters">
+        <button class="tag tag-blue filter-btn active" data-filter="all" onclick="filterAssignments('all',this)">全部</button>
+      </div>
+    </div>
+    <div class="list-wrap" id="assignments-list">
+      <div class="spinner"><div class="spin"></div></div>
+    </div>
+  </div>
 
-        <!-- 下载页面已删除 -->
+  <div class="page" id="page-announcements">
+    <div id="announcements-admin-bar" class="admin-perm-bar" style="display:none">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>管理员模式</span>
+      <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="openPublishAnnouncement()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        发布公告
+      </button>
+    </div>
+    <div class="list-wrap" id="announcements-list">
+      <div class="spinner"><div class="spin"></div></div>
+    </div>
+  </div>
 
-        <div class="page" data-page="settings" id="page-settings" style="display: none;">
-        </div>
+  <div class="page" id="page-discussions">
+    <div id="discussions-list" class="list-wrap">
+      <div class="spinner"><div class="spin"></div></div>
+    </div>
+  </div>
+
+  <div class="page" id="page-client">
+    <div class="client-hero">
+      <div class="client-hero-logo">
+        <svg width="32" height="32" fill="none" stroke="#fff" stroke-width="1.8" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
+      </div>
+      <div class="client-hero-title">GLCN Android</div>
+      <div class="client-hero-sub">班级作业发布系统 · 多端同步 · 安卓客户端</div>
+      <a id="download-btn-link" href="#" target="_blank" class="download-btn-light" style="display:none">
+        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        下载 APK
+      </a>
+      <div id="download-loading" style="font-size:13px;color:rgba(255,255,255,.8);margin-top:4px">正在获取下载链接…</div>
+      <div id="download-unavailable" style="display:none;font-size:13px;color:rgba(255,255,255,.8);margin-top:4px">暂无下载链接，请联系管理员</div>
     </div>
 
-    <div class="music-player" id="musicPlayer">
-        <button class="music-button" id="musicButton" aria-label="播放/暂停音乐">
-            <i class="fas fa-play" id="musicIcon"></i>
-        </button>
+    <div style="padding:12px 16px 16px">
+      <div class="card">
+        <div style="padding:12px 16px 0;font-size:12px;font-weight:700;color:var(--muted);letter-spacing:0.5px">APP 功能</div>
+        <div class="list-item" style="cursor:default;padding:10px 16px">
+          <div class="item-icon" style="background:#EBF4FF">
+            <svg width="18" height="18" fill="none" stroke="#2563EB" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          </div>
+          <div class="item-body"><div class="item-title">作业通知</div><div class="item-meta">实时接收作业与公告推送</div></div>
+        </div>
+        <div class="list-item" style="cursor:default;padding:10px 16px">
+          <div class="item-icon" style="background:#ECFDF5">
+            <svg width="18" height="18" fill="none" stroke="#059669" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          </div>
+          <div class="item-body"><div class="item-title">班级管理</div><div class="item-meta">课表 · 宿舍卫生 · 班费 · 运动打卡</div></div>
+        </div>
+      </div>
+      <div style="text-align:center;padding:20px 0 4px;font-size:12px;color:var(--muted)">
+        © 2025-2026 GLcn | STN Studio · All rights reserved
+      </div>
     </div>
 
-    <audio id="bgMusic" loop preload="metadata">
-        <source src="music.mp3" type="audio/mpeg">
-    </audio>
-
-    <div class="modal-overlay" id="homeworkModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="modalTitle">
-                    <i class="fas fa-book"></i>
-                    <span id="modalSubject">作业详情</span>
-                </h3>
-                <button class="modal-close" id="modalClose">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body" id="modalBody">
-            </div>
-            <div class="modal-footer">
-                <button class="modal-button" id="modalButton">知道了</button>
-            </div>
+    <div id="client-admin-section" style="display:none;margin:4px 16px 16px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;padding-top:8px;border-top:1px solid var(--border)">超管 · 管理下载链接</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="field">
+          <label>软件下载链接设置</label>
+          <input id="client-url-input" type="url" placeholder="https://..."/>
         </div>
+        <button class="btn btn-primary btn-sm" onclick="saveClientUrl()">保存链接</button>
+      </div>
     </div>
+  </div>
 
-    <div class="modal-overlay" id="settingsModal">
-        <div class="modal-content settings-modal">
-            <div class="modal-header">
-                <h3 class="modal-title">
-                    <i class="fas fa-cog"></i>
-                    <span>设置</span>
-                </h3>
-                <button class="modal-close" id="settingsClose">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body settings-body">
-                <div class="setting-item">
-                    <div class="setting-info">
-                        <div class="setting-icon">
-                            <i class="fas fa-rocket"></i>
-                        </div>
-                        <div class="setting-text">
-                            <div class="setting-title">性能模式</div>
-                            <div class="setting-description">切换高性能或兼容模式</div>
-                        </div>
-                    </div>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="performanceToggle" checked />
-                        <span class="toggle-slider">
-                            <span class="toggle-label performance">高性能</span>
-                            <span class="toggle-label compatibility">兼容</span>
-                        </span>
-                    </label>
-                </div>
-            </div>
-        </div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="nav-item active" data-tab="assignments" onclick="switchTab('assignments',this)">
+    <div class="nav-icon">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
     </div>
-
-    <div class="transition-overlay" id="transitionOverlay">
-        <div class="transition-content">
-            <div class="transition-spinner"></div>
-            <div class="transition-text">正在应用设置...</div>
-        </div>
+    作业
+  </button>
+  <button class="nav-item" data-tab="announcements" onclick="switchTab('announcements',this)">
+    <div class="nav-icon">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
     </div>
+    公告
+  </button>
+  <button class="nav-item" data-tab="discussions" onclick="switchTab('discussions',this)">
+    <div class="nav-icon">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </div>
+    讨论
+  </button>
+  <button class="nav-item" data-tab="client" onclick="switchTab('client',this)">
+    <div class="nav-icon">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+    </div>
+    客户端
+  </button>
+</nav>
 
-    <footer>
-        <div class="footer-content">
-            <p>&copy; 2025-2026 最终解释权 GLcn | STNStudio </p>
+</div>
+
+<div class="overlay" id="detail-overlay" onclick="closeDetailIfBg(event)">
+  <div class="detail-sheet">
+    <div class="sheet-handle"></div>
+    <div class="detail-head" id="detail-head"></div>
+    <div class="detail-body">
+      <div class="detail-content" id="detail-content"></div>
+      <div id="detail-discussions-section" style="display:none">
+        <div class="disc-section-title">讨论区</div>
+        <div class="disc-list" id="detail-discussions-list"></div>
+      </div>
+    </div>
+    <div class="detail-footer" id="detail-footer" style="display:none"></div>
+  </div>
+</div>
+
+<div class="overlay" id="login-overlay" onclick="closeLoginIfBg(event)">
+  <div class="login-sheet">
+    <div class="login-title">管理员登录</div>
+    <div class="login-sub">仅管理员可登录，学生直接浏览即可</div>
+    <div class="login-form">
+      <div class="field"><label>账号</label><input id="login-username" placeholder="管理员账号" autocomplete="username"/></div>
+      <div class="field"><label>密码</label><input id="login-password" type="password" placeholder="密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="form-err" id="login-err"></div>
+      <button class="btn btn-primary" id="login-submit-btn" onclick="doLogin()">登 录</button>
+      <button class="btn btn-ghost" onclick="closeLogin()">取 消</button>
+    </div>
+  </div>
+</div>
+
+<!-- 修复：管理员菜单使用独立样式，避免灰屏 -->
+<div class="overlay" id="admin-menu-overlay" onclick="closeAdminMenuIfBg(event)">
+  <div class="admin-menu-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-hdr">
+      <h3 id="admin-menu-name"></h3>
+      <div class="sheet-close" onclick="closeAdminMenu()">✕</div>
+    </div>
+    <div class="admin-menu-body">
+      <div class="admin-menu-role-badge" id="admin-menu-role"></div>
+      <button class="btn btn-danger" style="width:100%" onclick="doLogout()">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        退出登录
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="publish-assignment-overlay" onclick="closeOverlayIfBg('publish-assignment-overlay',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-hdr">
+      <h3>发布作业</h3>
+      <div class="sheet-close" onclick="closeOverlay('publish-assignment-overlay')">✕</div>
+    </div>
+    <div class="sheet-body">
+      <div class="field"><label>标题 *</label><input id="pa-title" placeholder="作业标题"/></div>
+      <div class="field"><label>科目 *</label><select id="pa-subject"></select></div>
+      <div class="field"><label>内容</label><textarea id="pa-content" placeholder="详细说明（可选）" style="min-height:90px"></textarea></div>
+      <div class="field-row">
+        <div class="field"><label>作业日期</label><input id="pa-date" type="date"/></div>
+        <div class="field"><label>状态</label><select id="pa-status"><option value="published">立即发布</option><option value="draft">草稿</option></select></div>
+      </div>
+      <div class="field"><label>附件链接</label><input id="pa-attachment-url" type="url" placeholder="https://..."/></div>
+      <div class="field"><label>附件名称</label><input id="pa-attachment-name" placeholder="附件文件名"/></div>
+      <div class="form-err" id="pa-err"></div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" onclick="closeOverlay('publish-assignment-overlay')">取消</button>
+        <button class="btn btn-primary" id="pa-submit" onclick="submitAssignment()">发布</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="edit-assignment-overlay" onclick="closeOverlayIfBg('edit-assignment-overlay',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-hdr">
+      <h3>编辑作业</h3>
+      <div class="sheet-close" onclick="closeOverlay('edit-assignment-overlay')">✕</div>
+    </div>
+    <div class="sheet-body">
+      <input type="hidden" id="ea-id"/>
+      <div class="field"><label>标题 *</label><input id="ea-title"/></div>
+      <div class="field"><label>科目 *</label><select id="ea-subject"></select></div>
+      <div class="field"><label>内容</label><textarea id="ea-content" style="min-height:90px"></textarea></div>
+      <div class="field-row">
+        <div class="field"><label>作业日期</label><input id="ea-date" type="date"/></div>
+        <div class="field"><label>状态</label><select id="ea-status"><option value="published">已发布</option><option value="draft">草稿</option></select></div>
+      </div>
+      <div class="field"><label>附件链接</label><input id="ea-attachment-url" type="url"/></div>
+      <div class="field"><label>附件名称</label><input id="ea-attachment-name"/></div>
+      <div class="form-err" id="ea-err"></div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" onclick="closeOverlay('edit-assignment-overlay')">取消</button>
+        <button class="btn btn-primary" id="ea-submit" onclick="saveEditAssignment()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="publish-announcement-overlay" onclick="closeOverlayIfBg('publish-announcement-overlay',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-hdr">
+      <h3>发布公告</h3>
+      <div class="sheet-close" onclick="closeOverlay('publish-announcement-overlay')">✕</div>
+    </div>
+    <div class="sheet-body">
+      <div class="field"><label>标题 *</label><input id="pan-title" placeholder="公告标题"/></div>
+      <div class="field"><label>内容 *</label><textarea id="pan-content" placeholder="公告内容" style="min-height:100px"></textarea></div>
+      <div class="field"><label>附件链接</label><input id="pan-attachment-url" type="url" placeholder="https://..."/></div>
+      <div class="field"><label>附件名称</label><input id="pan-attachment-name" placeholder="附件文件名"/></div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <label class="toggle-row">
+          <input type="checkbox" id="pan-urgent" class="toggle-cb" onchange="syncToggle(this,'toggle-pan-urgent')"/>
+          <div class="toggle" id="toggle-pan-urgent" onclick="triggerCb('pan-urgent')"></div>
+          紧急公告
+        </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="pan-pinned" class="toggle-cb" onchange="syncToggle(this,'toggle-pan-pinned')"/>
+          <div class="toggle" id="toggle-pan-pinned" onclick="triggerCb('pan-pinned')"></div>
+          置顶
+        </label>
+      </div>
+      <div class="form-err" id="pan-err"></div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" onclick="closeOverlay('publish-announcement-overlay')">取消</button>
+        <button class="btn btn-primary" id="pan-submit" onclick="submitAnnouncement()">发布</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="edit-announcement-overlay" onclick="closeOverlayIfBg('edit-announcement-overlay',event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-hdr">
+      <h3>编辑公告</h3>
+      <div class="sheet-close" onclick="closeOverlay('edit-announcement-overlay')">✕</div>
+    </div>
+    <div class="sheet-body">
+      <input type="hidden" id="ean-id"/>
+      <div class="field"><label>标题 *</label><input id="ean-title"/></div>
+      <div class="field"><label>内容 *</label><textarea id="ean-content" style="min-height:100px"></textarea></div>
+      <div class="field"><label>附件链接</label><input id="ean-attachment-url" type="url"/></div>
+      <div class="field"><label>附件名称</label><input id="ean-attachment-name"/></div>
+      <div style="display:flex;gap:16px;flex-wrap:wrap">
+        <label class="toggle-row">
+          <input type="checkbox" id="ean-urgent" class="toggle-cb" onchange="syncToggle(this,'toggle-ean-urgent')"/>
+          <div class="toggle" id="toggle-ean-urgent" onclick="triggerCb('ean-urgent')"></div>
+          紧急公告
+        </label>
+        <label class="toggle-row">
+          <input type="checkbox" id="ean-pinned" class="toggle-cb" onchange="syncToggle(this,'toggle-ean-pinned')"/>
+          <div class="toggle" id="toggle-ean-pinned" onclick="triggerCb('ean-pinned')"></div>
+          置顶
+        </label>
+      </div>
+      <div class="form-err" id="ean-err"></div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" onclick="closeOverlay('edit-announcement-overlay')">取消</button>
+        <button class="btn btn-primary" id="ean-submit" onclick="saveEditAnnouncement()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirm-title"></div>
+    <div class="confirm-msg" id="confirm-msg"></div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost btn-sm" onclick="closeOverlay('confirm-overlay')">取消</button>
+      <button class="btn btn-danger btn-sm" id="confirm-ok-btn">确认删除</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+'use strict';
+const SUPABASE_URL='https://backend.appmiaoda.com/projects/supabase315128075593494528';
+const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoyMDk0NTU5NTg4LCJpc3MiOiJzdXBhYmFzZSIsInJvbGUiOiJhbm9uIiwic3ViIjoiYW5vbiJ9.e6fwFRd5ouX4DNkNb2n2xNIooLmsd_JyOMqPmeaawf0';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
+
+let adminInfo=null,allSubjects=[],allAssignments=[],currentFilter='all',detailData=null,detailType='',lastTabIndex=0;
+const TAB_ORDER=['assignments','announcements','discussions','client'];
+
+const esc=s=>(s==null?'':String(s)).replace(/[&<<>"']/g,c=>({'&':'&amp;','<<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function fmtDate(ts){if(!ts)return'';const d=new Date(ts);return`${d.getMonth()+1}月${d.getDate()}日`}
+function fmtDateFull(s){if(!s)return'';const[,m,d]=s.split('-');return`${+m}月${+d}日 发布`}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+function syncToggle(cb,toggleId){document.getElementById(toggleId).classList.toggle('on',cb.checked)}
+function triggerCb(cbId){const cb=document.getElementById(cbId);cb.checked=!cb.checked;cb.dispatchEvent(new Event('change'))}
+function setToggle(cbId,toggleId,val){const cb=document.getElementById(cbId);cb.checked=val;document.getElementById(toggleId).classList.toggle('on',val)}
+
+function checkIOSPWA(){
+  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const isStandalone=window.navigator.standalone===true;
+  const dismissed=localStorage.getItem('glcn_ios_pwa_dismissed');
+  if(isIOS&&!isStandalone&&!dismissed){
+    const banner=document.getElementById('ios-pwa-banner');
+    if(banner)banner.style.display='flex';
+  }
+}
+function dismissIOSPWA(){
+  localStorage.setItem('glcn_ios_pwa_dismissed','1');
+  const banner=document.getElementById('ios-pwa-banner');
+  if(banner)banner.style.display='none';
+}
+
+document.querySelector('.pages').addEventListener('scroll',e=>{
+  const h=document.getElementById('main-header');
+  if(e.target.scrollTop>4)h.classList.add('hdr-scrolled');else h.classList.remove('hdr-scrolled');
+},{passive:true});
+
+function openLogin(){
+  document.getElementById('login-err').textContent='';
+  document.getElementById('login-username').value='';
+  document.getElementById('login-password').value='';
+  document.getElementById('login-overlay').classList.add('show');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('login-username').focus(),250);
+}
+function closeLogin(){document.getElementById('login-overlay').classList.remove('show');document.body.style.overflow=''}
+function closeLoginIfBg(e){if(e.target===document.getElementById('login-overlay'))closeLogin()}
+
+async function doLogin(){
+  const username=document.getElementById('login-username').value.trim();
+  const password=document.getElementById('login-password').value;
+  const errEl=document.getElementById('login-err');
+  const btn=document.getElementById('login-submit-btn');
+  if(!username){errEl.textContent='请输入账号';return}
+  if(!password){errEl.textContent='请输入密码';return}
+  btn.disabled=true;btn.textContent='登录中…';errEl.textContent='';
+  try{
+    const res=await fetch(`${SUPABASE_URL}/functions/v1/admin-auth`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},
+      body:JSON.stringify({username,password,device_model:'Web',device_fingerprint:'web-'+Date.now()}),
+    });
+    const data=await res.json();
+    if(!res.ok||data.error){errEl.textContent=data.error||'账号或密码错误';return}
+    adminInfo=data.admin;
+    localStorage.setItem('glcn_admin',JSON.stringify({...adminInfo,_ts:Date.now()}));
+    closeLogin();
+    updateAdminUI();
+    showToast(`欢迎，${adminInfo.username}！`);
+    refreshCurrentPage();
+    writeAdminLog('web_login',{username:adminInfo.username});
+  }catch(e){errEl.textContent='网络连接失败，请稍后重试';console.error(e)}
+  finally{btn.disabled=false;btn.textContent='登 录'}
+}
+
+function doLogout(){
+  adminInfo=null;
+  localStorage.removeItem('glcn_admin');
+  closeAdminMenu();
+  updateAdminUI();
+  showToast('已退出登录');
+  refreshCurrentPage();
+}
+
+function restoreSession(){
+  try{
+    const saved=localStorage.getItem('glcn_admin');
+    if(saved){
+      const d=JSON.parse(saved);
+      if(Date.now()-d._ts<7*86400*1000){
+        const{_ts,...info}=d;
+        adminInfo=info;
+      }else{
+        localStorage.removeItem('glcn_admin');
+      }
+    }
+  }catch(_){}
+}
+
+function toggleAdminMenu(){if(adminInfo)openAdminMenu();else openLogin()}
+function openAdminMenu(){
+  document.getElementById('admin-menu-name').textContent=adminInfo?.username||'';
+  const roleMap={superadmin:'超级管理员',admin:'管理员'};
+  document.getElementById('admin-menu-role').textContent=roleMap[adminInfo?.role]||adminInfo?.role||'';
+  document.getElementById('admin-menu-overlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function closeAdminMenu(){document.getElementById('admin-menu-overlay').classList.remove('show');document.body.style.overflow=''}
+function closeAdminMenuIfBg(e){if(e.target===document.getElementById('admin-menu-overlay'))closeAdminMenu()}
+
+function updateAdminUI(){
+  const loginBtn=document.getElementById('login-btn');
+  const adminBadge=document.getElementById('admin-badge');
+  const assignBar=document.getElementById('assignments-admin-bar');
+  const annBar=document.getElementById('announcements-admin-bar');
+  const clientAdmin=document.getElementById('client-admin-section');
+
+  if(adminInfo){
+    loginBtn.style.display='none';
+    adminBadge.style.display='flex';
+    document.getElementById('admin-name-text').textContent=adminInfo.username;
+
+    const assignPerm=adminInfo.permissions?.assignments;
+    const hasAssign=assignPerm&&assignPerm!==false;
+    assignBar.style.display=hasAssign?'flex':'none';
+    if(hasAssign){
+      const chipsEl=document.getElementById('assignments-perm-chips');
+      if(assignPerm==='all'||adminInfo.role==='superadmin'){
+        chipsEl.innerHTML='<span class="perm-chip">全科目权限</span>';
+      }else if(Array.isArray(assignPerm)){
+        const names=allSubjects.filter(s=>assignPerm.includes(s.id)).map(s=>s.name);
+        chipsEl.innerHTML=names.map(n=>`<span class="perm-chip">${esc(n)}</span>`).join('');
+      }
+      buildSubjectSelects();
+    }
+
+    const hasAnn=adminInfo.permissions?.announcements===true||adminInfo.role==='superadmin';
+    annBar.style.display=hasAnn?'flex':'none';
+
+    clientAdmin.style.display=(adminInfo.role==='superadmin')?'block':'none';
+    if(adminInfo.role==='superadmin')loadClientUrlForAdmin();
+  }else{
+    loginBtn.style.display='';
+    adminBadge.style.display='none';
+    assignBar.style.display='none';
+    annBar.style.display='none';
+    clientAdmin.style.display='none';
+  }
+}
+
+async function writeAdminLog(action_type,details={}){
+  if(!adminInfo)return;
+  try{
+    await sb.from('admin_logs').insert({
+      admin_id:adminInfo.id,
+      admin_username:adminInfo.username,
+      action_type,details,
+      is_superadmin:adminInfo.role==='superadmin',
+      source:'web',
+    });
+  }catch(_){}
+}
+
+async function trackView(tableName,recordId){
+  try{await sb.rpc('increment_view_count',{p_table:tableName,p_id:recordId})}catch(_){}
+}
+
+function switchTab(tab,el){
+  const pages=document.querySelectorAll('.page');
+  const navs=document.querySelectorAll('.nav-item,.pc-tab');
+  const newIndex=TAB_ORDER.indexOf(tab);
+  const direction=newIndex>lastTabIndex?'slide-right':'slide-left';
+  lastTabIndex=newIndex;
+
+  pages.forEach(p=>{p.classList.remove('active','slide-right','slide-left')});
+  navs.forEach(n=>n.classList.remove('active'));
+  const target=document.getElementById('page-'+tab);
+  target.classList.add('active',direction);
+  document.querySelectorAll(`[data-tab="${tab}"]`).forEach(n=>n.classList.add('active'));
+
+  if(tab==='assignments')loadAssignments();
+  else if(tab==='announcements')loadAnnouncements();
+  else if(tab==='discussions')loadDiscussions();
+  else if(tab==='client')loadClientPage();
+}
+function refreshCurrentPage(){
+  const active=document.querySelector('.nav-item.active,.pc-tab.active');
+  const tab=active?.dataset.tab||'assignments';
+  if(tab==='assignments')loadAssignments();
+  else if(tab==='announcements')loadAnnouncements();
+  else if(tab==='discussions')loadDiscussions();
+  updateAdminUI();
+}
+
+document.getElementById('pc-tabs').addEventListener('click',e=>{
+  const btn=e.target.closest('.pc-tab');
+  if(btn)switchTab(btn.dataset.tab,btn);
+});
+
+async function loadSubjects(){
+  const{data}=await sb.from('subjects').select('*').order('sort_order');
+  allSubjects=data||[];
+  buildSubjectFilters();
+}
+function buildSubjectFilters(){
+  const c=document.getElementById('subject-filters');
+  c.innerHTML=`<button class="tag tag-blue filter-btn active" data-filter="all" onclick="filterAssignments('all',this)">全部</button>`+
+    allSubjects.map(s=>`<button class="tag tag-gray filter-btn" data-filter="${s.id}" onclick="filterAssignments('${s.id}',this)">${esc(s.name)}</button>`).join('');
+}
+function buildSubjectSelects(){
+  ['pa-subject','ea-subject'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel)return;
+    const perm=adminInfo?.permissions?.assignments;
+    let subjects=allSubjects;
+    if(Array.isArray(perm))subjects=allSubjects.filter(s=>perm.includes(s.id));
+    sel.innerHTML=subjects.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('');
+  });
+}
+
+async function loadAssignments(){
+  const c=document.getElementById('assignments-list');
+  c.innerHTML=`<div class="spinner"><div class="spin"></div></div>`;
+  let q=sb.from('assignments').select('*,subjects!subject_id(id,name,color)').eq('status','published')
+    .order('assignment_date',{ascending:false}).order('published_at',{ascending:false}).limit(60);
+  if(currentFilter!=='all')q=q.eq('subject_id',currentFilter);
+  const{data,error}=await q;
+  if(error){c.innerHTML='<div class="empty"><p>加载失败，请稍后重试</p></div>';return}
+  allAssignments=data||[];
+  renderAssignments(allAssignments);
+}
+function renderAssignments(list){
+  const c=document.getElementById('assignments-list');
+  if(!list.length){
+    c.innerHTML='<div class="empty"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>暂无作业</p><small>管理员发布后将显示在这里</small></div>';
+    return;
+  }
+  c.innerHTML=list.map((a,i)=>{
+    const subj=a.subjects,color=subj?.color||'#2563EB',subjName=subj?.name||'未知科目';
+    const dateStr=a.assignment_date?fmtDateFull(a.assignment_date):'';
+    const pubStr=a.published_at?fmtDate(a.published_at):fmtDate(a.created_at);
+    const views=a.view_count||0;
+    return`<div class="card list-item stagger-item" style="animation-delay:${i*40}ms" onclick="openAssignmentDetail('${a.id}')">
+      <div class="item-icon" style="background:${color}22">
+        <svg width="20" height="20" fill="none" stroke="${color}" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      </div>
+      <div class="item-body">
+        <div class="item-title">${esc(a.title)}</div>
+        <div class="item-meta">
+          <span class="tag" style="background:${color}22;color:${color}">${esc(subjName)}</span>
+          ${dateStr?`<span>${dateStr}</span>`:''}
+          <span>${pubStr}</span>
+          <span class="view-badge"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>${views}</span>
         </div>
-    </footer>
+      </div>
+      <span class="item-arrow">›</span>
+    </div>`;
+  }).join('');
+}
+function filterAssignments(filter,el){
+  currentFilter=filter;
+  document.querySelectorAll('.filter-btn').forEach(b=>{
+    b.classList.remove('active');
+    b.className=b.className.replace('tag-blue','tag-gray');
+  });
+  el.classList.add('active');
+  if(filter==='all')el.className=el.className.replace('tag-gray','tag-blue');
+  loadAssignments();
+}
 
-    <script>
-        class EnhancedParticleNetwork {
-            constructor() {
-                this.canvas = document.getElementById('particles-canvas');
-                this.ctx = this.canvas.getContext('2d');
-                this.layers = { background: [], middle: [], foreground: [] };
-                this.mouse = { x: -1000, y: -1000 };
-                this.mouseTrail = [];
-                this.lastMouseTime = 0;
-                this.animationId = null;
-                this.lastFrameTime = 0;
-                this.frameCount = 0;
-                this.fps = 0;
-                this.targetFPS = 60;
-                this.isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                this.isPerformanceMode = document.body.classList.contains('performance-mode');
-                this.particleConfig = this.isPerformanceMode ? {
-                    background: { count: 40, speed: 0.3, size: [1.5, 2.5], opacity: [0.2, 0.4], color: '#7c5aa0' },
-                    middle: { count: 50, speed: 0.8, size: [2, 3], opacity: [0.4, 0.6], color: '#6d7aea' },
-                    foreground: { count: 30, speed: 1.5, size: [3, 4], opacity: [0.6, 0.8], color: '#ec8bf7' }
-                } : {
-                    background: { count: 20, speed: 0.2, size: [1, 2], opacity: [0.1, 0.3], color: '#7c5aa0' },
-                    middle: { count: 30, speed: 0.5, size: [1.5, 2.5], opacity: [0.3, 0.5], color: '#6d7aea' },
-                    foreground: { count: 15, speed: 1.0, size: [2, 3], opacity: [0.5, 0.7], color: '#ec8bf7' }
-                };
-                
-                this.init();
-                this.createParticles();
-                this.animate();
-                this.bindEvents();
-            }
-            
-            init() {
-                this.resizeCanvas();
-                window.addEventListener('resize', () => {
-                    this.resizeCanvas();
-                    this.createParticles();
-                });
-                
-                setInterval(() => {
-                    this.fps = this.frameCount;
-                    this.frameCount = 0;
-                    this.adjustParticleCount();
-                }, 1000);
-            }
-            
-            resizeCanvas() {
-                this.canvas.width = window.innerWidth;
-                this.canvas.height = window.innerHeight;
-            }
-            
-            createParticles() {
-                this.layers = { background: [], middle: [], foreground: [] };
-                
-                Object.keys(this.layers).forEach(layerName => {
-                    const config = this.particleConfig[layerName];
-                    const count = Math.min(config.count, Math.floor((window.innerWidth * window.innerHeight) / 15000));
-                    
-                    for (let i = 0; i < count; i++) {
-                        this.layers[layerName].push({
-                            x: Math.random() * this.canvas.width,
-                            y: Math.random() * this.canvas.height,
-                            vx: (Math.random() - 0.5) * config.speed * 0.5,
-                            vy: (Math.random() - 0.5) * config.speed * 0.5,
-                            radius: config.size[0] + Math.random() * (config.size[1] - config.size[0]),
-                            opacity: config.opacity[0] + Math.random() * (config.opacity[1] - config.opacity[0]),
-                            color: config.color,
-                            trail: [],
-                            glowIntensity: 0,
-                            breathOffset: Math.random() * Math.PI * 2
-                        });
-                    }
-                });
-            }
-            
-            adjustParticleCount() {
-                if (!this.isPerformanceMode) return;
-                if (this.fps < 45 && this.layers.foreground.length > 10) {
-                    this.layers.foreground = this.layers.foreground.slice(0, -5);
-                } else if (this.fps > 55 && this.layers.foreground.length < this.particleConfig.foreground.count) {
-                    this.createParticles();
-                }
-            }
-            
-            bindEvents() {
-                const updateMouse = (e) => {
-                    this.mouse.x = e.clientX;
-                    this.mouse.y = e.clientY;
-                    const now = Date.now();
-                    if (now - this.lastMouseTime > 30) {
-                        this.mouseTrail.push({ x: e.clientX, y: e.clientY, time: now });
-                        this.lastMouseTime = now;
-                        if (this.mouseTrail.length > 8) this.mouseTrail.shift();
-                    }
-                };
+async function openAssignmentDetail(id){
+  const a=allAssignments.find(x=>x.id===id);
+  if(!a)return;
+  detailData=a;detailType='assignment';
+  const subj=a.subjects,color=subj?.color||'#2563EB',subjName=subj?.name||'未知科目';
+  const dateStr=a.assignment_date?fmtDateFull(a.assignment_date):'';
+  const pubStr=a.published_at?fmtDate(a.published_at):fmtDate(a.created_at);
+  const views=(a.view_count||0)+1;
 
-                window.addEventListener('mousemove', updateMouse);
-                window.addEventListener('touchmove', (e) => {
-                    if (e.touches.length > 0) updateMouse(e.touches[0]);
-                });
-                
-                window.addEventListener('click', (e) => {
-                    if (this.isPerformanceMode) this.createClickEffect(e.clientX, e.clientY);
-                });
-                
-                window.addEventListener('mouseleave', () => {
-                    this.mouse.x = -1000;
-                    this.mouse.y = -1000;
-                    this.mouseTrail = [];
-                });
-                
-                document.addEventListener('visibilitychange', () => {
-                    if (document.hidden) this.stop();
-                    else this.start();
-                });
-            }
-            
-            createClickEffect(x, y) {
-                for (let layer = 0; layer < 3; layer++) {
-                    const particleCount = 6 + layer * 6;
-                    const speed = 4 - layer * 1.2;
-                    const color = layer === 0 ? '#ec8bf7' : layer === 1 ? '#6d7aea' : '#7c5aa0';
-                    
-                    for (let i = 0; i < particleCount; i++) {
-                        const angle = (Math.PI * 2 / particleCount) * i + Math.random() * 0.3;
-                        this.layers.foreground.push({
-                            x: x + Math.random() * 20 - 10,
-                            y: y + Math.random() * 20 - 10,
-                            vx: Math.cos(angle) * speed,
-                            vy: Math.sin(angle) * speed,
-                            radius: 2 + Math.random() * 2,
-                            opacity: 0.9,
-                            color: color,
-                            life: 40 + layer * 10,
-                            isEffect: true
-                        });
-                    }
-                }
-            }
-            
-            animate() {
-                if (this.isReducedMotion) {
-                    this.animationId = setTimeout(() => this.animate(), 100);
-                } else {
-                    this.animationId = requestAnimationFrame(() => this.animate());
-                }
+  document.getElementById('detail-head').innerHTML=`
+    <div class="detail-title">${esc(a.title)}</div>
+    <div class="detail-meta">
+      <span class="tag" style="background:${color}22;color:${color}">${esc(subjName)}</span>
+      ${dateStr?`<span class="tag tag-amber">${dateStr}</span>`:''}
+      <span style="font-size:11px;color:var(--muted)">发布于 ${pubStr}</span>
+      <span class="view-badge"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>${views} 次浏览</span>
+    </div>`;
+    
+let html=esc(a.content||'暂无详细内容');
+  if(a.attachment_url)html+=`<a class="attachment-link" href="${esc(a.attachment_url)}" target="_blank" rel="noopener">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+    ${esc(a.attachment_name||'查看附件')}</a>`;
+  document.getElementById('detail-content').innerHTML=html;
 
-                const now = Date.now();
-                if (now - this.lastFrameTime < (1000 / this.targetFPS) && !this.isReducedMotion) return;
-                this.lastFrameTime = now;
-                this.frameCount++;
+  const footer=document.getElementById('detail-footer');
+  footer.style.display='none';footer.innerHTML='';
+  if(adminInfo&&canEditAssignment(a)){
+    footer.style.display='flex';
+    footer.innerHTML=`
+      <button class="btn btn-ghost btn-sm" onclick="openEditAssignment()">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>编辑
+      </button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteAssignment('${a.id}')">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>删除
+      </button>`;
+  }
+  loadAssignmentDiscussions(id);
+  document.getElementById('detail-overlay').classList.add('show');
+  document.body.style.overflow='hidden';
 
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-                
-                if (this.mouseTrail.length > 1 && this.isPerformanceMode) {
-                    this.ctx.strokeStyle = 'rgba(102, 126, 234, 0.3)';
-                    this.ctx.lineWidth = 2;
-                    this.ctx.beginPath();
-                    this.mouseTrail.forEach((point, index) => {
-                        if (index === 0) this.ctx.moveTo(point.x, point.y);
-                        else this.ctx.lineTo(point.x, point.y);
-                    });
-                    this.ctx.stroke();
-                }
-                
-                ['background', 'middle', 'foreground'].forEach((layerName, layerIndex) => {
-                    const particles = this.layers[layerName];
-                    const layerMultiplier = (layerIndex + 1) * 0.5;
-                    
-                    particles.forEach((particle, i) => {
-                        if (particle.isEffect) {
-                            particle.life--;
-                            if (particle.life <= 0) {
-                                particles.splice(i, 1);
-                                return;
-                            }
-                            particle.vx *= 0.95;
-                            particle.vy *= 0.95;
-                            particle.opacity = particle.life / 60 * 0.8;
-                        }
-                        
-                        const breathScale = 1 + Math.sin(Date.now() * 0.003 + particle.breathOffset) * 0.1;
-                        const currentRadius = particle.radius * breathScale;
-                        
-                        const dx = this.mouse.x - particle.x;
-                        const dy = this.mouse.y - particle.y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        const influenceRange = 120 + layerIndex * 30;
-                        
-                        if (distance < influenceRange && distance > 0) {
-                            const force = (1 - distance / influenceRange) * 0.02 * layerMultiplier;
-                            const angle = Math.atan2(dy, dx);
-                            
-                            if (distance < 30) {
-                                particle.vx -= Math.cos(angle) * force * 3;
-                                particle.vy -= Math.sin(angle) * force * 3;
-                                particle.glowIntensity = 1.0;
-                            } else if (distance < 80) {
-                                particle.vx += Math.cos(angle) * force;
-                                particle.vy += Math.sin(angle) * force;
-                                particle.glowIntensity = 0.6;
-                            } else {
-                                particle.vx += Math.cos(angle) * force * 0.3;
-                                particle.vy += Math.sin(angle) * force * 0.3;
-                                particle.glowIntensity = 0.3;
-                            }
-                        } else {
-                            particle.glowIntensity *= 0.95;
-                        }
-                        
-                        particle.x += particle.vx;
-                        particle.y += particle.vy;
-                        
-                        if (particle.x < currentRadius || particle.x > this.canvas.width - currentRadius) {
-                            particle.vx *= -0.8;
-                            particle.x = Math.max(currentRadius, Math.min(this.canvas.width - currentRadius, particle.x));
-                        }
-                        if (particle.y < currentRadius || particle.y > this.canvas.height - currentRadius) {
-                            particle.vy *= -0.8;
-                            particle.y = Math.max(currentRadius, Math.min(this.canvas.height - currentRadius, particle.y));
-                        }
-                        
-                        if (this.isPerformanceMode) {
-                            particle.trail.push({ x: particle.x, y: particle.y });
-                            if (particle.trail.length > 8) particle.trail.shift();
-                        }
-                        
-                        this.ctx.save();
-                        
-                        if (particle.trail && particle.trail.length > 1) {
-                            particle.trail.forEach((pos, j) => {
-                                this.ctx.globalAlpha = (j / particle.trail.length) * particle.opacity * 0.3;
-                                this.ctx.fillStyle = particle.color;
-                                this.ctx.beginPath();
-                                this.ctx.arc(pos.x, pos.y, currentRadius * (j / particle.trail.length), 0, Math.PI * 2);
-                                this.ctx.fill();
-                            });
-                        }
-                        
-                        this.ctx.globalAlpha = particle.opacity;
-                        this.ctx.fillStyle = particle.color;
-                        
-                        if (this.isPerformanceMode && particle.glowIntensity > 0.1) {
-                            this.ctx.shadowBlur = 15 * particle.glowIntensity;
-                            this.ctx.shadowColor = particle.color + Math.floor(particle.opacity * 255).toString(16).padStart(2, '0');
-                        }
-                        
-                        this.ctx.beginPath();
-                        this.ctx.arc(particle.x, particle.y, currentRadius, 0, Math.PI * 2);
-                        this.ctx.fill();
-                        
-                        this.ctx.restore();
-                    });
-                    
-                    if (this.isPerformanceMode && layerName === 'middle') {
-                        this.drawConnections(particles, 80);
-                    }
-                });
-            }
-            
-            drawConnections(particles, maxDistance) {
-                this.ctx.strokeStyle = 'rgba(102, 126, 234, 0.4)';
-                this.ctx.lineWidth = 1;
-                
-                for (let i = 0; i < particles.length; i++) {
-                    for (let j = i + 1; j < particles.length; j++) {
-                        const dx = particles[j].x - particles[i].x;
-                        const dy = particles[j].y - particles[i].y;
-                        const distance = Math.sqrt(dx * dx + dy * dy);
-                        
-                        if (distance < maxDistance) {
-                            const opacity = (maxDistance - distance) / maxDistance * 0.4;
-                            this.ctx.globalAlpha = opacity;
-                            this.ctx.beginPath();
-                            this.ctx.moveTo(particles[i].x, particles[i].y);
-                            this.ctx.lineTo(particles[j].x, particles[j].y);
-                            this.ctx.stroke();
-                        }
-                    }
-                }
-            }
-            
-            start() {
-                if (!this.animationId) this.animate();
-            }
-            
-            stop() {
-                if (this.animationId) {
-                    if (this.isReducedMotion) clearTimeout(this.animationId);
-                    else cancelAnimationFrame(this.animationId);
-                    this.animationId = null;
-                }
-            }
-            
-            destroy() { this.stop(); }
-        }
+  trackView('assignments',id);
+  a.view_count=(a.view_count||0)+1;
+}
+function canEditAssignment(a){
+  if(!adminInfo)return false;
+  if(adminInfo.role==='superadmin')return true;
+  const perm=adminInfo.permissions?.assignments;
+  if(perm==='all')return true;
+  if(Array.isArray(perm))return perm.includes(a.subject_id);
+  return false;
+}
+function closeDetail(){document.getElementById('detail-overlay').classList.remove('show');detailData=null;detailType='';document.body.style.overflow=''}
+function closeDetailIfBg(e){if(e.target===document.getElementById('detail-overlay'))closeDetail()}
 
-        function detectUA() {
-            const ua = navigator.userAgent.toLowerCase();
-            const uaDisplay = document.getElementById('uaDisplay');
-            const uaIcon = document.getElementById('uaIcon');
-            const uaText = document.getElementById('uaText');
-            
-            let deviceType = '';
-            let iconClass = '';
-            let deviceClass = '';
-            
-            if (/iphone|ipad|ipod/.test(ua)) {
-                deviceType = 'IOS';
-                iconClass = 'fa-mobile-alt';
-                deviceClass = 'ua-ios';
-            }
-            else if (/android/.test(ua)) {
-                deviceType = '安卓手机端';
-                iconClass = 'fa-android';
-                deviceClass = 'ua-android';
-            }
-            else if (/micromessenger/.test(ua)) {
-                deviceType = '微信端';
-                iconClass = 'fa-comment-dots';
-                deviceClass = 'ua-wechat';
-            }
-            else if (/qq\//.test(ua) || /qqbrowser/.test(ua) || /qqapp/.test(ua)) {
-                deviceType = 'QQ端';
-                iconClass = 'fa-comment';
-                deviceClass = 'ua-qq';
-            }
-            else if (/windows|macintosh|linux/.test(ua) && !/mobile/.test(ua)) {
-                deviceType = 'PC';
-                iconClass = 'fa-desktop';
-                deviceClass = 'ua-pc';
-            }
-            else if (/mobile|tablet/.test(ua)) {
-                deviceType = '手机端';
-                iconClass = 'fa-mobile-alt';
-                deviceClass = 'ua-mobile';
-            }
-            else {
-                deviceType = 'PC';
-                iconClass = 'fa-desktop';
-                deviceClass = 'ua-pc';
-            }
-            
-            uaText.textContent = `当前访问UA：${deviceType}`;
-            uaIcon.className = `fas ${iconClass} ua-icon ${deviceClass}`;
-            uaDisplay.style.animation = 'fadeInUp 0.8s ease-out 1s both';
-        }
+async function loadAssignmentDiscussions(assignmentId){
+  const sec=document.getElementById('detail-discussions-section');
+  const list=document.getElementById('detail-discussions-list');
+  sec.style.display='none';list.innerHTML='';
+  const{data}=await sb.from('discussions').select('*').eq('assignment_id',assignmentId).eq('is_hidden',false)
+    .order('is_pinned',{ascending:false}).order('created_at',{ascending:true}).limit(100);
+  if(!data||!data.length)return;
+  sec.style.display='block';
+  list.innerHTML=data.map((d,i)=>`
+    <div class="disc-item${d.is_pinned?' disc-pinned':''} stagger-item" style="animation-delay:${i*50}ms">
+      <div class="disc-author">
+        <div class="disc-avatar">${esc((d.is_anonymous?'匿名同学':(d.display_name||`${d.seat_no}号`)).slice(-1))}</div>
+        <span class="disc-name">${esc(d.is_anonymous?'匿名同学':(d.display_name||`${d.seat_no}号`))}</span>
+        ${d.is_pinned?'<span class="disc-pinned-badge">置顶</span>':''}
+        <span class="disc-time">${fmtDate(d.created_at)}</span>
+      </div>
+      <div class="disc-content">${esc(d.content)}</div>
+    </div>`).join('');
+}
 
-        function updateUptime() {
-            const startTime = new Date('2025-12-18T18:00:00');
-            const now = new Date();
-            const diff = now - startTime;
-            
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-            
-            const uptimeText = document.getElementById('uptimeText');
-            if (uptimeText) {
-                uptimeText.textContent = `运行时间：${days}天 ${hours}小时 ${minutes}分钟 ${seconds}秒`;
-            }
-        }
+function openPublishAssignment(){
+  buildSubjectSelects();
+  ['pa-title','pa-content','pa-attachment-url','pa-attachment-name'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('pa-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('pa-status').value='published';
+  document.getElementById('pa-err').textContent='';
+  document.getElementById('publish-assignment-overlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+async function submitAssignment(){
+  const title=document.getElementById('pa-title').value.trim();
+  const subjectId=document.getElementById('pa-subject').value;
+  const content=document.getElementById('pa-content').value.trim();
+  const assignmentDate=document.getElementById('pa-date').value;
+  const status=document.getElementById('pa-status').value;
+  const attachmentUrl=document.getElementById('pa-attachment-url').value.trim();
+  const attachmentName=document.getElementById('pa-attachment-name').value.trim();
+  const errEl=document.getElementById('pa-err');
+  const btn=document.getElementById('pa-submit');
+  if(!title){errEl.textContent='请输入标题';return}
+  if(!subjectId){errEl.textContent='请选择科目';return}
+  btn.disabled=true;btn.textContent='发布中…';
+  const{error}=await sb.from('assignments').insert({
+    title,subject_id:subjectId,content:content||null,status,
+    assignment_date:assignmentDate||null,
+    attachment_url:attachmentUrl||null,attachment_name:attachmentName||null,
+    published_at:status==='published'?new Date().toISOString():null,
+  });
+  btn.disabled=false;btn.textContent='发布';
+  if(error){errEl.textContent='发布失败：'+error.message;return}
+  closeOverlay('publish-assignment-overlay');
+  showToast('作业已发布 ✓');
+  writeAdminLog('create_assignment',{title,subject_id:subjectId});
+  loadAssignments();
+}
 
-        const updateHistory = [
-            { date: '2026-3-5', version: 'Version2.1', changes: ['新版本'] },
-            { date: '2026-1-29', version: 'Version2.0', changes: ['春节版本'] },
-            { date: '2026-1-22', version: 'Version1.9', changes: ['测试春节版本'] },
-            { date: '2026-1-10', version: '公众号计划', changes: ['STcnAGLcn'] },
-            { date: '2026-1-7', version: 'Version1.8', changes: ['设置更新'] },
-            { date: '2026-1-5', version: 'Version1.7', changes: ['粒子模型优化'] },
-            { date: '2026-1-4', version: 'Version1.65', changes: ['显示优化'] },
-            { date: '2025-12-31', version: 'Version1.65', changes: ['UI优化，播放器优化，模式可选'] },
-            { date: '2025-12-30', version: 'Version1.5', changes: ['动画粒子大优化，提高体验'] },
-            { date: '2025-12-29', version: 'Version1.4', changes: ['音乐播放逻辑优化', '优化网页加载', '更新app版本（无黑边）'] },
-            { date: '2025-12-29', version: 'Version1.3', changes: ['新增安卓客户端', '更新下载链接', '优化播放逻辑'] },
-            { date: '2025-12-25', version: 'Version1.26', changes: ['哈希算法修改', '新增端侧省流（Lazy Loading策略）省流量'] },
-            { date: '2025-12-25', version: 'Version1.24', changes: ['导航栏优化'] },
-            { date: '2025-12-24', version: 'Version1.19', changes: ['API北京时间修复'] },
-            { date: '2025-12-24', version: 'Version1.17', changes: ['修复安全访问问题'] },
-            { date: '2025-12-23', version: 'Version1.15', changes: ['新增安全时间'] },
-            { date: '2025-12-23', version: 'Version1.14', changes: ['修改优化过渡动画'] },
-            { date: '2025-12-22', version: 'Version1.12', changes: ['新增测试码功能'] },
-            { date: '2025-12-21', version: 'Version1.1', changes: ['新增歌词Lrc显示'] },
-            { date: '2025-12-21', version: 'Version1.09', changes: ['新增音乐播放器'] },
-            { date: '2025-12-21', version: 'Version1.07', changes: ['粒子版本上线'] },
-            { date: '2025-12-20', version: 'Version1.05', changes: ['UI优化大版本'] },
-            { date: '2025-12-18', version: 'Version1.0', changes: ['18:00正式测试'] }
-        ];
+function openEditAssignment(){
+  const a=detailData;if(!a)return;
+  buildSubjectSelects();
+  document.getElementById('ea-id').value=a.id;
+  document.getElementById('ea-title').value=a.title;
+  document.getElementById('ea-content').value=a.content||'';
+  document.getElementById('ea-date').value=a.assignment_date||'';
+  document.getElementById('ea-status').value=a.status;
+  document.getElementById('ea-attachment-url').value=a.attachment_url||'';
+  document.getElementById('ea-attachment-name').value=a.attachment_name||'';
+  document.getElementById('ea-err').textContent='';
+  document.getElementById('ea-subject').value=a.subject_id;
+  closeDetail();
+  document.getElementById('edit-assignment-overlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+async function saveEditAssignment(){
+  const id=document.getElementById('ea-id').value;
+  const title=document.getElementById('ea-title').value.trim();
+  const subjectId=document.getElementById('ea-subject').value;
+  const content=document.getElementById('ea-content').value.trim();
+  const assignmentDate=document.getElementById('ea-date').value;
+  const status=document.getElementById('ea-status').value;
+  const attachmentUrl=document.getElementById('ea-attachment-url').value.trim();
+  const attachmentName=document.getElementById('ea-attachment-name').value.trim();
+  const errEl=document.getElementById('ea-err');
+  const btn=document.getElementById('ea-submit');
+  if(!title){errEl.textContent='请输入标题';return}
+  btn.disabled=true;btn.textContent='保存中…';
+  const{error}=await sb.from('assignments').update({
+    title,subject_id:subjectId,content:content||null,status,
+    assignment_date:assignmentDate||null,
+    attachment_url:attachmentUrl||null,attachment_name:attachmentName||null,
+    updated_at:new Date().toISOString(),
+  }).eq('id',id);
+  btn.disabled=false;btn.textContent='保存';
+  if(error){errEl.textContent='保存失败：'+error.message;return}
+  closeOverlay('edit-assignment-overlay');
+  showToast('作业已更新 ✓');
+  writeAdminLog('update_assignment',{id,title});
+  loadAssignments();
+}
+function confirmDeleteAssignment(id){
+  closeDetail();
+  document.getElementById('confirm-title').textContent='确认删除作业';
+  document.getElementById('confirm-msg').textContent='删除后无法恢复，确定要删除这条作业吗？';
+  const btn=document.getElementById('confirm-ok-btn');
+  btn.onclick=async()=>{
+    closeOverlay('confirm-overlay');
+    const{error}=await sb.from('assignments').delete().eq('id',id);
+    if(error){showToast('删除失败');return}
+    showToast('作业已删除');
+    writeAdminLog('delete_assignment',{id});
+    loadAssignments();
+  };
+  document.getElementById('confirm-overlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
 
-        class PerformanceModeManager {
-            constructor() {
-                this.mode = this.getStoredMode() || 'performance';
-            }
-            
-            setMode(mode) {
-                this.mode = mode;
-                localStorage.setItem('performanceMode', mode);
-                this.applyMode(mode);
-            }
-            
-            applyMode(mode) {
-                const body = document.body;
-                if (mode === 'compatibility') {
-                    body.classList.remove('performance-mode');
-                    body.classList.add('compatibility-mode');
-                    if (window.particleNetwork) window.particleNetwork.stop();
-                } else {
-                    body.classList.remove('compatibility-mode');
-                    body.classList.add('performance-mode');
-                    if (window.particleNetwork) window.particleNetwork.start();
-                }
-            }
-            
-            getStoredMode() {
-                return localStorage.getItem('performanceMode');
-            }
-        }
+async function loadAnnouncements(){
+  const c=document.getElementById('announcements-list');
+  c.innerHTML='<div class="spinner"><div class="spin"></div></div>';
+  const{data,error}=await sb.from('announcements').select('*').eq('status','published')
+    .order('is_pinned',{ascending:false}).order('published_at',{ascending:false}).limit(40);
+  if(error){c.innerHTML='<div class="empty"><p>加载失败，请稍后重试</p></div>';return}
+  const list=data||[];
+  if(!list.length){
+    c.innerHTML='<div class="empty"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg><p>暂无公告</p></div>';
+    return;
+  }
+  window._allAnnouncements=list;
+  c.innerHTML=list.map((a,i)=>{
+    const isUrgent=a.is_urgent,isPinned=a.is_pinned;
+    const pubStr=a.published_at?fmtDate(a.published_at):fmtDate(a.created_at);
+    const views=a.view_count||0;
+    return`<div class="card list-item stagger-item" style="animation-delay:${i*40}ms;${isUrgent?'border-left:3px solid var(--red)':''}" onclick="openAnnouncementDetail('${a.id}')">
+      <div class="item-icon" style="background:${isUrgent?'#FEE2E2':'var(--pl)'}">
+        ${isUrgent
+          ?'<svg width="20" height="20" fill="none" stroke="#EF4444" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+          :'<svg width="20" height="20" fill="none" stroke="#2563EB" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>'}
+      </div>
+      <div class="item-body">
+        <div class="item-title">${esc(a.title)}</div>
+        <div class="item-meta">
+          ${isUrgent?'<span class="tag tag-red">紧急</span>':''}
+          ${isPinned?'<span class="tag tag-amber">置顶</span>':''}
+          <span>${pubStr}</span>
+          <span class="view-badge"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>${views}</span>
+        </div>
+      </div>
+      <span class="item-arrow">›</span>
+    </div>`;
+  }).join('');
+}
 
-        class SettingsSystem {
-            constructor() {
-                this.settingsModal = document.getElementById('settingsModal');
-                this.settingsClose = document.getElementById('settingsClose');
-                this.performanceToggle = document.getElementById('performanceToggle');
-                this.transitionOverlay = document.getElementById('transitionOverlay');
-                
-                this.init();
-            }
-            
-            init() {
-                this.settingsClose.addEventListener('click', () => this.hide());
-                this.settingsModal.addEventListener('click', (e) => {
-                    if (e.target === this.settingsModal) this.hide();
-                });
-                
-                this.performanceToggle.addEventListener('change', (e) => {
-                    this.showTransition(() => {
-                        const mode = e.target.checked ? 'performance' : 'compatibility';
-                        modeManager.setMode(mode);
-                        this.performanceToggle.checked = mode === 'performance';
-                    });
-                });
-                
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape' && this.settingsModal.classList.contains('active')) {
-                        this.hide();
-                    }
-                });
-            }
-            
-            show() {
-                this.performanceToggle.checked = document.body.classList.contains('performance-mode');
-                this.settingsModal.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            }
-            
-            hide() {
-                this.settingsModal.classList.remove('active');
-                document.body.style.overflow = '';
-            }
-            
-            showTransition(callback) {
-                this.transitionOverlay.classList.add('active');
-                setTimeout(() => {
-                    callback();
-                    setTimeout(() => {
-                        this.transitionOverlay.classList.remove('active');
-                    }, 600);
-                }, 400);
-            }
-        }
+function openAnnouncementDetail(id){
+  const a=(window._allAnnouncements||[]).find(x=>x.id===id);
+  if(!a)return;
+  detailData=a;detailType='announcement';
+  const isUrgent=a.is_urgent,pubStr=a.published_at?fmtDate(a.published_at):fmtDate(a.created_at);
+  const views=(a.view_count||0)+1;
+  document.getElementById('detail-head').innerHTML=`
+    <div class="detail-title">${esc(a.title)}</div>
+    <div class="detail-meta">
+      ${isUrgent?'<span class="tag tag-red">紧急公告</span>':''}
+      ${a.is_pinned?'<span class="tag tag-amber">置顶</span>':''}
+      <span style="font-size:11px;color:var(--muted)">发布于 ${pubStr}</span>
+      <span class="view-badge"><svg width="10" height="10" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>${views} 次浏览</span>
+    </div>`;
+  let html=esc(a.content||'暂无内容');
+  if(a.attachment_url)html+=`<a class="attachment-link" href="${esc(a.attachment_url)}" target="_blank" rel="noopener">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+    ${esc(a.attachment_name||'查看附件')}</a>`;
+  document.getElementById('detail-content').innerHTML=html;
 
-        function setupNavigation() {
-            document.querySelectorAll('.nav-menu li[data-page]').forEach(item => {
-                item.addEventListener('click', () => {
-                    if (item.dataset.page === 'settings') {
-                        settingsSystem.show();
-                    } else {
-                        navigateTo(item.dataset.page);
-                    }
-                });
-            });
-        }
+  const footer=document.getElementById('detail-footer');
+  footer.style.display='none';footer.innerHTML='';
+  const canEdit=adminInfo&&(adminInfo.role==='superadmin'||adminInfo.permissions?.announcements===true);
+  if(canEdit){
+    footer.style.display='flex';
+    footer.innerHTML=`
+      <button class="btn btn-ghost btn-sm" onclick="openEditAnnouncement()">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>编辑
+      </button>
+      <button class="btn btn-danger btn-sm" onclick="confirmDeleteAnnouncement('${a.id}')">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>删除
+      </button>`;
+  }
+  document.getElementById('detail-discussions-section').style.display='none';
+  document.getElementById('detail-overlay').classList.add('show');
+  document.body.style.overflow='hidden';
 
-        function navigateTo(pageName) {
-            const currentPage = document.querySelector('.page.active');
-            const targetPage = document.getElementById(`page-${pageName}`);
-            
-            if (currentPage === targetPage) return;
-            
-            document.body.style.overflow = 'hidden';
-            document.querySelectorAll('.page').forEach(page => {
-                page.style.pointerEvents = 'none';
-                page.style.display = 'none';
-            });
-            
-            currentPage.classList.add('fade-out');
-            
-            setTimeout(() => {
-                document.querySelectorAll('.page').forEach(page => {
-                    page.classList.remove('active');
-                    page.classList.remove('fade-out');
-                });
-                
-                if (targetPage) {
-                    targetPage.style.display = 'block';
-                    targetPage.style.pointerEvents = 'auto';
-                    setTimeout(() => {
-                        targetPage.classList.add('active');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                        document.body.style.overflow = '';
-                        setTimeout(() => {
-                            applyStaggerAnimation();
-                        }, 100);
-                    }, 10);
-                }
-            }, 250);
-            
-            document.querySelectorAll('.nav-menu li').forEach(li => li.classList.remove('active'));
-            document.querySelector(`.nav-menu li[data-page="${pageName}"]`)?.classList.add('active');
-            
-            document.getElementById('navMenu').classList.remove('active');
-            const icon = document.querySelector('#mobileToggle i');
-            icon.classList.add('fa-bars');
-            icon.classList.remove('fa-times');
-        }
+  trackView('announcements',id);
+  a.view_count=(a.view_count||0)+1;
+}
 
-        function renderUpdateHistory() {
-            const timeline = document.getElementById('historyTimeline');
-            if (!timeline) return;
+function openPublishAnnouncement(){
+  ['pan-title','pan-content','pan-attachment-url','pan-attachment-name'].forEach(id=>document.getElementById(id).value='');
+  setToggle('pan-urgent','toggle-pan-urgent',false);
+  setToggle('pan-pinned','toggle-pan-pinned',false);
+  document.getElementById('pan-err').textContent='';
+  document.getElementById('publish-announcement-overlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+async function submitAnnouncement(){
+  const title=document.getElementById('pan-title').value.trim();
+  const content=document.getElementById('pan-content').value.trim();
+  const isUrgent=document.getElementById('pan-urgent').checked;
+  const isPinned=document.getElementById('pan-pinned').checked;
+  const attachmentUrl=document.getElementById('pan-attachment-url').value.trim();
+  const attachmentName=document.getElementById('pan-attachment-name').value.trim();
+  const errEl=document.getElementById('pan-err');
+  const btn=document.getElementById('pan-submit');
+  if(!title){errEl.textContent='请输入标题';return}
+  if(!content){errEl.textContent='请输入内容';return}
+  btn.disabled=true;btn.textContent='发布中…';
+  const{error}=await sb.from('announcements').insert({
+    title,content,status:'published',is_urgent:isUrgent,is_pinned:isPinned,
+    attachment_url:attachmentUrl||null,attachment_name:attachmentName||null,
+    published_at:new Date().toISOString(),
+  });
+  btn.disabled=false;btn.textContent='发布';
+  if(error){errEl.textContent='发布失败：'+error.message;return}
+  closeOverlay('publish-announcement-overlay');
+  showToast('公告已发布 ✓');
+  writeAdminLog('create_announcement',{title});
+  loadAnnouncements();
+}
+function openEditAnnouncement(){
+  const a=detailData;if(!a)return;
+  document.getElementById('ean-id').value=a.id;
+  document.getElementById('ean-title').value=a.title;
+  document.getElementById('ean-content').value=a.content||'';
+  document.getElementById('ean-attachment-url').value=a.attachment_url||'';
+  document.getElementById('ean-attachment-name').value=a.attachment_name||'';
+  setToggle('ean-urgent','toggle-ean-urgent',a.is_urgent||false);
+  setToggle('ean-pinned','toggle-ean-pinned',a.is_pinned||false);
+  document.getElementById('ean-err').textContent='';
+  closeDetail();
+  document.getElementById('edit-announcement-overlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+async function saveEditAnnouncement(){
+  const id=document.getElementById('ean-id').value;
+  const title=document.getElementById('ean-title').value.trim();
+  const content=document.getElementById('ean-content').value.trim();
+  const isUrgent=document.getElementById('ean-urgent').checked;
+  const isPinned=document.getElementById('ean-pinned').checked;
+  const attachmentUrl=document.getElementById('ean-attachment-url').value.trim();
+  const attachmentName=document.getElementById('ean-attachment-name').value.trim();
+  const errEl=document.getElementById('ean-err');
+  const btn=document.getElementById('ean-submit');
+  if(!title){errEl.textContent='请输入标题';return}
+  if(!content){errEl.textContent='请输入内容';return}
+  btn.disabled=true;btn.textContent='保存中…';
+  const{error}=await sb.from('announcements').update({
+    title,content,is_urgent:isUrgent,is_pinned:isPinned,
+    attachment_url:attachmentUrl||null,attachment_name:attachmentName||null,
+    updated_at:new Date().toISOString(),
+  }).eq('id',id);
+  btn.disabled=false;btn.textContent='保存';
+  if(error){errEl.textContent='保存失败：'+error.message;return}
+  closeOverlay('edit-announcement-overlay');
+  showToast('公告已更新 ✓');
+  writeAdminLog('update_announcement',{id,title});
+  loadAnnouncements();
+}
+function confirmDeleteAnnouncement(id){
+  closeDetail();
+  document.getElementById('confirm-title').textContent='确认删除公告';
+  document.getElementById('confirm-msg').textContent='删除后无法恢复，确定要删除这条公告吗？';
+  const btn=document.getElementById('confirm-ok-btn');
+  btn.onclick=async()=>{
+    closeOverlay('confirm-overlay');
+    const{error}=await sb.from('announcements').delete().eq('id',id);
+    if(error){showToast('删除失败');return}
+    showToast('公告已删除');
+    writeAdminLog('delete_announcement',{id});
+    loadAnnouncements();
+  };
+  document.getElementById('confirm-overlay').classList.add('show');
+  document.body.style.overflow='hidden';
+}
 
-            timeline.innerHTML = updateHistory.map((item, index) => `
-                <div class="history-item stagger-fade-in" style="animation-delay: ${(index + 1) * 0.1}s">
-                    <div class="history-card">
-                        <div class="history-header">
-                            <div class="history-date">
-                                <i class="fas fa-calendar-alt"></i>
-                                ${item.date}
-                            </div>
-                            <div class="history-version">
-                                ${item.version}
-                            </div>
-                        </div>
-                        <ul class="history-changes">
-                            ${item.changes.map(change => `
-                                <li class="history-change">${change}</li>
-                            `).join('')}
-                        </ul>
-                    </div>
-                </div>
-            `).join('');
-        }
+async function loadDiscussions(){
+  const c=document.getElementById('discussions-list');
+  c.innerHTML='<div class="spinner"><div class="spin"></div></div>';
+  const{data,error}=await sb.from('discussions').select('*,assignments!assignment_id(id,title)').eq('is_hidden',false)
+    .order('is_pinned',{ascending:false}).order('created_at',{ascending:false}).limit(60);
+  if(error){c.innerHTML='<div class="empty"><p>加载失败</p></div>';return}
+  const list=data||[];
+  if(!list.length){
+    c.innerHTML='<div class="empty"><svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><p>暂无讨论</p></div>';
+    return;
+  }
+  c.innerHTML=list.map((d,i)=>{
+    const name=d.is_anonymous?'匿名同学':(d.display_name||`${d.seat_no}号`);
+    const av=name.slice(-1);
+    const assignTitle=d.assignments?.title||'';
+    return`<div class="card stagger-item" style="animation-delay:${i*40}ms;padding:14px 16px">
+      <div class="disc-author" style="margin-bottom:6px">
+        <div class="disc-avatar">${esc(av)}</div>
+        <span class="disc-name">${esc(name)}</span>
+        ${d.is_pinned?'<span class="disc-pinned-badge">置顶</span>':''}
+        <span class="disc-time">${fmtDate(d.created_at)}</span>
+      </div>
+      ${assignTitle?`<div style="font-size:11px;color:var(--muted);margin-bottom:6px">关联作业：${esc(assignTitle)}</div>`:''}
+      <div class="disc-content">${esc(d.content)}</div>
+    </div>`;
+  }).join('');
+}
 
-        function setupMobileMenu() {
-            const mobileToggle = document.getElementById('mobileToggle');
-            const navMenu = document.getElementById('navMenu');
-            
-            mobileToggle.addEventListener('click', () => {
-                navMenu.classList.toggle('active');
-                const icon = mobileToggle.querySelector('i');
-                icon.classList.toggle('fa-bars');
-                icon.classList.toggle('fa-times');
-            });
-            
-            navMenu.querySelectorAll('li').forEach(item => {
-                item.addEventListener('click', () => {
-                    navMenu.classList.remove('active');
-                    const icon = mobileToggle.querySelector('i');
-                    icon.classList.add('fa-bars');
-                    icon.classList.remove('fa-times');
-                });
-            });
-        }
+async function loadClientPage(){
+  try{
+    const{data}=await sb.from('app_settings').select('key,value').in('key',['terms_url','privacy_url','official_website']);
+    if(data){
+      const map=Object.fromEntries(data.map(r=>[r.key,r.value]));
+      if(map.terms_url){const el=document.getElementById('terms-link');if(el){el.href=map.terms_url;el.target='_blank'}}
+      if(map.privacy_url){const el=document.getElementById('privacy-link');if(el){el.href=map.privacy_url;el.target='_blank'}}
+    }
+  }catch(_){}
+  await fetchClientDownloadUrl();
+}
+async function fetchClientDownloadUrl(){
+  const dlBtn=document.getElementById('download-btn-link');
+  const dlLoading=document.getElementById('download-loading');
+  const dlUnavail=document.getElementById('download-unavailable');
+  dlBtn.style.display='none';dlLoading.style.display='';dlUnavail.style.display='none';
+  try{
+    const{data}=await sb.from('app_settings').select('value').eq('key','client_download_url').maybeSingle();
+    const url=data?.value;
+    if(url){
+      dlBtn.href=url;dlBtn.style.display='inline-flex';dlLoading.style.display='none';
+    }else{
+      dlLoading.style.display='none';dlUnavail.style.display='block';
+    }
+  }catch(_){dlLoading.style.display='none';dlUnavail.style.display='block'}
+}
+async function loadClientUrlForAdmin(){
+  try{
+    const{data}=await sb.from('app_settings').select('value').eq('key','client_download_url').maybeSingle();
+    if(data?.value)document.getElementById('client-url-input').value=data.value;
+  }catch(_){}
+}
+async function saveClientUrl(){
+  const url=document.getElementById('client-url-input').value.trim();
+  if(!url){showToast('下载链接输入');return}
+  try{
+    await sb.from('app_settings').upsert({key:'client_download_url',value:url},{onConflict:'key'});
+    showToast('下载链接已更新 ✓');
+    writeAdminLog('update_client_download_url',{url});
+    fetchClientDownloadUrl();
+  }catch(e){showToast('保存失败：'+e.message)}
+}
 
-        function setupModal() {
-            const modalOverlay = document.getElementById('homeworkModal');
-            const modalClose = document.getElementById('modalClose');
-            const modalButton = document.getElementById('modalButton');
+function closeOverlay(id){
+  const el=document.getElementById(id);
+  el.classList.remove('show');
+  setTimeout(()=>{
+    if(!document.querySelector('.overlay.show'))document.body.style.overflow='';
+  },300);
+}
+function closeOverlayIfBg(id,e){if(e.target===document.getElementById(id))closeOverlay(id)}
 
-            modalClose.addEventListener('click', hideHomeworkModal);
-            modalButton.addEventListener('click', hideHomeworkModal);
-            
-            modalOverlay.addEventListener('click', (e) => {
-                if (e.target === modalOverlay) hideHomeworkModal();
-            });
+async function init(){
+  restoreSession();
+  updateAdminUI();
+  await loadSubjects();
+  loadAssignments();
+  loadClientPage();
+  checkIOSPWA();
+}
 
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
-                    hideHomeworkModal();
-                }
-            });
-        }
-
-        function showHomeworkModal(subject) {
-            hideHomeworkModal();
-        }
-
-        function hideHomeworkModal() {
-            const modalOverlay = document.getElementById('homeworkModal');
-            modalOverlay.classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        class MusicLoader {
-            constructor() {
-                this.supportedFormats = [
-                    { ext: 'mp3', type: 'audio/mpeg' },
-                    { ext: 'aac', type: 'audio/aac' },
-                    { ext: 'm4a', type: 'audio/mp4' },
-                    { ext: 'ogg', type: 'audio/ogg' },
-                    { ext: 'wav', type: 'audio/wav' },
-                    { ext: 'flac', type: 'audio/flac' }
-                ];
-                this.foundMusic = null;
-            }
-            
-            async detectMusic() {
-                const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-                const namePatterns = ['music', 'bgm', 'background', 'audio'];
-                
-                for (const name of namePatterns) {
-                    for (const format of this.supportedFormats) {
-                        const url = `${basePath}${name}.${format.ext}`;
-                        try {
-                            const result = await this.checkFile(url, format);
-                            if (result) {
-                                this.foundMusic = result;
-                                return result;
-                            }
-                        } catch (e) { continue; }
-                    }
-                }
-                return null;
-            }
-            
-            checkFile(url, format) {
-                return new Promise((resolve, reject) => {
-                    const audio = new Audio();
-                    let resolved = false;
-                    
-                    const onCanPlay = () => {
-                        if (!resolved) { resolved = true; resolve({ url, format }); }
-                    };
-                    const onError = () => {
-                        if (!resolved) { resolved = true; reject(null); }
-                    };
-                    const timeout = setTimeout(() => {
-                        if (!resolved) { resolved = true; reject(null); }
-                    }, 3000);
-                    
-                    audio.addEventListener('canplaythrough', onCanPlay, { once: true });
-                    audio.addEventListener('error', onError, { once: true });
-                    audio.src = url;
-                    audio.load();
-                });
-            }
-            
-            updateAudioElement(audio) {
-                if (!this.foundMusic) return false;
-                audio.innerHTML = '';
-                const source = document.createElement('source');
-                source.src = this.foundMusic.url;
-                source.type = this.foundMusic.format.type;
-                audio.appendChild(source);
-                return true;
-            }
-        }
-
-        async function initializeMusicPlayer() {
-            const musicLoader = new MusicLoader();
-            await musicLoader.detectMusic();
-            
-            const audio = document.getElementById('bgMusic');
-            const statusElement = document.getElementById('lyricsStatus');
-            const updated = musicLoader.updateAudioElement(audio);
-            
-            if (statusElement) {
-                if (updated) {
-                    statusElement.innerHTML = `<i class="fas fa-check-circle"></i> <span>音乐已加载</span>`;
-                    statusElement.className = 'lyrics-status success';
-                } else {
-                    statusElement.innerHTML = `<i class="fas fa-info-circle"></i> <span>使用默认音乐文件</span>`;
-                }
-            }
-            
-            setupMusicPlayer();
-        }
-
-        function setupMusicPlayer() {
-            const musicButton = document.getElementById('musicButton');
-            const musicIcon = document.getElementById('musicIcon');
-            const bgMusic = document.getElementById('bgMusic');
-            const statusElement = document.getElementById('lyricsStatus');
-            
-            let isPlaying = false;
-            let mediaSessionSupported = false;
-            
-            const updateButtonState = (state) => {
-                switch(state) {
-                    case 'loading':
-                        musicIcon.className = 'fas fa-spinner fa-spin';
-                        musicButton.disabled = true;
-                        break;
-                    case 'ready':
-                        musicIcon.className = 'fas fa-play';
-                        musicButton.disabled = false;
-                        break;
-                    case 'error':
-                        musicIcon.className = 'fas fa-exclamation-triangle';
-                        musicButton.disabled = true;
-                        if(statusElement) {
-                            statusElement.innerHTML = '<i class="fas fa-exclamation-circle"></i> <span>音乐文件加载失败</span>';
-                            statusElement.className = 'lyrics-status error';
-                        }
-                        break;
-                    case 'playing':
-                        musicIcon.className = 'fas fa-pause';
-                        musicButton.classList.add('playing');
-                        break;
-                    case 'paused':
-                        musicIcon.className = 'fas fa-play';
-                        musicButton.classList.remove('playing');
-                        break;
-                }
-            };
-            
-            bgMusic.addEventListener('progress', () => {
-                if (bgMusic.readyState >= 2 && !isPlaying) updateButtonState('ready');
-            });
-            
-            musicButton.addEventListener('click', () => {
-                if (!isPlaying) {
-                    bgMusic.play().then(() => {
-                        isPlaying = true;
-                        updateButtonState('playing');
-                    }).catch(e => {
-                        updateButtonState('error');
-                    });
-                } else {
-                    bgMusic.pause();
-                    isPlaying = false;
-                    updateButtonState('paused');
-                }
-                updateMediaSessionState();
-            });
-            
-            bgMusic.addEventListener('ended', () => {
-                isPlaying = false;
-                updateButtonState('paused');
-                updateMediaSessionState();
-            });
-            
-            bgMusic.addEventListener('loadedmetadata', () => {
-                if(statusElement) {
-                    statusElement.innerHTML = `<i class="fas fa-check-circle"></i> <span>音乐已加载：${bgMusic.duration.toFixed(1)}秒</span>`;
-                }
-                setupMediaSession();
-            });
-            
-            bgMusic.addEventListener('error', () => {
-                statusElement?.classList.add('error');
-            });
-            
-            bgMusic.loop = true;
-            
-            function setupMediaSession() {
-                if ('mediaSession' in navigator) {
-                    mediaSessionSupported = true;
-                    navigator.mediaSession.metadata = new MediaMetadata({
-                        title: 'STNStudio背景音乐',
-                        artist: 'GLcn',
-                        album: '网页播放器',
-                        artwork: [
-                            { src: 'https://raw.githubusercontent.com/glcn26/glcn26.github.io/main/musiclogo.jpg', sizes: '512x512', type: 'image/jpeg' }
-                        ]
-                    });
-                    
-                    navigator.mediaSession.setActionHandler('play', () => {
-                        if (!isPlaying) musicButton.click();
-                    });
-                    
-                    navigator.mediaSession.setActionHandler('pause', () => {
-                        if (isPlaying) musicButton.click();
-                    });
-                }
-            }
-            
-            function updateMediaSessionState() {
-                if (!mediaSessionSupported || !navigator.mediaSession) return;
-                navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
-            }
-        }
-
-        class ServerTimeManager {
-            constructor() {
-                this.serverTimeOffset = 0;
-                this.lastSyncTime = 0;
-                this.isInitialized = false;
-            }
-            
-            async fetchBeijingTime() {
-                try {
-                    const apis = [
-                        'https://worldtimeapi.org/api/timezone/Asia/Shanghai',
-                        'https://api.github.com'
-                    ];
-                    
-                    for (let api of apis) {
-                        try {
-                            const response = await fetch(api, { 
-                                method: 'GET',
-                                cache: 'no-cache',
-                                signal: AbortSignal.timeout(5000)
-                            });
-                            
-                            if (api.includes('worldtimeapi')) {
-                                const data = await response.json();
-                                const serverTime = new Date(data.datetime).getTime();
-                                return serverTime;
-                            } else {
-                                const dateString = response.headers.get('Date');
-                                const serverTime = new Date(dateString).getTime();
-                                return serverTime;
-                            }
-                        } catch (e) { continue; }
-                    }
-                    throw new Error('所有时间API均不可用');
-                } catch (error) {
-                    return null;
-                }
-            }
-            
-            async syncTime() {
-                const startTime = Date.now();
-                const serverTime = await this.fetchBeijingTime();
-                const endTime = Date.now();
-                
-                if (serverTime) {
-                    const networkDelay = (endTime - startTime) / 2;
-                    this.serverTimeOffset = (serverTime + networkDelay) - Date.now();
-                    this.lastSyncTime = Date.now();
-                    this.isInitialized = true;
-                    return true;
-                }
-                return false;
-            }
-            
-            getBeijingTime() {
-                return this.isInitialized ? new Date(Date.now() + this.serverTimeOffset) : new Date();
-            }
-            
-            shouldResync() {
-                return Date.now() - this.lastSyncTime > 5 * 60 * 1000;
-            }
-        }
-        
-        const serverTimeManager = new ServerTimeManager();
-        
-        function updateBeijingTime() {
-            const beijingTime = serverTimeManager.getBeijingTime();
-            
-            const timeString = beijingTime.toLocaleTimeString('zh-CN', { 
-                hour12: false,
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            const dateString = beijingTime.toLocaleDateString('zh-CN', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                weekday: 'long'
-            });
-            
-            const timeElement = document.getElementById('beijingTime');
-            const dateElement = document.getElementById('beijingDate');
-            
-            if (timeElement && dateElement) {
-                timeElement.textContent = timeString;
-                dateElement.textContent = dateString;
-                timeElement.style.opacity = serverTimeManager.isInitialized ? '1' : '0.6';
-            }
-        }
-
-        function setupScrollEffects() {
-            let lastScrollTop = 0;
-            const navbar = document.getElementById('navbar');
-            
-            window.addEventListener('scroll', () => {
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                if (scrollTop > lastScrollTop && scrollTop > 100) {
-                    navbar.style.transform = 'translateY(-100%)';
-                } else {
-                    navbar.style.transform = 'translateY(0)';
-                }
-                lastScrollTop = scrollTop;
-            }, { passive: true });
-        }
-
-        function applyStaggerAnimation() {
-            const cards = document.querySelectorAll('.stagger-fade-in');
-            cards.forEach((card, index) => {
-                card.style.animationDelay = `${index * 0.1}s`;
-                card.classList.add('fadeInUp');
-            });
-        }
-
-        class LyricParser {
-            constructor() {
-                this.lyrics = [];
-                this.title = '';
-                this.artist = '';
-                this.album = '';
-            }
-            
-            parse(lrcContent) {
-                this.lyrics = [];
-                const lines = lrcContent.split('\n');
-                
-                lines.forEach(line => {
-                    const metaMatch = line.match(/^\[(ti|ar|al):(.+)\]$/i);
-                    if (metaMatch) {
-                        const [, key, value] = metaMatch;
-                        switch(key.toLowerCase()) {
-                            case 'ti': this.title = value; break;
-                            case 'ar': this.artist = value; break;
-                            case 'al': this.album = value; break;
-                        }
-                    }
-                });
-                
-                lines.forEach(line => {
-                    const timeMatches = line.match(/\[(\d{2}):(\d{2})\.(\d{2,3})\]/g);
-                    const textMatch = line.match(/\].*$/);
-                    
-                    if (timeMatches && textMatch) {
-                        const text = textMatch[0].substring(1).trim();
-                        timeMatches.forEach(timeMatch => {
-                            const [, min, sec, ms] = timeMatch.match(/\[(\d{2}):(\d{2})\.(\d{2,3})\]/);
-                            const time = parseInt(min) * 60 + parseInt(sec) + parseInt(ms) / (ms.length === 2 ? 100 : 1000);
-                            this.lyrics.push({ time, text });
-                        });
-                    }
-                });
-                
-                this.lyrics.sort((a, b) => a.time - b.time);
-                return {
-                    lyrics: this.lyrics,
-                    title: this.title,
-                    artist: this.artist,
-                    album: this.album
-                };
-            }
-        }
-
-        class LyricDisplay {
-            constructor() {
-                this.lyrics = [];
-                this.currentIndex = -1;
-                this.container = document.getElementById('lyricsContainer');
-                this.linesContainer = document.getElementById('lyricsLines');
-                this.progressBar = document.getElementById('lyricsProgressBar');
-                this.status = document.getElementById('lyricsStatus');
-                this.toggle = document.getElementById('lyricsToggle');
-                this.title = document.getElementById('lyricsTitle');
-                this.isCollapsed = true;
-                this.isReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-                
-                this.setupToggle();
-                this.bindEvents();
-            }
-            
-            setupToggle() {
-                this.toggle.addEventListener('click', () => {
-                    this.isCollapsed = !this.isCollapsed;
-                    this.container.classList.toggle('collapsed');
-                    
-                    const icon = this.toggle.querySelector('i');
-                    const text = this.toggle.querySelector('span');
-                    
-                    if (this.isCollapsed) {
-                        icon.className = 'fas fa-chevron-up';
-                        text.textContent = '展开';
-                    } else {
-                        icon.className = 'fas fa-chevron-down';
-                        text.textContent = '收起';
-                    }
-                });
-            }
-            
-            bindEvents() {
-                this.linesContainer.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('lyrics-line')) {
-                        const index = parseInt(e.target.dataset.index);
-                        if (index >= 0 && this.lyrics[index]) {
-                            this.seekToTime(this.lyrics[index].time);
-                        }
-                    }
-                });
-            }
-            
-            async loadLyrics(url) {
-                this.showStatus('loading', '正在加载歌词...');
-                
-                try {
-                    const controller = new AbortController();
-                    const timeout = setTimeout(() => controller.abort(), 5000);
-                    
-                    const response = await fetch(url, { 
-                        signal: controller.signal,
-                        cache: 'no-cache'
-                    });
-                    
-                    clearTimeout(timeout);
-                    
-                    if (!response.ok) throw new Error('歌词文件加载失败');
-                    
-                    const lrcContent = await response.text();
-                    const parser = new LyricParser();
-                    const result = parser.parse(lrcContent);
-                    
-                    this.lyrics = result.lyrics;
-                    this.renderLyrics();
-                    this.showStatus('success', `歌词加载成功：${result.title || '音乐'}`);
-                    
-                    if (result.title) this.title.textContent = result.title;
-                    
-                    if (this.lyrics.length > 0) {
-                        setTimeout(() => {
-                            if (this.isCollapsed) this.toggle.click();
-                        }, 500);
-                    }
-                } catch (error) {
-                    let message = '歌词加载失败';
-                    if (error.name === 'AbortError') message = '歌词加载超时';
-                    else if (error.message) message += '：' + error.message;
-                    this.showStatus('error', message);
-                    this.title.textContent = '暂无歌词';
-                }
-            }
-            
-            renderLyrics() {
-                this.linesContainer.innerHTML = '';
-                this.lyrics.forEach((lyric, index) => {
-                    const line = document.createElement('div');
-                    line.className = 'lyrics-line';
-                    line.textContent = lyric.text || '♪ ~ ♪';
-                    line.dataset.index = index;
-                    this.linesContainer.appendChild(line);
-                });
-            }
-            
-            update(currentTime) {
-                if (this.lyrics.length === 0) return;
-                
-                let newIndex = -1;
-                for (let i = this.lyrics.length - 1; i >= 0; i--) {
-                    if (currentTime >= this.lyrics[i].time) {
-                        newIndex = i;
-                        break;
-                    }
-                }
-                
-                if (newIndex !== this.currentIndex) {
-                    this.currentIndex = newIndex;
-                    this.highlightLine(newIndex);
-                }
-                
-                const totalDuration = this.lyrics[this.lyrics.length - 1].time;
-                const progress = (currentTime / totalDuration) * 100;
-                this.progressBar.style.width = Math.min(progress, 100) + '%';
-            }
-            
-            highlightLine(index) {
-                document.querySelectorAll('.lyrics-line').forEach(line => line.classList.remove('active'));
-                
-                if (index >= 0) {
-                    const activeLine = document.querySelector(`[data-index="${index}"]`);
-                    if (activeLine) {
-                        activeLine.classList.add('active');
-                        
-                        if (!this.isReducedMotion) {
-                            const containerHeight = this.linesContainer.parentElement.clientHeight;
-                            const lineHeight = activeLine.offsetHeight;
-                            const offset = activeLine.offsetTop - (containerHeight / 2) + (lineHeight / 2);
-                            this.linesContainer.style.transform = `translateY(-${offset}px)`;
-                        }
-                    }
-                }
-            }
-            
-            seekToTime(time) {
-                const audio = document.getElementById('bgMusic');
-                if (audio && !isNaN(time)) {
-                    audio.currentTime = time;
-                    if (audio.paused) document.getElementById('musicButton').click();
-                }
-            }
-            
-            showStatus(type, message) {
-                this.status.className = 'lyrics-status ' + type;
-                this.status.querySelector('span').textContent = message;
-                
-                const icon = this.status.querySelector('i');
-                switch(type) {
-                    case 'loading': icon.className = 'fas fa-spinner'; break;
-                    case 'error': icon.className = 'fas fa-exclamation-circle'; break;
-                    case 'success': icon.className = 'fas fa-check-circle'; break;
-                    default: icon.className = 'fas fa-info-circle';
-                }
-            }
-            
-            reset() {
-                this.currentIndex = -1;
-                this.highlightLine(-1);
-                this.progressBar.style.width = '0%';
-                this.linesContainer.style.transform = 'translateY(0)';
-            }
-        }
-
-        function setupLyricsIntegration() {
-            const audio = document.getElementById('bgMusic');
-            const musicButton = document.getElementById('musicButton');
-            const lyricDisplay = new LyricDisplay();
-            
-            lyricDisplay.loadLyrics('歌词.lrc');
-            
-            audio.addEventListener('timeupdate', () => {
-                if (!audio.paused && audio.readyState >= 2) {
-                    lyricDisplay.update(audio.currentTime);
-                }
-            });
-            
-            audio.addEventListener('play', () => musicButton.classList.add('lyrics-active'));
-            audio.addEventListener('pause', () => musicButton.classList.remove('lyrics-active'));
-            audio.addEventListener('ended', () => {
-                lyricDisplay.reset();
-                musicButton.classList.remove('lyrics-active');
-            });
-            audio.addEventListener('loadedmetadata', () => {
-                lyricDisplay.showStatus('success', `音乐已加载：${audio.duration.toFixed(1)}秒`);
-            });
-            audio.addEventListener('error', () => {
-                lyricDisplay.showStatus('error', '音乐加载失败');
-            });
-        }
-
-        function setupAutoRefresh() {
-            const REFRESH_INTERVAL = 8 * 60 * 1000;
-            
-            function shouldRefresh() {
-                const activeElement = document.activeElement;
-                const hasFocus = activeElement && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'BUTTON');
-                const hasActiveModal = document.querySelector('.modal-overlay.active');
-                const audio = document.getElementById('bgMusic');
-                const isMusicPlaying = audio && !audio.paused;
-                return !hasFocus && !hasActiveModal && !isMusicPlaying;
-            }
-            
-            setInterval(() => {
-                if (shouldRefresh()) {
-                    const currentPage = document.querySelector('.page.active');
-                    if (currentPage) localStorage.setItem('lastPage', currentPage.dataset.page);
-                    location.reload();
-                }
-            }, REFRESH_INTERVAL);
-        }
-
-        let particleNetwork = null;
-        let modeManager = null;
-        let settingsSystem = null;
-        
-        async function initializeApp() {
-            modeManager = new PerformanceModeManager();
-            settingsSystem = new SettingsSystem();
-            
-            // 默认高性能模式，无需选择
-            modeManager.setMode('performance');
-            
-            await serverTimeManager.syncTime();
-            
-            setupNavigation();
-            setupMobileMenu();
-            setupModal();
-            await initializeMusicPlayer();
-            updateBeijingTime();
-            setupScrollEffects();
-            applyStaggerAnimation();
-            setupLyricsIntegration();
-            detectUA();
-            
-            // 直接启动粒子系统
-            document.body.classList.add('performance-mode');
-            particleNetwork = new EnhancedParticleNetwork();
-            
-            // 立即显示音乐播放器
-            document.getElementById('musicPlayer').classList.add('show');
-            
-            // 优化定时器
-            let lastTimeUpdate = Date.now();
-            let lastUptimeUpdate = Date.now();
-            
-            const optimizedUpdate = () => {
-                const now = Date.now();
-                if (now - lastTimeUpdate >= 1000) {
-                    updateBeijingTime();
-                    lastTimeUpdate = now;
-                }
-                if (now - lastUptimeUpdate >= 1000) {
-                    updateUptime();
-                    lastUptimeUpdate = now;
-                }
-                requestAnimationFrame(optimizedUpdate);
-            };
-            requestAnimationFrame(optimizedUpdate);
-            
-            setInterval(async () => {
-                if (serverTimeManager.shouldResync()) {
-                    await serverTimeManager.syncTime();
-                }
-            }, 5 * 60 * 1000);
-            
-            setupAutoRefresh();
-            renderUpdateHistory();
-        }
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeApp().catch(console.error);
-        });
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                const navMenu = document.getElementById('navMenu');
-                const modalOverlay = document.getElementById('homeworkModal');
-                
-                if (navMenu.classList.contains('active')) {
-                    navMenu.classList.remove('active');
-                    const icon = document.querySelector('#mobileToggle i');
-                    icon.classList.add('fa-bars');
-                    icon.classList.remove('fa-times');
-                }
-                
-                if (modalOverlay.classList.contains('active')) hideHomeworkModal();
-                if (settingsSystem && settingsSystem.settingsModal.classList.contains('active')) settingsSystem.hide();
-            }
-        });
-
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 768) {
-                document.getElementById('navMenu').classList.remove('active');
-                const icon = document.querySelector('#mobileToggle i');
-                icon.classList.add('fa-bars');
-                icon.classList.remove('fa-times');
-            }
-        });
-
-        document.addEventListener('visibilitychange', () => {
-            if (!document.hidden) {
-                updateBeijingTime();
-                updateUptime();
-            }
-        });
-    </script>
+init();
+</script>
 </body>
 </html>
