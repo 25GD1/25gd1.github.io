@@ -387,6 +387,47 @@ input[type=checkbox].toggle-cb{display:none}
   font-size:12px;font-weight:700;
   align-self:flex-start;
 }
+/* ── 3D免罚卡专用样式（完全独立，不影响现有样式） ── */
+.ex-page-wrap{padding:14px 16px;display:flex;flex-direction:column;gap:14px;max-width:720px;margin:0 auto;width:100%}
+.ex-gold-border:focus{border-color:#c9a962!important;box-shadow:0 0 0 3px rgba(201,169,98,.2)!important}
+.ex-card-scene{
+  perspective:1000px;
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  padding:12px 0;
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:pan-y;
+}
+.ex-card-scene.dragging{touch-action:none}
+.ex-card-3d{
+  width:min(290px,78vw);
+  aspect-ratio:290/180;
+  position:relative;
+  transform-style:preserve-3d;
+  cursor:grab;
+  transition:box-shadow .2s ease;
+}
+.ex-card-3d:active{cursor:grabbing}
+.ex-card-face{
+  position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  border-radius:24px;border:1.5px solid #c9a962;background:#ffffff;
+  padding:16px;display:flex;flex-direction:column;justify-content:space-between;
+  box-shadow:0 10px 24px rgba(201,169,98,.24),0 2px 6px rgba(10,22,40,.04);
+  overflow:hidden;
+}
+.ex-card-back{transform:rotateY(180deg);background:linear-gradient(145deg,#ffffff 0%,#fbf9f4 100%)}
+.ex-shimmer{
+  position:absolute;top:0;left:-100%;width:60%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);
+  transform:skewX(-25deg);pointer-events:none;
+  animation:exShimmerSweep 5s infinite ease-in-out;
+}
+@keyframes exShimmerSweep{0%,70%{left:-100%}100%{left:200%}}
+.ex-scale-in{animation:exScaleIn .45s cubic-bezier(0.16,1,0.3,1) both}
+@keyframes exScaleIn{from{opacity:0;transform:scale(0.92) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
 </style>
 </head>
 <body>
@@ -416,6 +457,7 @@ input[type=checkbox].toggle-cb{display:none}
   <button class="pc-tab" data-tab="announcements">公告</button>
   <button class="pc-tab" data-tab="discussions">讨论</button>
   <button class="pc-tab" data-tab="client">客户端</button>
+  <button class="pc-tab" data-tab="exemption-card">我的卡</button>
 </div>
 
 <div class="pages">
@@ -488,7 +530,7 @@ input[type=checkbox].toggle-cb{display:none}
           <div class="item-icon" style="background:#ECFDF5">
             <svg width="18" height="18" fill="none" stroke="#059669" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
           </div>
-          <div class="item-body"><div class="item-title">班级管理</div><div class="item-meta">课表 · 宿舍卫生 · 班费 · 运动打卡</div></div>
+          <div class="item-body"><div class="item-title">班级管理</div><div class="item-meta">课表 · 宿舍卫生 · 班费 · 运动打卡 · 免罚卡 · 成绩查询</div></div>
         </div>
       </div>
       <div style="text-align:center;padding:20px 0 4px;font-size:12px;color:var(--muted)">
@@ -504,6 +546,142 @@ input[type=checkbox].toggle-cb{display:none}
           <input id="client-url-input" type="url" placeholder="https://..."/>
         </div>
         <button class="btn btn-primary btn-sm" onclick="saveClientUrl()">保存链接</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 第 5 个 Tab：学生免罚卡查询页面 ── -->
+  <div class="page" id="page-exemption-card">
+    <div class="ex-page-wrap">
+      <!-- 查询输入卡片 -->
+      <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:32px;height:32px;border-radius:10px;background:#FAF5E8;border:1px solid #c9a962;display:flex;align-items:center;justify-content:center;color:#c9a962">
+            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:var(--text)">数字免罚卡查询</div>
+            <div style="font-size:11px;color:var(--muted)">输入座号和姓名查询您的个人免罚卡余量及记录</div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <div class="field" style="flex:1;min-width:110px">
+            <label>座号 *</label>
+            <input id="ex-input-seat" type="tel" pattern="[0-9]*" inputmode="numeric" class="ex-gold-border" placeholder="如 1" />
+          </div>
+          <div class="field" style="flex:1.5;min-width:130px">
+            <label>姓名 *</label>
+            <input id="ex-input-name" class="ex-gold-border" placeholder="如 张三" onkeydown="if(event.key==='Enter')queryExemptionCard()" />
+          </div>
+        </div>
+
+        <div class="form-err" id="ex-query-err" style="margin:0;display:none"></div>
+
+        <button class="btn btn-primary" id="ex-query-btn" style="background:#c9a962;border-color:#c9a962;box-shadow:0 4px 12px rgba(201,169,98,.3);font-weight:700" onclick="queryExemptionCard()">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          立即查询
+        </button>
+      </div>
+
+      <!-- 结果展示区域 -->
+      <div id="ex-result-container" style="display:none;flex-direction:column;gap:14px">
+        <!-- 学生基础信息概览条 -->
+        <div class="card" style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:#FFFFFF">
+          <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+            <div style="width:36px;height:36px;border-radius:10px;background:#FAF5E8;display:flex;align-items:center;justify-content:center;color:#c9a962;font-size:14px;font-weight:800;flex-shrink:0" id="ex-res-seat-badge">
+              1号
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="ex-res-student-name">学生姓名</div>
+              <div style="font-size:11px;color:var(--muted)" id="ex-res-status-sub">状态信息</div>
+            </div>
+          </div>
+          <span class="tag" id="ex-res-balance-tag" style="font-size:12px;padding:4px 12px;background:#FAF5E8;color:#c9a962;border:1px solid #c9a962;flex-shrink:0;margin-left:8px">余 1 张</span>
+        </div>
+
+        <!-- 卡片展示区（balance > 0 显示 3D 卡片） -->
+        <div id="ex-3d-card-area" class="ex-scale-in" style="display:none">
+          <div class="ex-card-scene" id="ex-card-scene">
+            <div class="ex-card-3d" id="ex-card-3d">
+              <!-- 正面 -->
+              <div class="ex-card-face ex-card-front">
+                <div class="ex-shimmer"></div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">
+                    <svg width="15" height="15" fill="#c9a962" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                    <span style="font-size:11px;font-weight:800;letter-spacing:1px;color:#c9a962;text-transform:uppercase">Exemption Card</span>
+                  </div>
+                  <span style="font-size:10px;font-weight:700;color:#c9a962;background:#FAF5E8;padding:2px 8px;border-radius:99px;border:1px solid rgba(201,169,98,.4);flex-shrink:0;margin-left:6px">免罚卡</span>
+                </div>
+
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;margin:auto 0">
+                  <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#c9a962,#dfc282);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 12px rgba(201,169,98,.35)">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                  </div>
+                  <div style="display:flex;align-items:baseline;gap:4px">
+                    <span style="font-size:38px;font-weight:900;color:#c9a962;letter-spacing:-1px" id="ex-card-number">1</span>
+                    <span style="font-size:14px;font-weight:700;color:#c9a962">张</span>
+                  </div>
+                  <div style="font-size:12px;font-weight:700;color:#2a2520">班级免罚卡</div>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;align-items:flex-end;">
+                  <div style="font-size:10px;color:#c9a962;font-weight:600;display:flex;align-items:center;gap:2px;flex-shrink:0">
+                                      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 背面 -->
+              <div class="ex-card-face ex-card-back">
+                <div class="ex-shimmer"></div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <span style="font-size:11px;font-weight:800;letter-spacing:1px;color:#c9a962">班级免罚卡</span>
+                  <span style="font-size:10px;color:var(--muted)" id="ex-card-back-date">2026.09</span>
+                </div>
+                <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;margin:auto 0;text-align:center">
+                  <div style="width:36px;height:36px;border-radius:12px;background:#FAF5E8;display:flex;align-items:center;justify-content:center;color:#c9a962">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                  </div>
+                  <div style="font-size:14px;font-weight:800;color:#2a2520">表现优异特此发放</div>
+                </div>
+                <div style="display:flex;justify-content:center">
+                  <span style="font-size:10px;color:var(--muted)">由班主任发放</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- balance = 0 提示（当前无免罚卡，不显示卡片） -->
+        <div id="ex-empty-zero" class="card" style="padding:32px 20px;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center">
+          <div style="width:48px;height:48px;border-radius:16px;background:#FAF5E8;display:flex;align-items:center;justify-content:center;color:#c9a962">
+            <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div style="font-size:16px;font-weight:700;color:var(--text)">当前无免罚卡</div>
+          <div style="font-size:12px;color:var(--muted)">积极参与班级活动、考试成绩前列等可获取奖励免罚卡哦～</div>
+        </div>
+
+        <!-- balance < 0 提示（有 X 周待处理，不显示卡片） -->
+        <div id="ex-debt-alert" class="card" style="padding:24px 20px;display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;text-align:center;background:#FEF2F2;border-color:rgba(239,68,68,.3)">
+          <div style="width:48px;height:48px;border-radius:16px;background:#FEE2E2;display:flex;align-items:center;justify-content:center;color:#EF4444">
+            <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          </div>
+          <div style="font-size:16px;font-weight:800;color:#EF4444" id="ex-debt-title">有 1 周待处理</div>
+          <div style="font-size:12px;color:#991B1B">请在班会课上交免罚卡以抵消惩罚，或者正常上交手机</div>
+        </div>
+
+        <!-- 下方最近流水记录列表 -->
+        <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:14px;font-weight:700;color:var(--text)">最近记录列表</div>
+            <span style="font-size:11px;color:var(--muted)" id="ex-records-count">共 0 条</span>
+          </div>
+          <div id="ex-records-list" style="display:flex;flex-direction:column;gap:8px">
+            <!-- 动态流水项目 -->
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -534,6 +712,12 @@ input[type=checkbox].toggle-cb{display:none}
       <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
     </div>
     客户端
+  </button>
+  <button class="nav-item" data-tab="exemption-card" onclick="switchTab('exemption-card',this)">
+    <div class="nav-icon">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    我的卡
   </button>
 </nav>
 
@@ -726,7 +910,7 @@ const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aW
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 
 let adminInfo=null,allSubjects=[],allAssignments=[],currentFilter='all',detailData=null,detailType='',lastTabIndex=0;
-const TAB_ORDER=['assignments','announcements','discussions','client'];
+const TAB_ORDER=['assignments','announcements','discussions','client','exemption-card'];
 
 const esc=s=>(s==null?'':String(s)).replace(/[&<<>"']/g,c=>({'&':'&amp;','<<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function fmtDate(ts){if(!ts)return'';const d=new Date(ts);return`${d.getMonth()+1}月${d.getDate()}日`}
@@ -780,23 +964,85 @@ async function doLogin(){
   if(!username){errEl.textContent='请输入账号';return}
   if(!password){errEl.textContent='请输入密码';return}
   btn.disabled=true;btn.textContent='登录中…';errEl.textContent='';
+
   try{
-    const res=await fetch(`${SUPABASE_URL}/functions/v1/admin-auth`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':`Bearer ${SUPABASE_ANON}`},
-      body:JSON.stringify({username,password,device_model:'Web',device_fingerprint:'web-'+Date.now()}),
-    });
-    const data=await res.json();
-    if(!res.ok||data.error){errEl.textContent=data.error||'账号或密码错误';return}
-    adminInfo=data.admin;
-    localStorage.setItem('glcn_admin',JSON.stringify({...adminInfo,_ts:Date.now()}));
+    let adminResult=null;
+    // 方案一：优先使用 Supabase SDK 的 functions.invoke（自动处理跨域、URL路径与请求头）
+    try{
+      const { data, error } = await sb.functions.invoke('admin-auth', {
+        body: {
+          username,
+          password,
+          device_model: navigator.userAgent || 'Web Browser',
+          device_fingerprint: 'web-' + Date.now(),
+        },
+      });
+      if(error){
+        let errMsg = error.message;
+        try{
+          if(error.context && typeof error.context.json === 'function'){
+            const ctx = await error.context.json();
+            if(ctx?.error) errMsg = ctx.error;
+          }
+        }catch(_){}
+        if(errMsg && errMsg !== 'Failed to send a request to the Edge Function') {
+          errEl.textContent = errMsg;
+          return;
+        }
+      } else if(data){
+        if(data.error){
+          errEl.textContent = data.error;
+          return;
+        }
+        adminResult = data.admin;
+      }
+    }catch(e){
+      console.warn('functions.invoke 异常，尝试备用 fetch 通道', e);
+    }
+
+    // 方案二：备用 fetch 直连 Edge Function
+    if(!adminResult){
+      const res = await fetch(`${SUPABASE_URL}/functions/v1/admin-auth`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SUPABASE_ANON,
+          'Authorization': `Bearer ${SUPABASE_ANON}`
+        },
+        body: JSON.stringify({
+          username,
+          password,
+          device_model: navigator.userAgent || 'Web Browser',
+          device_fingerprint: 'web-' + Date.now()
+        }),
+      });
+      const data = await res.json().catch(()=>({}));
+      if(!res.ok || data.error){
+        errEl.textContent = data.error || (res.status === 401 ? '账号或密码错误' : '登录失败(' + res.status + ')');
+        return;
+      }
+      adminResult = data.admin;
+    }
+
+    if(!adminResult){
+      errEl.textContent = '账号或密码错误';
+      return;
+    }
+
+    adminInfo = adminResult;
+    localStorage.setItem('glcn_admin', JSON.stringify({ ...adminInfo, _ts: Date.now() }));
     closeLogin();
     updateAdminUI();
     showToast(`欢迎，${adminInfo.username}！`);
     refreshCurrentPage();
-    writeAdminLog('web_login',{username:adminInfo.username});
-  }catch(e){errEl.textContent='网络连接失败，请稍后重试';console.error(e)}
-  finally{btn.disabled=false;btn.textContent='登 录'}
+    writeAdminLog('web_login', { username: adminInfo.username });
+  }catch(e){
+    console.error('Login error:', e);
+    errEl.textContent = '网络连接失败，请稍后重试';
+  }finally{
+    btn.disabled = false;
+    btn.textContent = '登 录';
+  }
 }
 
 function doLogout(){
@@ -908,6 +1154,7 @@ function switchTab(tab,el){
   else if(tab==='announcements')loadAnnouncements();
   else if(tab==='discussions')loadDiscussions();
   else if(tab==='client')loadClientPage();
+  else if(tab==='exemption-card')initExemptionCardTab();
 }
 function refreshCurrentPage(){
   const active=document.querySelector('.nav-item.active,.pc-tab.active');
@@ -1415,6 +1662,307 @@ async function init(){
   loadAssignments();
   loadClientPage();
   checkIOSPWA();
+}
+
+// ── 免罚卡 Tab 交互与 3D 旋转逻辑 ──
+let exCardCurrentRotY = 0;
+let exCardCurrentRotX = -4;
+let exCardIsDragging = false;
+let exCardStartX = 0;
+let exCardStartY = 0;
+let exCardAnimId = null;
+let exCardInitialized = false;
+
+function initExemptionCardTab() {
+  restoreExemptionInputs();
+  if (!exCardInitialized) {
+    init3DCardEvents();
+    exCardInitialized = true;
+  }
+}
+
+function restoreExemptionInputs() {
+  try {
+    const saved = localStorage.getItem('glcn_ex_inputs');
+    if (saved) {
+      const d = JSON.parse(saved);
+      if (d.seat) document.getElementById('ex-input-seat').value = d.seat;
+      if (d.name) document.getElementById('ex-input-name').value = d.name;
+    }
+  } catch(_) {}
+}
+
+function saveExemptionInputs(seat, name) {
+  try {
+    localStorage.setItem('glcn_ex_inputs', JSON.stringify({ seat, name }));
+  } catch(_) {}
+}
+
+function init3DCardEvents() {
+  const scene = document.getElementById('ex-card-scene');
+  const card = document.getElementById('ex-card-3d');
+  if (!scene || !card) return;
+
+  function onPointerDown(e) {
+    exCardIsDragging = true;
+    scene.classList.add('dragging');
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    exCardStartX = clientX;
+    exCardStartY = clientY;
+    if (exCardAnimId) cancelAnimationFrame(exCardAnimId);
+    card.style.cursor = 'grabbing';
+  }
+
+  function onPointerMove(e) {
+    if (!exCardIsDragging) return;
+    if (e.cancelable) e.preventDefault();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const dx = clientX - exCardStartX;
+    const dy = clientY - exCardStartY;
+    exCardStartX = clientX;
+    exCardStartY = clientY;
+
+    exCardCurrentRotY += dx * 0.7;
+    exCardCurrentRotX = Math.max(-45, Math.min(45, exCardCurrentRotX - dy * 0.4));
+    update3DCardTransform();
+  }
+
+  function onPointerUp() {
+    if (!exCardIsDragging) return;
+    exCardIsDragging = false;
+    scene.classList.remove('dragging');
+    card.style.cursor = 'grab';
+    start3DCardAutoRotate();
+  }
+
+  scene.addEventListener('mousedown', onPointerDown);
+  window.addEventListener('mousemove', onPointerMove);
+  window.addEventListener('mouseup', onPointerUp);
+
+  scene.addEventListener('touchstart', onPointerDown, { passive: true });
+  scene.addEventListener('touchmove', onPointerMove, { passive: false });
+  window.addEventListener('touchend', onPointerUp);
+
+  update3DCardTransform();
+  start3DCardAutoRotate();
+}
+
+function update3DCardTransform() {
+  const card = document.getElementById('ex-card-3d');
+  if (!card) return;
+  card.style.transform = `rotateX(${exCardCurrentRotX}deg) rotateY(${exCardCurrentRotY}deg)`;
+}
+
+function start3DCardAutoRotate() {
+  if (exCardAnimId) cancelAnimationFrame(exCardAnimId);
+  function loop() {
+    if (!exCardIsDragging) {
+      exCardCurrentRotY += 0.35;
+      exCardCurrentRotX += (0 - exCardCurrentRotX) * 0.05;
+      update3DCardTransform();
+    }
+    exCardAnimId = requestAnimationFrame(loop);
+  }
+  exCardAnimId = requestAnimationFrame(loop);
+}
+
+function formatExDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return `${d.getMonth() + 1}月${d.getDate()}日`;
+}
+
+async function queryExemptionCard() {
+  const seatInput = document.getElementById('ex-input-seat');
+  const nameInput = document.getElementById('ex-input-name');
+  const errEl = document.getElementById('ex-query-err');
+  const btn = document.getElementById('ex-query-btn');
+  const resContainer = document.getElementById('ex-result-container');
+
+  const seatVal = parseInt(seatInput?.value?.trim() || '', 10);
+  const nameVal = nameInput?.value?.trim() || '';
+
+  if (isNaN(seatVal) || seatVal <= 0) {
+    errEl.textContent = '请输入有效的正整数座号';
+    errEl.style.display = 'block';
+    return;
+  }
+  if (!nameVal) {
+    errEl.textContent = '请输入学生姓名';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.style.opacity = '0.7';
+  btn.textContent = '查询中...';
+
+  try {
+    const { data, error } = await sb.rpc('get_student_digital_exemption', {
+      p_seat: seatVal,
+      p_name: nameVal
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    if (!data || !data.success) {
+      errEl.textContent = data?.error || '未找到对应座号和姓名的学生，请核对后重试';
+      errEl.style.display = 'block';
+      resContainer.style.display = 'none';
+      return;
+    }
+
+    saveExemptionInputs(seatVal, nameVal);
+    renderExemptionResult(data);
+    resContainer.style.display = 'flex';
+
+    setTimeout(() => {
+      resContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
+  } catch (e) {
+    errEl.textContent = e.message || '查询失败，请检查网络';
+    errEl.style.display = 'block';
+    resContainer.style.display = 'none';
+  } finally {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.innerHTML = `<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> 立即查询`;
+  }
+}
+
+function renderExemptionResult(data) {
+  const student = data.student || {};
+  const balance = typeof data.balance === 'number' ? data.balance : 0;
+  const records = Array.isArray(data.records) ? data.records : [];
+
+  document.getElementById('ex-res-seat-badge').textContent = `${student.seat_number}号`;
+  document.getElementById('ex-res-student-name').textContent = student.student_name || '';
+
+  const statusSub = document.getElementById('ex-res-status-sub');
+  const balTag = document.getElementById('ex-res-balance-tag');
+  const cardArea = document.getElementById('ex-3d-card-area');
+  const zeroEmpty = document.getElementById('ex-empty-zero');
+  const debtAlert = document.getElementById('ex-debt-alert');
+
+  if (balance > 0) {
+    statusSub.textContent = `当前荣誉持有：${balance} 张免罚卡`;
+    balTag.textContent = `余 ${balance} 张`;
+    balTag.style.background = '#FAF5E8';
+    balTag.style.color = '#c9a962';
+    balTag.style.borderColor = '#c9a962';
+
+    cardArea.style.display = 'block';
+    zeroEmpty.style.display = 'none';
+    debtAlert.style.display = 'none';
+    document.getElementById('ex-card-number').textContent = Math.max(0, balance);
+    
+    const lastGain = records.find(r => r.type === 'gain');
+    if (lastGain) {
+      const d = new Date(lastGain.date || lastGain.created_at);
+      if (!isNaN(d.getTime())) {
+        document.getElementById('ex-card-back-date').textContent = 
+          `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+      }
+    }
+  } else if (balance === 0) {
+    statusSub.textContent = '当前未持有免罚卡';
+    balTag.textContent = '无卡';
+    balTag.style.background = '#F1F5F9';
+    balTag.style.color = '#64748B';
+    balTag.style.borderColor = '#CBD5E1';
+
+    cardArea.style.display = 'none';
+    zeroEmpty.style.display = 'flex';
+    debtAlert.style.display = 'none';
+  } else {
+    const debtWeeks = Math.abs(balance);
+    statusSub.textContent = `待处理违规：${debtWeeks} 周`;
+    balTag.textContent = `待处理 ${debtWeeks} 周`;
+    balTag.style.background = '#FEF2F2';
+    balTag.style.color = '#EF4444';
+    balTag.style.borderColor = 'rgba(239,68,68,.3)';
+
+    cardArea.style.display = 'none';
+    zeroEmpty.style.display = 'none';
+    debtAlert.style.display = 'flex';
+    document.getElementById('ex-debt-title').textContent = `有 ${debtWeeks} 周待处理`;
+  }
+
+  renderExemptionRecords(records);
+}
+
+function renderExemptionRecords(records) {
+  const countEl = document.getElementById('ex-records-count');
+  const listEl = document.getElementById('ex-records-list');
+  countEl.textContent = `共 ${records.length} 条`;
+
+  if (!records || records.length === 0) {
+    listEl.innerHTML = `
+      <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">
+        暂无任何免罚卡或违规流水记录
+      </div>
+    `;
+    return;
+  }
+
+  listEl.innerHTML = records.map(r => {
+    const isGain = r.type === 'gain';
+    const isPenalty = r.type === 'penalty';
+    const isUse = r.type === 'use';
+
+    let iconBg = '#FAF5E8';
+    let iconColor = '#c9a962';
+    let deltaText = '';
+    let deltaColor = '#c9a962';
+    let svgIcon = '';
+
+    if (isGain) {
+      iconBg = '#FAF5E8';
+      iconColor = '#c9a962';
+      deltaText = `+${Math.abs(r.amount || 1)} 张`;
+      deltaColor = '#c9a962';
+      svgIcon = `<svg width="16" height="16" fill="none" stroke="${iconColor}" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
+    } else if (isUse) {
+      iconBg = '#ECFDF5';
+      iconColor = '#059669';
+      deltaText = `-${Math.abs(r.amount || 1)} 张`;
+      deltaColor = '#059669';
+      svgIcon = `<svg width="16" height="16" fill="none" stroke="${iconColor}" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+    } else {
+      iconBg = '#FEF2F2';
+      iconColor = '#EF4444';
+      deltaText = `违规待收 ${Math.abs(r.amount || 1)} 周`;
+      deltaColor = '#EF4444';
+      svgIcon = `<svg width="16" height="16" fill="none" stroke="${iconColor}" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+    }
+
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:12px;background:#FAFBFD;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+          <div style="width:32px;height:32px;border-radius:10px;background:${iconBg};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            ${svgIcon}
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              ${esc(r.note || (isGain ? '获得免罚卡奖励' : isUse ? '抵消违纪使用' : '手机管理违纪处罚'))}
+            </div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">
+              ${esc(formatExDate(r.date || r.created_at))}
+            </div>
+          </div>
+        </div>
+        <div style="font-size:13px;font-weight:800;color:${deltaColor};margin-left:8px;flex-shrink:0">
+          ${deltaText}
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 init();
