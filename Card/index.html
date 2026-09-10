@@ -5,17 +5,15 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<!-- ★ 夸克 / UC / QQ 浏览器：禁止强制夜间模式 -->
 <meta name="nightmode" content="disable"/>
 <meta name="darkreader-lock"/>
-<meta name="color-scheme" content="light"/><!-- JS 动态更新 -->
-<meta name="supported-color-schemes" content="light dark"/><!-- 声明支持两种，但实际由 JS 控制 -->
+<meta name="color-scheme" content="light"/>
+<meta name="supported-color-schemes" content="light dark"/>
 <meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)"/>
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)"/>
 <title>免罚卡查询 · GLCN</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
-/* ★ 阻止浏览器强制改色 */
 html{
   color-scheme: light;
   forced-color-adjust: none;
@@ -26,17 +24,9 @@ html{
   -webkit-forced-color-adjust: none;
 }
 
-/* ══════════════════════════════════════════
-   主题变量
-   data-theme="light" → 亮色
-   data-theme="dark"  → 暗色
-   data-theme="auto"  → 跟随系统
-   ══════════════════════════════════════════ */
-
-/* ── 亮色（默认 + data-theme="light"） ── */
 :root,
 :root[data-theme="light"]{
-  color-scheme: light;  /* 明确声明亮色，阻止浏览器自动反转 */
+  color-scheme: light;
 
   --p:#2563EB;
   --pl:#EBF4FF;
@@ -88,9 +78,8 @@ html{
   --ease-spring:cubic-bezier(0.32,0.72,0,1);
 }
 
-/* ── 暗色：手动切换 data-theme="dark" ── */
 :root[data-theme="dark"]{
-  color-scheme: dark;  /* 明确声明暗色 */
+  color-scheme: dark;
 
   --p:#7BA3FF;
   --pl:rgba(123,163,255,.14);
@@ -143,59 +132,59 @@ html{
   --rec-pen-bg:rgba(239,68,68,.18);--rec-pen-fg:#fca5a5;
 }
 
-/* ── 暗色：跟随系统（JS 解析后设置 data-resolved="dark"） ── */
+/* auto 模式下 JS 会往 data-resolved 上写 dark，这里对应暗色 */
 :root[data-theme="auto"][data-resolved="dark"]{
-    color-scheme: dark;  /* JS 解析后确认是暗色 */
+  color-scheme: dark;
 
-    --p:#7BA3FF;
-    --pl:rgba(123,163,255,.14);
+  --p:#7BA3FF;
+  --pl:rgba(123,163,255,.14);
 
-    --gold:#d4b872;
-    --gold-light:#f0dc9e;
-    --gold-dark:#8a6c2e;
+  --gold:#d4b872;
+  --gold-light:#f0dc9e;
+  --gold-dark:#8a6c2e;
 
-    --bg:#000000;
-    --surface:#0c0c0e;
-    --card-hdr:rgba(0,0,0,.85);
-    --border:#1e1e24;
-    --text:#f5f5f7;
-    --t2:#c2c2cc;
-    --muted:#9a9aa6;
-    --shadow:0 4px 16px rgba(0,0,0,.75),0 1px 3px rgba(0,0,0,.6);
-    --shadow-colored:0 8px 24px rgba(123,163,255,.2);
+  --bg:#000000;
+  --surface:#0c0c0e;
+  --card-hdr:rgba(0,0,0,.85);
+  --border:#1e1e24;
+  --text:#f5f5f7;
+  --t2:#c2c2cc;
+  --muted:#9a9aa6;
+  --shadow:0 4px 16px rgba(0,0,0,.75),0 1px 3px rgba(0,0,0,.6);
+  --shadow-colored:0 8px 24px rgba(123,163,255,.2);
 
-    --card-front-1:#0c0c0e;
-    --card-front-2:#000000;
-    --card-back-1:#0c0c0e;
-    --card-back-2:#000000;
-    --card-border-1:#f0dc9e;
-    --card-border-2:#d4b872;
-    --card-border-3:#a68a3f;
-    --card-text-strong:#f5ecd6;
-    --card-text-soft:#b3a78c;
-    --card-icon-bg:rgba(212,184,114,.16);
-    --card-icon-border:rgba(240,220,158,.55);
-    --card-shadow:
-      0 0 0 1px rgba(240,220,158,.45),
-      0 0 22px rgba(212,184,114,.45),
-      0 0 48px -6px rgba(212,184,114,.28),
-      0 24px 48px -18px rgba(0,0,0,1),
-      0 10px 22px -10px rgba(0,0,0,.9);
-    --card-glare-color:rgba(240,220,158,.45);
-    --card-glare-mid:rgba(240,220,158,.10);
-    --card-shimmer-color:rgba(240,220,158,.6);
+  --card-front-1:#0c0c0e;
+  --card-front-2:#000000;
+  --card-back-1:#0c0c0e;
+  --card-back-2:#000000;
+  --card-border-1:#f0dc9e;
+  --card-border-2:#d4b872;
+  --card-border-3:#a68a3f;
+  --card-text-strong:#f5ecd6;
+  --card-text-soft:#b3a78c;
+  --card-icon-bg:rgba(212,184,114,.16);
+  --card-icon-border:rgba(240,220,158,.55);
+  --card-shadow:
+    0 0 0 1px rgba(240,220,158,.45),
+    0 0 22px rgba(212,184,114,.45),
+    0 0 48px -6px rgba(212,184,114,.28),
+    0 24px 48px -18px rgba(0,0,0,1),
+    0 10px 22px -10px rgba(0,0,0,.9);
+  --card-glare-color:rgba(240,220,158,.45);
+  --card-glare-mid:rgba(240,220,158,.10);
+  --card-shimmer-color:rgba(240,220,158,.6);
 
-    --tag-gold-bg:rgba(212,184,114,.18);
-    --tag-gold-fg:#f0dc9e;
-    --tag-gold-border:rgba(240,220,158,.55);
-    --tag-neutral-bg:#1a1a20;--tag-neutral-fg:#a8a8b3;--tag-neutral-border:#2a2a32;
-    --tag-red-bg:rgba(239,68,68,.18);--tag-red-fg:#fca5a5;--tag-red-border:rgba(248,113,113,.45);
-    --tag-empty-bg:rgba(212,184,114,.16);--tag-debt-bg:rgba(239,68,68,.18);
-    --debt-fg:#fca5a5;--debt-hint:#fecaca;
+  --tag-gold-bg:rgba(212,184,114,.18);
+  --tag-gold-fg:#f0dc9e;
+  --tag-gold-border:rgba(240,220,158,.55);
+  --tag-neutral-bg:#1a1a20;--tag-neutral-fg:#a8a8b3;--tag-neutral-border:#2a2a32;
+  --tag-red-bg:rgba(239,68,68,.18);--tag-red-fg:#fca5a5;--tag-red-border:rgba(248,113,113,.45);
+  --tag-empty-bg:rgba(212,184,114,.16);--tag-debt-bg:rgba(239,68,68,.18);
+  --debt-fg:#fca5a5;--debt-hint:#fecaca;
 
-    --rec-gain-bg:rgba(212,184,114,.18);--rec-gain-fg:#f0dc9e;
-    --rec-use-bg:rgba(16,185,129,.16);--rec-use-fg:#5eead4;
-    --rec-pen-bg:rgba(239,68,68,.18);--rec-pen-fg:#fca5a5;
+  --rec-gain-bg:rgba(212,184,114,.18);--rec-gain-fg:#f0dc9e;
+  --rec-use-bg:rgba(16,185,129,.16);--rec-use-fg:#5eead4;
+  --rec-pen-bg:rgba(239,68,68,.18);--rec-pen-fg:#fca5a5;
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -234,7 +223,6 @@ a{color:inherit;text-decoration:none}
 .hdr-title{font-size:17px;font-weight:700;letter-spacing:-0.2px}
 .hdr-subtitle{font-size:11px;color:var(--muted);line-height:1.3}
 
-/* 主题切换按钮 */
 .hdr-theme-btn{
   display:inline-flex;align-items:center;gap:5px;
   padding:7px 12px;border-radius:99px;
@@ -304,9 +292,7 @@ a{color:inherit;text-decoration:none}
 @keyframes exShimmerSweep{0%,72%{left:-110%}100%{left:220%}}
 .ex-scale-in{animation:exScaleIn .45s var(--ease-out-expo) both}
 
-/* ═══════════════════════════════════════════════════════
-   3D 卡片
-   ═══════════════════════════════════════════════════════ */
+/* ── 3D 卡片 ── */
 .ex-card-scene{
   perspective:1500px;
   perspective-origin:50% 50%;
@@ -540,12 +526,10 @@ a{color:inherit;text-decoration:none}
   .hdr-theme-btn span{display:none}
 }
 
-/* 主题切换过渡动画 */
 .theme-transitioning *{
   transition: background-color .35s ease, color .25s ease, border-color .25s ease, box-shadow .3s ease !important;
 }
 
-/* 主题按钮切换反馈 */
 .hdr-theme-btn.switching{
   animation: themeSwitchPulse .3s ease;
 }
@@ -554,7 +538,6 @@ a{color:inherit;text-decoration:none}
   50%{ transform: scale(0.9); opacity: 0.7; }
   100%{ transform: scale(1); opacity: 1; }
 }
-
 </style>
 </head>
 <body>
@@ -566,7 +549,6 @@ a{color:inherit;text-decoration:none}
       <div class="hdr-title">GLCN</div>
       <div class="hdr-subtitle">免罚卡查询</div>
     </div>
-    <!-- 主题切换按钮 -->
     <button class="hdr-theme-btn" id="theme-toggle" onclick="cycleTheme()" title="切换主题">
       <svg id="theme-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="4"/>
@@ -755,15 +737,12 @@ function saveExemptionInputs(seat,name){
   try{localStorage.setItem('glcn_ex_inputs',JSON.stringify({seat,name}))}catch(_){}
 }
 
-/* ══════════════════════════════════════════════════════════
-   主题管理（优化版）
-   
-   核心改进：
-   1. auto 模式不再依赖纯 CSS @media 查询，改为 JS 主动解析
-      并通过 data-resolved 属性驱动样式，解决移动端不实时更新问题
-   2. 动态设置 color-scheme，防止浏览器"强制深色"二次反转
-   3. 多重事件监听：matchMedia change + visibilitychange + pageshow + focus
-   ══════════════════════════════════════════════════════════ */
+/*
+ * 主题切换
+ * auto 模式下不用纯 CSS media query，改成用 JS 自己判断系统深浅色，
+ * 把结果写到 data-resolved 上让 CSS 去选变量。主要是移动端切系统主题
+ * 时纯 CSS 方案经常不刷新，必须靠 JS 兜。
+ */
 const THEME_KEY = 'glcn_theme';
 const THEME_ORDER = ['auto', 'light', 'dark'];
 const THEME_LABEL = { auto:'自动', light:'亮色', dark:'暗色' };
@@ -772,24 +751,18 @@ function getCurrentTheme(){
   return document.documentElement.dataset.theme || 'auto';
 }
 
-/* 查询系统是否偏好暗色 */
 function systemPrefersDark(){
   return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
 
-/* 当前实际是否是暗色（用于卡片逻辑） */
+// 当前实际是不是暗色，卡片构建那边要用
 function isDarkMode(){
   const t = getCurrentTheme();
   if(t === 'dark') return true;
   if(t === 'light') return false;
-  // auto 模式：读取 JS 解析结果（data-resolved），而非再次查询 matchMedia
   return document.documentElement.dataset.resolved === 'dark';
 }
 
-/**
- * 解析 auto 模式的实际主题，并设置 data-resolved 属性
- * 这是解决"跟随系统不更新"的核心：用 JS 主动判断 + 属性驱动 CSS
- */
 function resolveAutoTheme(){
   const root = document.documentElement;
   if(root.dataset.theme !== 'auto') return;
@@ -800,15 +773,11 @@ function resolveAutoTheme(){
 
   if(prevResolved !== newResolved){
     root.dataset.resolved = newResolved;
-
-    // 动态更新 color-scheme，防止浏览器强制反转
     root.style.colorScheme = isDark ? 'dark' : 'light';
 
-    // 动态更新 meta color-scheme
     const metaCS = document.querySelector('meta[name="color-scheme"]');
     if(metaCS) metaCS.setAttribute('content', isDark ? 'dark' : 'light');
 
-    // 动态更新 meta theme-color
     const metaTC = document.querySelectorAll('meta[name="theme-color"]');
     metaTC.forEach(m => {
       if(isDark){
@@ -818,7 +787,6 @@ function resolveAutoTheme(){
       }
     });
 
-    // 重建卡片（颜色依赖明暗）
     if(typeof buildCardLayers === 'function') buildCardLayers();
     if(typeof update3DCardTransform === 'function') update3DCardTransform();
   }
@@ -829,7 +797,6 @@ function applyTheme(mode, silent){
   const root = document.documentElement;
   root.dataset.theme = mode;
 
-  // 非 auto 模式：清除 data-resolved，直接设置 color-scheme
   if(mode === 'dark'){
     delete root.dataset.resolved;
     root.style.colorScheme = 'dark';
@@ -841,14 +808,12 @@ function applyTheme(mode, silent){
     const metaCS = document.querySelector('meta[name="color-scheme"]');
     if(metaCS) metaCS.setAttribute('content', 'light');
   } else {
-    // auto 模式：调用 resolveAutoTheme 设置 data-resolved
     resolveAutoTheme();
   }
 
   const label = document.getElementById('theme-label');
   if(label) label.textContent = THEME_LABEL[mode];
 
-  // 图标切换
   const icon = document.getElementById('theme-icon');
   if(icon){
     if(mode === 'dark'){
@@ -856,7 +821,6 @@ function applyTheme(mode, silent){
     }else if(mode === 'light'){
       icon.innerHTML = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';
     }else{
-      // auto 模式：根据解析结果显示对应图标
       const resolvedDark = root.dataset.resolved === 'dark';
       if(resolvedDark){
         icon.innerHTML = '<circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M12 3a9 9 0 0 1 0 18" fill="currentColor"/>';
@@ -866,11 +830,9 @@ function applyTheme(mode, silent){
     }
   }
 
-  // 重建卡片厚度层
   if(typeof buildCardLayers === 'function') buildCardLayers();
   if(typeof update3DCardTransform === 'function') update3DCardTransform();
 
-  // 切换提示（静默模式不提示，如初始化时）
   if(!silent && typeof showToast === 'function'){
     const actualDark = isDarkMode();
     const resolvedLabel = mode === 'auto'
@@ -886,7 +848,6 @@ function cycleTheme(){
   const next = THEME_ORDER[(idx + 1) % THEME_ORDER.length];
   try{ localStorage.setItem(THEME_KEY, next); }catch(_){}
 
-  // 添加过渡动画类
   const btn = document.getElementById('theme-toggle');
   if(btn){
     btn.classList.add('switching');
@@ -898,16 +859,11 @@ function cycleTheme(){
   applyTheme(next, false);
 }
 
-/* ══════════════════════════════════════════
-   多重系统主题变化检测
-   ══════════════════════════════════════════ */
-
-/* 1. matchMedia change 事件（标准方式） */
+// 系统主题变化的多重兜底：不同浏览器/WebView 触发的时机不一样
 if(window.matchMedia){
   const mq = window.matchMedia('(prefers-color-scheme: dark)');
   const onSystemThemeChange = () => {
     if(getCurrentTheme() === 'auto'){
-      // 强制重新解析（清除缓存的 resolved 值以触发更新）
       document.documentElement.dataset.resolved = '';
       resolveAutoTheme();
     }
@@ -916,7 +872,6 @@ if(window.matchMedia){
   else if(mq.addListener) mq.addListener(onSystemThemeChange);
 }
 
-/* 2. visibilitychange：用户切回页面时重新检测 */
 document.addEventListener('visibilitychange', () => {
   if(!document.hidden && getCurrentTheme() === 'auto'){
     document.documentElement.dataset.resolved = '';
@@ -924,7 +879,6 @@ document.addEventListener('visibilitychange', () => {
   }
 });
 
-/* 3. pageshow：iOS Safari 从缓存恢复页面时触发 */
 window.addEventListener('pageshow', (e) => {
   if(e.persisted && getCurrentTheme() === 'auto'){
     document.documentElement.dataset.resolved = '';
@@ -932,18 +886,13 @@ window.addEventListener('pageshow', (e) => {
   }
 });
 
-/* 4. focus：窗口获得焦点时重新检测（兼容部分 WebView） */
 window.addEventListener('focus', () => {
   if(getCurrentTheme() === 'auto'){
     resolveAutoTheme();
   }
 });
 
-/* ══════════════════════════════════════════════════════════
-   构建厚度层
-   亮色：白 → 淡金 → 白
-   暗色：黑 → 亮金 → 黑（金色更实，边缘发光）
-   ══════════════════════════════════════════════════════════ */
+// 卡片侧面厚度层：靠一堆叠起来的 div 假装出立体感
 function buildCardLayers(){
   const card = document.getElementById('ex-card-3d');
   if(!card) return;
@@ -985,9 +934,7 @@ function buildCardLayers(){
   card.insertBefore(frag, front);
 }
 
-/* ══════════════════════════════════════════
-   3D 卡片 · 旋转引擎
-   ══════════════════════════════════════════ */
+// 卡片旋转：拖拽带动惯性，松手后自己慢慢晃
 let exRotY = 0, exRotX = -6;
 let exVelY = 0, exVelX = 0;
 let exDragging = false;
@@ -1104,7 +1051,6 @@ function init3DCardEvents(){
   start3DCardAutoRotate();
 }
 
-/* ── 查询 ── */
 async function queryExemptionCard(){
   const seatInput=document.getElementById('ex-input-seat');
   const nameInput=document.getElementById('ex-input-name');
@@ -1164,7 +1110,6 @@ async function queryExemptionCard(){
   }
 }
 
-/* ── 渲染结果 ── */
 function renderExemptionResult(data){
   const student=data.student||{};
   const balance=typeof data.balance==='number'?data.balance:0;
@@ -1294,17 +1239,13 @@ function renderExemptionRecords(records){
   }).join('');
 }
 
-/* ── 初始化 ── */
 (function init(){
-  // 1. 恢复主题（必须在卡片构建之前，silent=true 不弹 toast）
   let saved = 'auto';
   try{ saved = localStorage.getItem(THEME_KEY) || 'auto'; }catch(_){}
   applyTheme(saved, true);
 
-  // 2. 恢复输入
   restoreExemptionInputs();
 
-  // 3. 构建卡片
   buildCardLayers();
   init3DCardEvents();
 })();
