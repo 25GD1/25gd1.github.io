@@ -558,10 +558,8 @@ input[type=checkbox].toggle-cb{display:none}
     </div>
   </div>
 
-  <!-- ── 第 5 个 Tab：学生免罚卡查询页面 ── -->
   <div class="page" id="page-exemption-card">
     <div class="ex-page-wrap">
-      <!-- 查询输入卡片 -->
       <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px">
         <div style="display:flex;align-items:center;gap:8px">
           <div style="width:32px;height:32px;border-radius:10px;background:#FAF5E8;border:1px solid #c9a962;display:flex;align-items:center;justify-content:center;color:#c9a962">
@@ -592,9 +590,7 @@ input[type=checkbox].toggle-cb{display:none}
         </button>
       </div>
 
-      <!-- 结果展示区域 -->
       <div id="ex-result-container" style="display:none;flex-direction:column;gap:14px">
-        <!-- 学生基础信息概览条 -->
         <div class="card" style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between;background:#FFFFFF">
           <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
             <div style="width:36px;height:36px;border-radius:10px;background:#FAF5E8;display:flex;align-items:center;justify-content:center;color:#c9a962;font-size:14px;font-weight:800;flex-shrink:0" id="ex-res-seat-badge">
@@ -608,17 +604,14 @@ input[type=checkbox].toggle-cb{display:none}
           <span class="tag" id="ex-res-balance-tag" style="font-size:12px;padding:4px 12px;background:#FAF5E8;color:#c9a962;border:1px solid #c9a962;flex-shrink:0;margin-left:8px">余 1 张</span>
         </div>
 
-        <!-- 卡片展示区（balance > 0 显示 3D 卡片） -->
         <div id="ex-3d-card-area" class="ex-scale-in" style="display:none">
           <div class="ex-card-scene" id="ex-card-scene">
             <div class="ex-card-3d" id="ex-card-3d">
-              <!-- 正面 -->
               <div class="ex-card-face ex-card-front">
                 <div class="ex-shimmer"></div>
                 <div style="display:flex;justify-content:space-between;align-items:center">
                   <div style="display:flex;align-items:center;gap:6px;flex:1;min-width:0">
                     <svg width="15" height="15" fill="#c9a962" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                    <!-- 已删除 "Exemption Card" 文字 -->
                   </div>
                   <span style="font-size:10px;font-weight:700;color:#c9a962;background:#FAF5E8;padding:2px 8px;border-radius:99px;border:1px solid rgba(201,169,98,.4);flex-shrink:0;margin-left:6px">免罚卡</span>
                 </div>
@@ -641,7 +634,6 @@ input[type=checkbox].toggle-cb{display:none}
                 </div>
               </div>
 
-              <!-- 背面 -->
               <div class="ex-card-face ex-card-back">
                 <div class="ex-shimmer"></div>
                 <div style="display:flex;justify-content:space-between;align-items:center">
@@ -662,7 +654,6 @@ input[type=checkbox].toggle-cb{display:none}
           </div>
         </div>
 
-        <!-- balance = 0 提示（当前无免罚卡，不显示卡片） -->
         <div id="ex-empty-zero" class="card" style="padding:32px 20px;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center">
           <div style="width:48px;height:48px;border-radius:16px;background:#FAF5E8;display:flex;align-items:center;justify-content:center;color:#c9a962">
             <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -671,7 +662,6 @@ input[type=checkbox].toggle-cb{display:none}
           <div style="font-size:12px;color:var(--muted)">积极参与班级活动、考试成绩前列等可获取奖励免罚卡哦～</div>
         </div>
 
-        <!-- balance < 0 提示（有 X 周待处理，不显示卡片） -->
         <div id="ex-debt-alert" class="card" style="padding:24px 20px;display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;text-align:center;background:#FEF2F2;border-color:rgba(239,68,68,.3)">
           <div style="width:48px;height:48px;border-radius:16px;background:#FEE2E2;display:flex;align-items:center;justify-content:center;color:#EF4444">
             <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -680,15 +670,12 @@ input[type=checkbox].toggle-cb{display:none}
           <div style="font-size:12px;color:#991B1B">请在班会课上交免罚卡以抵消惩罚，或者正常上交手机</div>
         </div>
 
-        <!-- 下方最近流水记录列表 -->
         <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px">
           <div style="display:flex;align-items:center;justify-content:space-between">
             <div style="font-size:14px;font-weight:700;color:var(--text)">最近记录列表</div>
             <span style="font-size:11px;color:var(--muted)" id="ex-records-count">共 0 条</span>
           </div>
-          <div id="ex-records-list" style="display:flex;flex-direction:column;gap:8px">
-            <!-- 动态流水项目 -->
-          </div>
+          <div id="ex-records-list" style="display:flex;flex-direction:column;gap:8px"></div>
         </div>
       </div>
     </div>
@@ -919,7 +906,7 @@ const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 let adminInfo=null,allSubjects=[],allAssignments=[],currentFilter='all',detailData=null,detailType='',lastTabIndex=0;
 const TAB_ORDER=['assignments','announcements','discussions','client','exemption-card'];
 
-const esc=s=>(s==null?'':String(s)).replace(/[&<<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=s=>(s==null?'':String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function fmtDate(ts){if(!ts)return'';const d=new Date(ts);return`${d.getMonth()+1}月${d.getDate()}日`}
 function fmtDateFull(s){if(!s)return'';const[,m,d]=s.split('-');return`${+m}月${+d}日 发布`}
 function showToast(msg){
@@ -1196,18 +1183,14 @@ function buildSubjectSelects(){
   });
 }
 
-// ── 修复1：学科标签点击后正确变色 ──
 function filterAssignments(filter, el) {
   currentFilter = filter;
-  // 1. 重置所有标签：移除 active，强制变灰
   document.querySelectorAll('.filter-btn').forEach(b => {
     b.classList.remove('active');
     b.className = b.className.replace(/\btag-blue\b/g, 'tag-gray');
   });
-  // 2. 当前点击的标签：添加 active，并变为蓝色
   el.classList.add('active');
   el.className = el.className.replace(/\btag-gray\b/g, 'tag-blue');
-  // 3. 重新加载列表
   loadAssignments();
 }
 
@@ -1222,7 +1205,6 @@ async function loadAssignments(){
   allAssignments=data||[];
   renderAssignments(allAssignments);
 }
-// ── 修复3：作业列表只显示作业日期，隐藏发布日期 ──
 function renderAssignments(list){
   const c=document.getElementById('assignments-list');
   if(!list.length){
@@ -1231,7 +1213,6 @@ function renderAssignments(list){
   }
   c.innerHTML=list.map((a,i)=>{
     const subj=a.subjects,color=subj?.color||'#2563EB',subjName=subj?.name||'未知科目';
-    // 只显示作业日期（assignment_date），不显示发布日期
     const dateStr = a.assignment_date ? fmtDateFull(a.assignment_date) : '';
     return`<div class="card list-item stagger-item" style="animation-delay:${i*40}ms" onclick="openAssignmentDetail('${a.id}')">
       <div class="item-icon" style="background:${color}22">
@@ -1249,14 +1230,12 @@ function renderAssignments(list){
   }).join('');
 }
 
-// ── 修复2：作业详情只显示作业日期，隐藏"发布于" ──
 async function openAssignmentDetail(id){
   const a=allAssignments.find(x=>x.id===id);
   if(!a)return;
   detailData=a;detailType='assignment';
   const subj=a.subjects,color=subj?.color||'#2563EB',subjName=subj?.name||'未知科目';
   const dateStr = a.assignment_date ? fmtDateFull(a.assignment_date) : '';
-  // 不再显示发布日期
 
   document.getElementById('detail-head').innerHTML=`
     <div class="detail-title">${esc(a.title)}</div>
@@ -1639,7 +1618,7 @@ async function loadClientUrlForAdmin(){
 }
 async function saveClientUrl(){
   const url=document.getElementById('client-url-input').value.trim();
-  if(!url){showToast('下载链接输入');return}
+  if(!url){showToast('请输入下载链接');return}
   try{
     await sb.from('app_settings').upsert({key:'client_download_url',value:url},{onConflict:'key'});
     showToast('下载链接已更新 ✓');
@@ -1666,7 +1645,6 @@ async function init(){
   checkIOSPWA();
 }
 
-// ── 免罚卡 Tab 交互与 3D 旋转逻辑 ──
 let exCardCurrentRotY = 0;
 let exCardCurrentRotX = -4;
 let exCardIsDragging = false;
@@ -1915,7 +1893,6 @@ function renderExemptionRecords(records) {
 
   listEl.innerHTML = records.map(r => {
     const isGain = r.type === 'gain';
-    const isPenalty = r.type === 'penalty';
     const isUse = r.type === 'use';
 
     let iconBg = '#FAF5E8';
