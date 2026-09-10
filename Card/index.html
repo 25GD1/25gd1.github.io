@@ -31,6 +31,7 @@ body{
 }
 button{cursor:pointer;border:none;background:none;font-family:inherit;font-size:14px;touch-action:manipulation}
 input{font-family:inherit;font-size:14px;-webkit-appearance:none;appearance:none}
+a{color:inherit;text-decoration:none}
 
 /* ── 头部 ── */
 .hdr{
@@ -52,6 +53,19 @@ input{font-family:inherit;font-size:14px;-webkit-appearance:none;appearance:none
 .hdr-logo span{font-size:16px;font-weight:800;color:#fff}
 .hdr-title{font-size:17px;font-weight:700;letter-spacing:-0.2px}
 .hdr-subtitle{font-size:11px;color:var(--muted);line-height:1.3}
+
+/* ── 主站跳转按钮（右上角） ── */
+.hdr-home-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 14px;border-radius:99px;
+  background:var(--pl);color:var(--p);
+  font-size:12px;font-weight:700;
+  border:1px solid rgba(37,99,235,.15);
+  flex-shrink:0;
+  transition:all .15s;
+}
+.hdr-home-btn:hover{background:#dbeafe;transform:translateY(-1px)}
+.hdr-home-btn:active{transform:scale(0.96);background:#dbeafe}
 
 /* ── 页面容器 ── */
 .ex-page-wrap{
@@ -157,10 +171,16 @@ input{font-family:inherit;font-size:14px;-webkit-appearance:none;appearance:none
 <header class="hdr">
   <div class="hdr-inner">
     <div class="hdr-logo"><span>G</span></div>
-    <div>
+    <div style="flex:1;min-width:0">
       <div class="hdr-title">GLCN</div>
       <div class="hdr-subtitle">免罚卡查询</div>
     </div>
+    <a class="hdr-home-btn" href="https://25gd1.github.io" title="返回主站">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>
+      </svg>
+      主站
+    </a>
   </div>
 </header>
 
