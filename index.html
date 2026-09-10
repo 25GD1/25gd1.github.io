@@ -568,7 +568,7 @@ input[type=checkbox].toggle-cb{display:none}
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           </div>
           <div>
-            <div style="font-size:15px;font-weight:700;color:var(--text)">数字免罚卡查询</div>
+            <div style="font-size:15px;font-weight:700;color:var(--text)">免罚卡查询</div>
             <div style="font-size:11px;color:var(--muted)">输入座号和姓名查询您的个人免罚卡余量及记录</div>
           </div>
         </div>
@@ -1853,7 +1853,7 @@ function renderExemptionResult(data) {
   const debtAlert = document.getElementById('ex-debt-alert');
 
   if (balance > 0) {
-    statusSub.textContent = `当前荣誉持有：${balance} 张免罚卡`;
+    statusSub.textContent = `当前持有：${balance} 张免罚卡`;
     balTag.textContent = `余 ${balance} 张`;
     balTag.style.background = '#FAF5E8';
     balTag.style.color = '#c9a962';
