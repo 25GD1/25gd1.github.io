@@ -1,24 +1,203 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="auto">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<!-- ★ 夸克 / UC / QQ 浏览器：禁止强制夜间模式 -->
+<meta name="nightmode" content="disable"/>
+<meta name="darkreader-lock"/>
+<meta name="color-scheme" content="light"/><!-- JS 动态更新 -->
+<meta name="supported-color-schemes" content="light dark"/><!-- 声明支持两种，但实际由 JS 控制 -->
+<meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)"/>
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)"/>
 <title>免罚卡查询 · GLCN</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
-:root{
-  --p:#2563EB;--pl:#EBF4FF;
+/* ★ 阻止浏览器强制改色 */
+html{
+  color-scheme: light;
+  forced-color-adjust: none;
+  -webkit-forced-color-adjust: none;
+}
+*,*::before,*::after{
+  forced-color-adjust: none;
+  -webkit-forced-color-adjust: none;
+}
+
+/* ══════════════════════════════════════════
+   主题变量
+   data-theme="light" → 亮色
+   data-theme="dark"  → 暗色
+   data-theme="auto"  → 跟随系统
+   ══════════════════════════════════════════ */
+
+/* ── 亮色（默认 + data-theme="light"） ── */
+:root,
+:root[data-theme="light"]{
+  color-scheme: light;  /* 明确声明亮色，阻止浏览器自动反转 */
+
+  --p:#2563EB;
+  --pl:#EBF4FF;
+
   --gold:#c9a962;
-  --bg:#F4F7FC;--card:#fff;--border:#E8EEF8;
-  --text:#0A1628;--t2:#3B5073;--muted:#8FA3BF;
+  --gold-light:#e0c180;
+  --gold-dark:#8a6c2e;
+
+  --bg:#F4F7FC;
+  --surface:#ffffff;
+  --card-hdr:rgba(255,255,255,.92);
+  --border:#E8EEF8;
+  --text:#0A1628;
+  --t2:#3B5073;
+  --muted:#8FA3BF;
   --shadow:0 4px 16px rgba(10,22,40,.06),0 1px 3px rgba(10,22,40,.04);
   --shadow-colored:0 8px 24px rgba(37,99,235,.18);
+
+  --card-front-1:#ffffff;
+  --card-front-2:#fcfcfc;
+  --card-back-1:#ffffff;
+  --card-back-2:#fbfbfb;
+  --card-border-1:#e8d5a0;
+  --card-border-2:#c9a962;
+  --card-border-3:#a8863f;
+  --card-text-strong:#1a1410;
+  --card-text-soft:#8a7d68;
+  --card-icon-bg:#faf5e8;
+  --card-icon-border:rgba(201,169,98,.35);
+  --card-shadow:
+    0 20px 40px -18px rgba(90,68,20,.24),
+    0 8px 18px -10px rgba(10,22,40,.10);
+  --card-glare-color:rgba(255,255,255,.9);
+  --card-glare-mid:rgba(255,255,255,.20);
+  --card-shimmer-color:rgba(255,255,255,.8);
+
+  --tag-gold-bg:#FAF5E8;--tag-gold-fg:#c9a962;--tag-gold-border:#c9a962;
+  --tag-neutral-bg:#F1F5F9;--tag-neutral-fg:#64748B;--tag-neutral-border:#CBD5E1;
+  --tag-red-bg:#FEF2F2;--tag-red-fg:#EF4444;--tag-red-border:rgba(239,68,68,.3);
+  --tag-empty-bg:#FAF5E8;--tag-debt-bg:#FEE2E2;
+  --debt-fg:#EF4444;--debt-hint:#991B1B;
+
+  --rec-gain-bg:#FAF5E8;--rec-gain-fg:#c9a962;
+  --rec-use-bg:#ECFDF5;--rec-use-fg:#059669;
+  --rec-pen-bg:#FEF2F2;--rec-pen-fg:#EF4444;
+
   --r:16px;--r-sm:12px;
   --ease-out-expo:cubic-bezier(0.16,1,0.3,1);
   --ease-spring:cubic-bezier(0.32,0.72,0,1);
 }
+
+/* ── 暗色：手动切换 data-theme="dark" ── */
+:root[data-theme="dark"]{
+  color-scheme: dark;  /* 明确声明暗色 */
+
+  --p:#7BA3FF;
+  --pl:rgba(123,163,255,.14);
+
+  --gold:#d4b872;
+  --gold-light:#f0dc9e;
+  --gold-dark:#8a6c2e;
+
+  --bg:#000000;
+  --surface:#0c0c0e;
+  --card-hdr:rgba(0,0,0,.85);
+  --border:#1e1e24;
+  --text:#f5f5f7;
+  --t2:#c2c2cc;
+  --muted:#9a9aa6;
+  --shadow:0 4px 16px rgba(0,0,0,.75),0 1px 3px rgba(0,0,0,.6);
+  --shadow-colored:0 8px 24px rgba(123,163,255,.2);
+
+  --card-front-1:#0c0c0e;
+  --card-front-2:#000000;
+  --card-back-1:#0c0c0e;
+  --card-back-2:#000000;
+  --card-border-1:#f0dc9e;
+  --card-border-2:#d4b872;
+  --card-border-3:#a68a3f;
+  --card-text-strong:#f5ecd6;
+  --card-text-soft:#b3a78c;
+  --card-icon-bg:rgba(212,184,114,.16);
+  --card-icon-border:rgba(240,220,158,.55);
+  --card-shadow:
+    0 0 0 1px rgba(240,220,158,.45),
+    0 0 22px rgba(212,184,114,.45),
+    0 0 48px -6px rgba(212,184,114,.28),
+    0 24px 48px -18px rgba(0,0,0,1),
+    0 10px 22px -10px rgba(0,0,0,.9);
+  --card-glare-color:rgba(240,220,158,.45);
+  --card-glare-mid:rgba(240,220,158,.10);
+  --card-shimmer-color:rgba(240,220,158,.6);
+
+  --tag-gold-bg:rgba(212,184,114,.18);
+  --tag-gold-fg:#f0dc9e;
+  --tag-gold-border:rgba(240,220,158,.55);
+  --tag-neutral-bg:#1a1a20;--tag-neutral-fg:#a8a8b3;--tag-neutral-border:#2a2a32;
+  --tag-red-bg:rgba(239,68,68,.18);--tag-red-fg:#fca5a5;--tag-red-border:rgba(248,113,113,.45);
+  --tag-empty-bg:rgba(212,184,114,.16);--tag-debt-bg:rgba(239,68,68,.18);
+  --debt-fg:#fca5a5;--debt-hint:#fecaca;
+
+  --rec-gain-bg:rgba(212,184,114,.18);--rec-gain-fg:#f0dc9e;
+  --rec-use-bg:rgba(16,185,129,.16);--rec-use-fg:#5eead4;
+  --rec-pen-bg:rgba(239,68,68,.18);--rec-pen-fg:#fca5a5;
+}
+
+/* ── 暗色：跟随系统（JS 解析后设置 data-resolved="dark"） ── */
+:root[data-theme="auto"][data-resolved="dark"]{
+    color-scheme: dark;  /* JS 解析后确认是暗色 */
+
+    --p:#7BA3FF;
+    --pl:rgba(123,163,255,.14);
+
+    --gold:#d4b872;
+    --gold-light:#f0dc9e;
+    --gold-dark:#8a6c2e;
+
+    --bg:#000000;
+    --surface:#0c0c0e;
+    --card-hdr:rgba(0,0,0,.85);
+    --border:#1e1e24;
+    --text:#f5f5f7;
+    --t2:#c2c2cc;
+    --muted:#9a9aa6;
+    --shadow:0 4px 16px rgba(0,0,0,.75),0 1px 3px rgba(0,0,0,.6);
+    --shadow-colored:0 8px 24px rgba(123,163,255,.2);
+
+    --card-front-1:#0c0c0e;
+    --card-front-2:#000000;
+    --card-back-1:#0c0c0e;
+    --card-back-2:#000000;
+    --card-border-1:#f0dc9e;
+    --card-border-2:#d4b872;
+    --card-border-3:#a68a3f;
+    --card-text-strong:#f5ecd6;
+    --card-text-soft:#b3a78c;
+    --card-icon-bg:rgba(212,184,114,.16);
+    --card-icon-border:rgba(240,220,158,.55);
+    --card-shadow:
+      0 0 0 1px rgba(240,220,158,.45),
+      0 0 22px rgba(212,184,114,.45),
+      0 0 48px -6px rgba(212,184,114,.28),
+      0 24px 48px -18px rgba(0,0,0,1),
+      0 10px 22px -10px rgba(0,0,0,.9);
+    --card-glare-color:rgba(240,220,158,.45);
+    --card-glare-mid:rgba(240,220,158,.10);
+    --card-shimmer-color:rgba(240,220,158,.6);
+
+    --tag-gold-bg:rgba(212,184,114,.18);
+    --tag-gold-fg:#f0dc9e;
+    --tag-gold-border:rgba(240,220,158,.55);
+    --tag-neutral-bg:#1a1a20;--tag-neutral-fg:#a8a8b3;--tag-neutral-border:#2a2a32;
+    --tag-red-bg:rgba(239,68,68,.18);--tag-red-fg:#fca5a5;--tag-red-border:rgba(248,113,113,.45);
+    --tag-empty-bg:rgba(212,184,114,.16);--tag-debt-bg:rgba(239,68,68,.18);
+    --debt-fg:#fca5a5;--debt-hint:#fecaca;
+
+    --rec-gain-bg:rgba(212,184,114,.18);--rec-gain-fg:#f0dc9e;
+    --rec-use-bg:rgba(16,185,129,.16);--rec-use-fg:#5eead4;
+    --rec-pen-bg:rgba(239,68,68,.18);--rec-pen-fg:#fca5a5;
+}
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{height:100%}
 body{
@@ -28,21 +207,22 @@ body{
   color:var(--text);
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
+  transition:background-color .25s ease,color .25s ease;
 }
 button{cursor:pointer;border:none;background:none;font-family:inherit;font-size:14px;touch-action:manipulation}
 input{font-family:inherit;font-size:14px;-webkit-appearance:none;appearance:none}
 a{color:inherit;text-decoration:none}
 
-/* ── 头部 ── */
 .hdr{
   position:sticky;top:0;z-index:100;height:56px;
-  background:rgba(255,255,255,.92);
+  background:var(--card-hdr);
   backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
   border-bottom:1px solid var(--border);
+  transition:background-color .25s ease,border-color .25s ease;
 }
 .hdr-inner{
   max-width:720px;margin:0 auto;height:100%;
-  display:flex;align-items:center;gap:10px;padding:0 16px;
+  display:flex;align-items:center;gap:8px;padding:0 16px;
 }
 .hdr-logo{
   width:32px;height:32px;border-radius:10px;
@@ -54,44 +234,56 @@ a{color:inherit;text-decoration:none}
 .hdr-title{font-size:17px;font-weight:700;letter-spacing:-0.2px}
 .hdr-subtitle{font-size:11px;color:var(--muted);line-height:1.3}
 
-/* ── 主站跳转按钮（右上角） ── */
+/* 主题切换按钮 */
+.hdr-theme-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:7px 12px;border-radius:99px;
+  background:transparent;color:var(--muted);
+  font-size:12px;font-weight:700;
+  border:1px solid var(--border);
+  flex-shrink:0;
+  transition:all .15s;
+}
+.hdr-theme-btn:hover{color:var(--text);border-color:var(--muted)}
+.hdr-theme-btn:active{transform:scale(0.96)}
+.hdr-theme-btn svg{flex-shrink:0}
+
 .hdr-home-btn{
   display:inline-flex;align-items:center;gap:5px;
   padding:7px 14px;border-radius:99px;
   background:var(--pl);color:var(--p);
   font-size:12px;font-weight:700;
-  border:1px solid rgba(37,99,235,.15);
+  border:1px solid transparent;
   flex-shrink:0;
   transition:all .15s;
 }
-.hdr-home-btn:hover{background:#dbeafe;transform:translateY(-1px)}
-.hdr-home-btn:active{transform:scale(0.96);background:#dbeafe}
+.hdr-home-btn:hover{transform:translateY(-1px)}
+.hdr-home-btn:active{transform:scale(0.96)}
 
-/* ── 页面容器 ── */
 .ex-page-wrap{
   padding:14px 16px 28px;
   display:flex;flex-direction:column;gap:14px;
   max-width:720px;margin:0 auto;width:100%;
 }
 .card{
-  background:var(--card);border-radius:var(--r);
+  background:var(--surface);border-radius:var(--r);
   border:1px solid var(--border);box-shadow:var(--shadow);
   overflow:hidden;
+  transition:background-color .25s ease,border-color .25s ease;
 }
 
-/* ── 表单 ── */
 .field{display:flex;flex-direction:column;gap:5px}
 .field label{font-size:12px;font-weight:700;color:var(--t2)}
 .field input{
   padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);
-  background:var(--card);color:var(--text);outline:none;
-  transition:border-color .2s,box-shadow .2s;
+  background:var(--surface);color:var(--text);outline:none;
+  transition:border-color .2s,box-shadow .2s,background-color .25s ease;
 }
-.field input:focus{border-color:var(--p);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
-.ex-gold-border:focus{border-color:var(--gold)!important;box-shadow:0 0 0 3px rgba(201,169,98,.2)!important}
+.field input::placeholder{color:var(--muted);opacity:.85}
+.field input:focus{border-color:var(--p);box-shadow:0 0 0 3px color-mix(in srgb,var(--p) 15%,transparent)}
+.ex-gold-border:focus{border-color:var(--gold)!important;box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 20%,transparent)!important}
 .form-err{font-size:12px;color:#EF4444;font-weight:600}
 
-/* ── 按钮 ── */
 .btn{
   display:inline-flex;align-items:center;justify-content:center;gap:6px;
   padding:9px 18px;border-radius:var(--r-sm);
@@ -101,54 +293,228 @@ a{color:inherit;text-decoration:none}
 .btn:active{transform:scale(0.97)}
 .btn:disabled{opacity:.6;cursor:not-allowed;transform:none!important}
 
-/* ── 标签 ── */
 .tag{
   display:inline-flex;align-items:center;padding:3px 10px;
   border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap;
   transition:all .15s;
 }
 
-/* ── 动画 ── */
 @keyframes exScaleIn{from{opacity:0;transform:scale(0.92) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(12px) scale(0.96)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+@keyframes exShimmerSweep{0%,72%{left:-110%}100%{left:220%}}
 .ex-scale-in{animation:exScaleIn .45s var(--ease-out-expo) both}
 
-/* ── 3D 卡片 ── */
+/* ═══════════════════════════════════════════════════════
+   3D 卡片
+   ═══════════════════════════════════════════════════════ */
 .ex-card-scene{
-  perspective:1000px;width:100%;
+  perspective:1500px;
+  perspective-origin:50% 50%;
+  width:100%;
   display:flex;justify-content:center;align-items:center;
-  padding:12px 0;
+  padding:30px 0 34px;
   user-select:none;-webkit-user-select:none;
   touch-action:pan-y;
+  position:relative;
 }
 .ex-card-scene.dragging{touch-action:none}
+
 .ex-card-3d{
-  width:min(290px,78vw);
-  aspect-ratio:290/180;
-  position:relative;
-  transform-style:preserve-3d;
-  cursor:grab;
-  transition:box-shadow .2s ease;
+  --w: min(290px, 78vw);
+  --h: calc(var(--w) * 180 / 290);
+  --depth: 8px;
+  --half: 4px;
+  --r: 20px;
+
+  width: var(--w);
+  height: var(--h);
+  position: relative;
+  transform-style: preserve-3d;
+  cursor: grab;
+  will-change: transform;
 }
 .ex-card-3d:active{cursor:grabbing}
-.ex-card-face{
-  position:absolute;inset:0;
-  backface-visibility:hidden;-webkit-backface-visibility:hidden;
-  border-radius:24px;border:1.5px solid var(--gold);background:#fff;
-  padding:16px;display:flex;flex-direction:column;justify-content:space-between;
-  box-shadow:0 10px 24px rgba(201,169,98,.24),0 2px 6px rgba(10,22,40,.04);
-  overflow:hidden;
-}
-.ex-card-back{transform:rotateY(180deg);background:linear-gradient(145deg,#fff 0%,#fbf9f4 100%)}
-.ex-shimmer{
-  position:absolute;top:0;left:-100%;width:60%;height:100%;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.6),transparent);
-  transform:skewX(-25deg);pointer-events:none;
-  animation:exShimmerSweep 5s infinite ease-in-out;
-}
-@keyframes exShimmerSweep{0%,70%{left:-100%}100%{left:200%}}
 
-/* ── Toast ── */
+.ex-layer{
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r);
+  pointer-events: none;
+}
+
+.ex-face{
+  position: absolute;
+  inset: 0;
+  border-radius: var(--r);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  border: 2px solid transparent;
+  background:
+    linear-gradient(155deg,
+      var(--card-front-1) 0%,
+      var(--card-front-2) 100%) padding-box,
+    linear-gradient(135deg,
+      var(--card-border-1) 0%,
+      var(--card-border-2) 25%,
+      var(--card-border-3) 50%,
+      var(--card-border-2) 75%,
+      var(--card-border-1) 100%) border-box;
+  box-shadow: var(--card-shadow);
+  transition: background .25s ease, box-shadow .25s ease;
+}
+.ex-front{
+  transform: translateZ(var(--half));
+}
+.ex-back{
+  transform: rotateY(180deg) translateZ(var(--half));
+  background:
+    linear-gradient(155deg,
+      var(--card-back-1) 0%,
+      var(--card-back-2) 100%) padding-box,
+    linear-gradient(135deg,
+      var(--card-border-1) 0%,
+      var(--card-border-2) 25%,
+      var(--card-border-3) 50%,
+      var(--card-border-2) 75%,
+      var(--card-border-1) 100%) border-box;
+}
+
+.ex-face::after{
+  content: '';
+  position: absolute;
+  inset: 8px;
+  border-radius: calc(var(--r) - 8px);
+  border: 1px solid color-mix(in srgb, var(--gold) 25%, transparent);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ex-card-glare{
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background: radial-gradient(circle at 30% 25%,
+    var(--card-glare-color) 0%,
+    var(--card-glare-mid) 28%,
+    transparent 58%);
+  opacity: .85;
+}
+
+.ex-shimmer{
+  position: absolute;
+  top: 0; left: -110%;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent,
+    var(--card-shimmer-color),
+    transparent);
+  transform: skewX(-22deg);
+  pointer-events: none;
+  z-index: 1;
+  animation: exShimmerSweep 6.5s infinite ease-in-out;
+}
+
+.ex-face > *:not(.ex-card-glare):not(.ex-shimmer){
+  position: relative;
+  z-index: 3;
+}
+
+.ex-card-top{display:flex;justify-content:space-between;align-items:center}
+.ex-card-star{flex-shrink:0;color:var(--gold)}
+.ex-card-badge{
+  font-size:10px;font-weight:700;
+  color:var(--gold);
+  background:var(--card-icon-bg);
+  border:1px solid var(--card-icon-border);
+  padding:2px 8px;border-radius:99px;
+  flex-shrink:0;margin-left:6px;
+}
+
+.ex-card-center{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  margin:auto 0;
+}
+.ex-card-icon{
+  width:46px;height:46px;border-radius:14px;
+  background:linear-gradient(135deg,var(--gold),var(--gold-light));
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;
+  box-shadow:0 4px 14px -4px color-mix(in srgb,var(--gold) 55%,transparent);
+}
+.ex-card-icon svg{color:#fff}
+
+.ex-card-count{display:flex;align-items:baseline;gap:4px}
+
+.ex-card-number{
+  font-size:38px;
+  font-weight:900;
+  letter-spacing:-1px;
+  line-height:1;
+  color: var(--gold);
+  background: linear-gradient(180deg,
+    var(--gold-light) 0%,
+    var(--gold) 48%,
+    var(--gold-dark) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+@supports not ((-webkit-background-clip: text) or (background-clip: text)){
+  .ex-card-number{
+    color: var(--gold);
+    background: none;
+    -webkit-text-fill-color: currentColor;
+  }
+}
+
+.ex-card-unit{
+  font-size:14px;font-weight:700;
+  color:var(--gold);
+}
+.ex-card-label{
+  font-size:12px;font-weight:700;letter-spacing:.5px;
+  color:var(--card-text-strong);
+  transition:color .25s ease;
+}
+
+.ex-card-bottom{display:flex;justify-content:flex-end;align-items:flex-end}
+.ex-card-bottom svg{color:var(--gold);opacity:.9}
+
+.ex-card-back-top{display:flex;justify-content:space-between;align-items:center}
+.ex-card-back-title{
+  font-size:11px;font-weight:800;letter-spacing:1px;color:var(--gold);
+}
+.ex-card-back-date{font-size:10px;color:var(--card-text-soft);transition:color .25s ease}
+.ex-card-back-center{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:8px;margin:auto 0;text-align:center;
+}
+.ex-card-back-icon{
+  width:36px;height:36px;border-radius:12px;
+  background:var(--card-icon-bg);
+  border:1px solid var(--card-icon-border);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--gold);
+}
+.ex-card-back-text{
+  font-size:14px;font-weight:800;
+  color:var(--card-text-strong);
+  transition:color .25s ease;
+}
+.ex-card-back-foot{
+  display:flex;justify-content:center;
+  font-size:10px;color:var(--card-text-soft);
+  transition:color .25s ease;
+}
+
 #toast{
   position:fixed;bottom:28px;left:50%;
   transform:translateX(-50%) translateY(12px);
@@ -159,11 +525,36 @@ a{color:inherit;text-decoration:none}
   white-space:nowrap;max-width:calc(100vw - 40px);text-align:center;
   box-shadow:0 4px 16px rgba(0,0,0,.25);
 }
+:root[data-theme="dark"] #toast{
+  background:#26262e;color:#f5f5f7;border:1px solid rgba(255,255,255,.08);
+}
+:root[data-theme="auto"][data-resolved="dark"] #toast{
+    background:#26262e;color:#f5f5f7;border:1px solid rgba(255,255,255,.08);
+  }
 #toast.show{opacity:1;animation:toastIn .35s var(--ease-spring)}
 
 @media(max-width:639px){
   .ex-page-wrap{padding:12px 14px 24px}
+  .ex-card-scene{padding:26px 0 30px}
+  .hdr-theme-btn{padding:7px 10px}
+  .hdr-theme-btn span{display:none}
 }
+
+/* 主题切换过渡动画 */
+.theme-transitioning *{
+  transition: background-color .35s ease, color .25s ease, border-color .25s ease, box-shadow .3s ease !important;
+}
+
+/* 主题按钮切换反馈 */
+.hdr-theme-btn.switching{
+  animation: themeSwitchPulse .3s ease;
+}
+@keyframes themeSwitchPulse{
+  0%{ transform: scale(1); }
+  50%{ transform: scale(0.9); opacity: 0.7; }
+  100%{ transform: scale(1); opacity: 1; }
+}
+
 </style>
 </head>
 <body>
@@ -175,6 +566,15 @@ a{color:inherit;text-decoration:none}
       <div class="hdr-title">GLCN</div>
       <div class="hdr-subtitle">免罚卡查询</div>
     </div>
+    <!-- 主题切换按钮 -->
+    <button class="hdr-theme-btn" id="theme-toggle" onclick="cycleTheme()" title="切换主题">
+      <svg id="theme-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="4"/>
+        <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>
+      </svg>
+      <span id="theme-label">自动</span>
+    </button>
+
     <a class="hdr-home-btn" href="https://25gd1.github.io" title="返回主站">
       <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
         <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>
@@ -186,10 +586,9 @@ a{color:inherit;text-decoration:none}
 
 <main class="ex-page-wrap">
 
-  <!-- 查询输入卡片 -->
   <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px">
     <div style="display:flex;align-items:center;gap:8px">
-      <div style="width:32px;height:32px;border-radius:10px;background:#FAF5E8;border:1px solid #c9a962;display:flex;align-items:center;justify-content:center;color:#c9a962">
+      <div style="width:32px;height:32px;border-radius:10px;background:var(--card-icon-bg);border:1px solid var(--card-icon-border);display:flex;align-items:center;justify-content:center;color:var(--gold)">
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       </div>
       <div>
@@ -213,21 +612,19 @@ a{color:inherit;text-decoration:none}
     <div class="form-err" id="ex-query-err" style="display:none"></div>
 
     <button class="btn" id="ex-query-btn"
-      style="background:#c9a962;color:#fff;box-shadow:0 4px 12px rgba(201,169,98,.3);font-weight:700"
+      style="background:var(--gold);color:#fff;box-shadow:0 4px 14px -3px color-mix(in srgb,var(--gold) 50%,transparent);font-weight:700"
       onclick="queryExemptionCard()">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       立即查询
     </button>
   </div>
 
-  <!-- 结果展示区域 -->
   <div id="ex-result-container" style="display:none;flex-direction:column;gap:14px">
 
-    <!-- 学生基础信息概览条 -->
     <div class="card" style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
       <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
         <div id="ex-res-seat-badge"
-          style="width:36px;height:36px;border-radius:10px;background:#FAF5E8;display:flex;align-items:center;justify-content:center;color:#c9a962;font-size:14px;font-weight:800;flex-shrink:0">
+          style="width:36px;height:36px;border-radius:10px;background:var(--card-icon-bg);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:14px;font-weight:800;flex-shrink:0;border:1px solid var(--card-icon-border)">
           1号
         </div>
         <div style="flex:1;min-width:0">
@@ -237,81 +634,77 @@ a{color:inherit;text-decoration:none}
         </div>
       </div>
       <span class="tag" id="ex-res-balance-tag"
-        style="font-size:12px;padding:4px 12px;background:#FAF5E8;color:#c9a962;border:1px solid #c9a962;flex-shrink:0;margin-left:8px">余 1 张</span>
+        style="font-size:12px;padding:4px 12px;background:var(--tag-gold-bg);color:var(--tag-gold-fg);border:1px solid var(--tag-gold-border);flex-shrink:0;margin-left:8px">余 1 张</span>
     </div>
 
-    <!-- 3D 卡片展示区（balance > 0） -->
     <div id="ex-3d-card-area" class="ex-scale-in" style="display:none">
       <div class="ex-card-scene" id="ex-card-scene">
         <div class="ex-card-3d" id="ex-card-3d">
 
-          <!-- 正面 -->
-          <div class="ex-card-face ex-card-front">
+          <div class="ex-face ex-front">
+            <div class="ex-card-glare"></div>
             <div class="ex-shimmer"></div>
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <svg width="15" height="15" fill="#c9a962" viewBox="0 0 24 24" style="flex-shrink:0"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              <span style="font-size:10px;font-weight:700;color:#c9a962;background:#FAF5E8;padding:2px 8px;border-radius:99px;border:1px solid rgba(201,169,98,.4);flex-shrink:0;margin-left:6px">免罚卡</span>
+
+            <div class="ex-card-top">
+              <svg class="ex-card-star" width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+              <span class="ex-card-badge">免罚卡</span>
             </div>
 
-            <div style="display:flex;flex-direction:column;align-items:center;gap:4px;margin:auto 0">
-              <div style="width:46px;height:46px;border-radius:14px;background:linear-gradient(135deg,#c9a962,#dfc282);display:flex;align-items:center;justify-content:center;color:#fff;box-shadow:0 4px 12px rgba(201,169,98,.35)">
+            <div class="ex-card-center">
+              <div class="ex-card-icon">
                 <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
               </div>
-              <div style="display:flex;align-items:baseline;gap:4px">
-                <span id="ex-card-number" style="font-size:38px;font-weight:900;color:#c9a962;letter-spacing:-1px">1</span>
-                <span style="font-size:14px;font-weight:700;color:#c9a962">张</span>
+              <div class="ex-card-count">
+                <span id="ex-card-number" class="ex-card-number">1</span>
+                <span class="ex-card-unit">张</span>
               </div>
-              <div style="font-size:12px;font-weight:700;color:#2a2520">班级免罚卡</div>
+              <div class="ex-card-label">班级免罚卡</div>
             </div>
 
-            <div style="display:flex;justify-content:flex-end;align-items:flex-end">
-              <svg width="12" height="12" fill="none" stroke="#c9a962" stroke-width="2" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            <div class="ex-card-bottom">
+              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
             </div>
           </div>
 
-          <!-- 背面 -->
-          <div class="ex-card-face ex-card-back">
+          <div class="ex-face ex-back">
+            <div class="ex-card-glare"></div>
             <div class="ex-shimmer"></div>
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <span style="font-size:11px;font-weight:800;letter-spacing:1px;color:#c9a962">班级免罚卡</span>
-              <span id="ex-card-back-date" style="font-size:10px;color:var(--muted)">2026.09</span>
+
+            <div class="ex-card-back-top">
+              <span class="ex-card-back-title">班级免罚卡</span>
+              <span id="ex-card-back-date" class="ex-card-back-date">2026.09</span>
             </div>
-            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;margin:auto 0;text-align:center">
-              <div style="width:36px;height:36px;border-radius:12px;background:#FAF5E8;display:flex;align-items:center;justify-content:center;color:#c9a962">
+            <div class="ex-card-back-center">
+              <div class="ex-card-back-icon">
                 <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
               </div>
-              <div style="font-size:14px;font-weight:800;color:#2a2520">表现优异特此发放</div>
+              <div class="ex-card-back-text">表现优异特此发放</div>
             </div>
-            <div style="display:flex;justify-content:center">
-              <span style="font-size:10px;color:var(--muted)">由班主任发放</span>
-            </div>
+            <div class="ex-card-back-foot">由班主任发放</div>
           </div>
 
         </div>
       </div>
     </div>
 
-    <!-- balance = 0 提示 -->
     <div id="ex-empty-zero" class="card"
       style="padding:32px 20px;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center">
-      <div style="width:48px;height:48px;border-radius:16px;background:#FAF5E8;display:flex;align-items:center;justify-content:center;color:#c9a962">
+      <div style="width:48px;height:48px;border-radius:16px;background:var(--tag-empty-bg);display:flex;align-items:center;justify-content:center;color:var(--gold)">
         <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       </div>
       <div style="font-size:16px;font-weight:700;color:var(--text)">当前无免罚卡</div>
       <div style="font-size:12px;color:var(--muted)">积极参与班级活动、考试成绩前列等可获取奖励免罚卡哦～</div>
     </div>
 
-    <!-- balance < 0 提示 -->
     <div id="ex-debt-alert" class="card"
-      style="padding:24px 20px;display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;text-align:center;background:#FEF2F2;border-color:rgba(239,68,68,.3)">
-      <div style="width:48px;height:48px;border-radius:16px;background:#FEE2E2;display:flex;align-items:center;justify-content:center;color:#EF4444">
+      style="padding:24px 20px;display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;text-align:center;background:var(--tag-red-bg);border-color:var(--tag-red-border)">
+      <div style="width:48px;height:48px;border-radius:16px;background:var(--tag-debt-bg);display:flex;align-items:center;justify-content:center;color:var(--debt-fg)">
         <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       </div>
-      <div id="ex-debt-title" style="font-size:16px;font-weight:800;color:#EF4444">有 1 周待处理</div>
-      <div style="font-size:12px;color:#991B1B">请在班会课上交免罚卡以抵消惩罚，或者正常上交手机</div>
+      <div id="ex-debt-title" style="font-size:16px;font-weight:800;color:var(--debt-fg)">有 1 周待处理</div>
+      <div style="font-size:12px;color:var(--debt-hint)">请在班会课上交免罚卡以抵消惩罚，或者正常上交手机</div>
     </div>
 
-    <!-- 流水记录 -->
     <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div style="font-size:14px;font-weight:700;color:var(--text)">最近记录列表</div>
@@ -348,7 +741,6 @@ function formatExDate(dateStr){
   return `${d.getMonth()+1}月${d.getDate()}日`;
 }
 
-/* ── 输入记忆 ── */
 function restoreExemptionInputs(){
   try{
     const saved=localStorage.getItem('glcn_ex_inputs');
@@ -363,63 +755,350 @@ function saveExemptionInputs(seat,name){
   try{localStorage.setItem('glcn_ex_inputs',JSON.stringify({seat,name}))}catch(_){}
 }
 
-/* ── 3D 旋转 ── */
-let exRotY=0,exRotX=-4,exDragging=false,exStartX=0,exStartY=0,exAnimId=null;
+/* ══════════════════════════════════════════════════════════
+   主题管理（优化版）
+   
+   核心改进：
+   1. auto 模式不再依赖纯 CSS @media 查询，改为 JS 主动解析
+      并通过 data-resolved 属性驱动样式，解决移动端不实时更新问题
+   2. 动态设置 color-scheme，防止浏览器"强制深色"二次反转
+   3. 多重事件监听：matchMedia change + visibilitychange + pageshow + focus
+   ══════════════════════════════════════════════════════════ */
+const THEME_KEY = 'glcn_theme';
+const THEME_ORDER = ['auto', 'light', 'dark'];
+const THEME_LABEL = { auto:'自动', light:'亮色', dark:'暗色' };
+
+function getCurrentTheme(){
+  return document.documentElement.dataset.theme || 'auto';
+}
+
+/* 查询系统是否偏好暗色 */
+function systemPrefersDark(){
+  return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+}
+
+/* 当前实际是否是暗色（用于卡片逻辑） */
+function isDarkMode(){
+  const t = getCurrentTheme();
+  if(t === 'dark') return true;
+  if(t === 'light') return false;
+  // auto 模式：读取 JS 解析结果（data-resolved），而非再次查询 matchMedia
+  return document.documentElement.dataset.resolved === 'dark';
+}
+
+/**
+ * 解析 auto 模式的实际主题，并设置 data-resolved 属性
+ * 这是解决"跟随系统不更新"的核心：用 JS 主动判断 + 属性驱动 CSS
+ */
+function resolveAutoTheme(){
+  const root = document.documentElement;
+  if(root.dataset.theme !== 'auto') return;
+
+  const isDark = systemPrefersDark();
+  const prevResolved = root.dataset.resolved;
+  const newResolved = isDark ? 'dark' : 'light';
+
+  if(prevResolved !== newResolved){
+    root.dataset.resolved = newResolved;
+
+    // 动态更新 color-scheme，防止浏览器强制反转
+    root.style.colorScheme = isDark ? 'dark' : 'light';
+
+    // 动态更新 meta color-scheme
+    const metaCS = document.querySelector('meta[name="color-scheme"]');
+    if(metaCS) metaCS.setAttribute('content', isDark ? 'dark' : 'light');
+
+    // 动态更新 meta theme-color
+    const metaTC = document.querySelectorAll('meta[name="theme-color"]');
+    metaTC.forEach(m => {
+      if(isDark){
+        if(m.getAttribute('media')?.includes('dark')) m.setAttribute('content', '#000000');
+      } else {
+        if(m.getAttribute('media')?.includes('light')) m.setAttribute('content', '#F4F7FC');
+      }
+    });
+
+    // 重建卡片（颜色依赖明暗）
+    if(typeof buildCardLayers === 'function') buildCardLayers();
+    if(typeof update3DCardTransform === 'function') update3DCardTransform();
+  }
+}
+
+function applyTheme(mode, silent){
+  if(!THEME_ORDER.includes(mode)) mode = 'auto';
+  const root = document.documentElement;
+  root.dataset.theme = mode;
+
+  // 非 auto 模式：清除 data-resolved，直接设置 color-scheme
+  if(mode === 'dark'){
+    delete root.dataset.resolved;
+    root.style.colorScheme = 'dark';
+    const metaCS = document.querySelector('meta[name="color-scheme"]');
+    if(metaCS) metaCS.setAttribute('content', 'dark');
+  } else if(mode === 'light'){
+    delete root.dataset.resolved;
+    root.style.colorScheme = 'light';
+    const metaCS = document.querySelector('meta[name="color-scheme"]');
+    if(metaCS) metaCS.setAttribute('content', 'light');
+  } else {
+    // auto 模式：调用 resolveAutoTheme 设置 data-resolved
+    resolveAutoTheme();
+  }
+
+  const label = document.getElementById('theme-label');
+  if(label) label.textContent = THEME_LABEL[mode];
+
+  // 图标切换
+  const icon = document.getElementById('theme-icon');
+  if(icon){
+    if(mode === 'dark'){
+      icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+    }else if(mode === 'light'){
+      icon.innerHTML = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';
+    }else{
+      // auto 模式：根据解析结果显示对应图标
+      const resolvedDark = root.dataset.resolved === 'dark';
+      if(resolvedDark){
+        icon.innerHTML = '<circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M12 3a9 9 0 0 1 0 18" fill="currentColor"/>';
+      } else {
+        icon.innerHTML = '<circle cx="12" cy="12" r="9"/><path d="M12 3v18"/><path d="M12 3a9 9 0 0 0 0 18" fill="currentColor"/>';
+      }
+    }
+  }
+
+  // 重建卡片厚度层
+  if(typeof buildCardLayers === 'function') buildCardLayers();
+  if(typeof update3DCardTransform === 'function') update3DCardTransform();
+
+  // 切换提示（静默模式不提示，如初始化时）
+  if(!silent && typeof showToast === 'function'){
+    const actualDark = isDarkMode();
+    const resolvedLabel = mode === 'auto'
+      ? (actualDark ? '自动（暗色）' : '自动（亮色）')
+      : THEME_LABEL[mode];
+    showToast('已切换为 ' + resolvedLabel + ' 模式');
+  }
+}
+
+function cycleTheme(){
+  const cur = getCurrentTheme();
+  const idx = THEME_ORDER.indexOf(cur);
+  const next = THEME_ORDER[(idx + 1) % THEME_ORDER.length];
+  try{ localStorage.setItem(THEME_KEY, next); }catch(_){}
+
+  // 添加过渡动画类
+  const btn = document.getElementById('theme-toggle');
+  if(btn){
+    btn.classList.add('switching');
+    setTimeout(() => btn.classList.remove('switching'), 350);
+  }
+  document.documentElement.classList.add('theme-transitioning');
+  setTimeout(() => document.documentElement.classList.remove('theme-transitioning'), 400);
+
+  applyTheme(next, false);
+}
+
+/* ══════════════════════════════════════════
+   多重系统主题变化检测
+   ══════════════════════════════════════════ */
+
+/* 1. matchMedia change 事件（标准方式） */
+if(window.matchMedia){
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  const onSystemThemeChange = () => {
+    if(getCurrentTheme() === 'auto'){
+      // 强制重新解析（清除缓存的 resolved 值以触发更新）
+      document.documentElement.dataset.resolved = '';
+      resolveAutoTheme();
+    }
+  };
+  if(mq.addEventListener) mq.addEventListener('change', onSystemThemeChange);
+  else if(mq.addListener) mq.addListener(onSystemThemeChange);
+}
+
+/* 2. visibilitychange：用户切回页面时重新检测 */
+document.addEventListener('visibilitychange', () => {
+  if(!document.hidden && getCurrentTheme() === 'auto'){
+    document.documentElement.dataset.resolved = '';
+    resolveAutoTheme();
+  }
+});
+
+/* 3. pageshow：iOS Safari 从缓存恢复页面时触发 */
+window.addEventListener('pageshow', (e) => {
+  if(e.persisted && getCurrentTheme() === 'auto'){
+    document.documentElement.dataset.resolved = '';
+    resolveAutoTheme();
+  }
+});
+
+/* 4. focus：窗口获得焦点时重新检测（兼容部分 WebView） */
+window.addEventListener('focus', () => {
+  if(getCurrentTheme() === 'auto'){
+    resolveAutoTheme();
+  }
+});
+
+/* ══════════════════════════════════════════════════════════
+   构建厚度层
+   亮色：白 → 淡金 → 白
+   暗色：黑 → 亮金 → 黑（金色更实，边缘发光）
+   ══════════════════════════════════════════════════════════ */
+function buildCardLayers(){
+  const card = document.getElementById('ex-card-3d');
+  if(!card) return;
+
+  card.querySelectorAll('.ex-layer').forEach(el => el.remove());
+
+  const front = card.querySelector('.ex-front');
+  const LAYERS = 20;
+  const HALF = 4;
+  const DEPTH = HALF * 2;
+
+  const dark = isDarkMode();
+
+  const baseC = dark ? [8,8,10]      : [252,252,252];
+  const goldC = dark ? [212,184,114] : [201,169,98];
+  const peak  = dark ? 0.95          : 0.55;
+
+  const frag = document.createDocumentFragment();
+  for(let i = 0; i < LAYERS; i++){
+    const t = (i + 0.5) / LAYERS;
+    const z = -HALF + t * DEPTH;
+    const goldAmount = Math.sin(t * Math.PI) * peak;
+
+    const r = baseC[0] + (goldC[0] - baseC[0]) * goldAmount;
+    const g = baseC[1] + (goldC[1] - baseC[1]) * goldAmount;
+    const b = baseC[2] + (goldC[2] - baseC[2]) * goldAmount;
+
+    const el = document.createElement('div');
+    el.className = 'ex-layer';
+    el.style.transform = `translateZ(${z.toFixed(2)}px)`;
+    el.style.background = `rgb(${r.toFixed(0)}, ${g.toFixed(0)}, ${b.toFixed(0)})`;
+
+    if(dark){
+      el.style.boxShadow = `0 0 8px rgba(212,184,114,${(0.18 + goldAmount * 0.28).toFixed(3)})`;
+    }
+
+    frag.appendChild(el);
+  }
+  card.insertBefore(frag, front);
+}
+
+/* ══════════════════════════════════════════
+   3D 卡片 · 旋转引擎
+   ══════════════════════════════════════════ */
+let exRotY = 0, exRotX = -6;
+let exVelY = 0, exVelX = 0;
+let exDragging = false;
+let exStartX = 0, exStartY = 0;
+let exAnimId = null;
+let exCard = null, exGlares = null;
 
 function update3DCardTransform(){
-  const card=document.getElementById('ex-card-3d');
-  if(card)card.style.transform=`rotateX(${exRotX}deg) rotateY(${exRotY}deg)`;
+  if(!exCard) return;
+  exCard.style.transform = `rotateX(${exRotX}deg) rotateY(${exRotY}deg)`;
+
+  const radY = exRotY * Math.PI / 180;
+  const radX = exRotX * Math.PI / 180;
+  const gx = 50 + Math.sin(radY) * 55;
+  const gy = 42 - Math.sin(radX) * 40;
+
+  let glareBg;
+  if(isDarkMode()){
+    glareBg =
+      `radial-gradient(circle at ${gx.toFixed(1)}% ${gy.toFixed(1)}%,` +
+      `rgba(240,220,158,.42) 0%,` +
+      `rgba(240,220,158,.08) 30%,` +
+      `transparent 60%)`;
+  }else{
+    glareBg =
+      `radial-gradient(circle at ${gx.toFixed(1)}% ${gy.toFixed(1)}%,` +
+      `rgba(255,255,255,.95) 0%,` +
+      `rgba(255,255,255,.25) 26%,` +
+      `transparent 58%)`;
+  }
+  if(exGlares) exGlares.forEach(g => { g.style.background = glareBg; });
 }
+
 function start3DCardAutoRotate(){
-  if(exAnimId)cancelAnimationFrame(exAnimId);
-  (function loop(){
+  if(exAnimId) cancelAnimationFrame(exAnimId);
+  let lastT = performance.now();
+
+  function loop(t){
+    const dt = Math.min((t - lastT) / 16.67, 3);
+    lastT = t;
+
     if(!exDragging){
-      exRotY+=0.35;
-      exRotX+=(0-exRotX)*0.05;
+      exRotY += exVelY * dt;
+      exRotX += exVelX * dt;
+      exVelY *= Math.pow(0.93, dt);
+      exVelX *= Math.pow(0.93, dt);
+
+      if(Math.abs(exVelY) < 0.08) exRotY += 0.22 * dt;
+
+      exRotX += (0 - exRotX) * 0.04 * dt;
+      exRotX = Math.max(-38, Math.min(38, exRotX));
+
+      if(exRotY > 360) exRotY -= 360;
+      if(exRotY < -360) exRotY += 360;
+
       update3DCardTransform();
     }
-    exAnimId=requestAnimationFrame(loop);
-  })();
+
+    exAnimId = requestAnimationFrame(loop);
+  }
+  exAnimId = requestAnimationFrame(loop);
 }
+
 function init3DCardEvents(){
-  const scene=document.getElementById('ex-card-scene');
-  const card=document.getElementById('ex-card-3d');
-  if(!scene||!card)return;
+  const scene = document.getElementById('ex-card-scene');
+  exCard   = document.getElementById('ex-card-3d');
+  exGlares = document.querySelectorAll('.ex-card-glare');
+  if(!scene || !exCard) return;
 
   function down(e){
-    exDragging=true;
+    exDragging = true;
     scene.classList.add('dragging');
-    const x=e.touches?e.touches[0].clientX:e.clientX;
-    const y=e.touches?e.touches[0].clientY:e.clientY;
-    exStartX=x;exStartY=y;
-    if(exAnimId)cancelAnimationFrame(exAnimId);
-    card.style.cursor='grabbing';
-  }
-  function move(e){
-    if(!exDragging)return;
-    if(e.cancelable)e.preventDefault();
-    const x=e.touches?e.touches[0].clientX:e.clientX;
-    const y=e.touches?e.touches[0].clientY:e.clientY;
-    const dx=x-exStartX,dy=y-exStartY;
-    exStartX=x;exStartY=y;
-    exRotY+=dx*0.7;
-    exRotX=Math.max(-45,Math.min(45,exRotX-dy*0.4));
-    update3DCardTransform();
-  }
-  function up(){
-    if(!exDragging)return;
-    exDragging=false;
-    scene.classList.remove('dragging');
-    card.style.cursor='grab';
-    start3DCardAutoRotate();
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    exStartX = x; exStartY = y;
+    exVelY = 0; exVelX = 0;
+    exCard.style.cursor = 'grabbing';
   }
 
-  scene.addEventListener('mousedown',down);
-  window.addEventListener('mousemove',move);
-  window.addEventListener('mouseup',up);
-  scene.addEventListener('touchstart',down,{passive:true});
-  scene.addEventListener('touchmove',move,{passive:false});
-  window.addEventListener('touchend',up);
+  function move(e){
+    if(!exDragging) return;
+    if(e.cancelable) e.preventDefault();
+
+    const x = e.touches ? e.touches[0].clientX : e.clientX;
+    const y = e.touches ? e.touches[0].clientY : e.clientY;
+    const dx = x - exStartX;
+    const dy = y - exStartY;
+    exStartX = x; exStartY = y;
+
+    exRotY += dx * 0.65;
+    exRotX = Math.max(-38, Math.min(38, exRotX - dy * 0.35));
+
+    exVelY = Math.max(-22, Math.min(22, dx * 0.65));
+    exVelX = Math.max(-14, Math.min(14, -dy * 0.35));
+
+    update3DCardTransform();
+  }
+
+  function up(){
+    if(!exDragging) return;
+    exDragging = false;
+    scene.classList.remove('dragging');
+    exCard.style.cursor = 'grab';
+  }
+
+  scene.addEventListener('mousedown', down);
+  window.addEventListener('mousemove', move);
+  window.addEventListener('mouseup', up);
+  scene.addEventListener('touchstart', down, { passive: true });
+  scene.addEventListener('touchmove', move, { passive: false });
+  window.addEventListener('touchend', up);
 
   update3DCardTransform();
   start3DCardAutoRotate();
@@ -503,14 +1182,21 @@ function renderExemptionResult(data){
   if(balance>0){
     statusSub.textContent=`当前持有：${balance} 张免罚卡`;
     balTag.textContent=`余 ${balance} 张`;
-    balTag.style.background='#FAF5E8';
-    balTag.style.color='#c9a962';
-    balTag.style.borderColor='#c9a962';
+    balTag.style.background='var(--tag-gold-bg)';
+    balTag.style.color='var(--tag-gold-fg)';
+    balTag.style.borderColor='var(--tag-gold-border)';
 
     cardArea.style.display='block';
     zeroEmpty.style.display='none';
     debtAlert.style.display='none';
     document.getElementById('ex-card-number').textContent=Math.max(0,balance);
+
+    exRotY=0; exRotX=-6; exVelY=0; exVelX=0;
+    if(exCard) update3DCardTransform();
+
+    cardArea.classList.remove('ex-scale-in');
+    void cardArea.offsetWidth;
+    cardArea.classList.add('ex-scale-in');
 
     const lastGain=records.find(r=>r.type==='gain');
     if(lastGain){
@@ -523,9 +1209,9 @@ function renderExemptionResult(data){
   }else if(balance===0){
     statusSub.textContent='当前未持有免罚卡';
     balTag.textContent='无卡';
-    balTag.style.background='#F1F5F9';
-    balTag.style.color='#64748B';
-    balTag.style.borderColor='#CBD5E1';
+    balTag.style.background='var(--tag-neutral-bg)';
+    balTag.style.color='var(--tag-neutral-fg)';
+    balTag.style.borderColor='var(--tag-neutral-border)';
 
     cardArea.style.display='none';
     zeroEmpty.style.display='flex';
@@ -534,9 +1220,9 @@ function renderExemptionResult(data){
     const debtWeeks=Math.abs(balance);
     statusSub.textContent=`待处理违规：${debtWeeks} 周`;
     balTag.textContent=`待处理 ${debtWeeks} 周`;
-    balTag.style.background='#FEF2F2';
-    balTag.style.color='#EF4444';
-    balTag.style.borderColor='rgba(239,68,68,.3)';
+    balTag.style.background='var(--tag-red-bg)';
+    balTag.style.color='var(--tag-red-fg)';
+    balTag.style.borderColor='var(--tag-red-border)';
 
     cardArea.style.display='none';
     zeroEmpty.style.display='none';
@@ -564,27 +1250,32 @@ function renderExemptionRecords(records){
     const isGain=r.type==='gain';
     const isUse=r.type==='use';
 
-    let iconBg='#FAF5E8',iconColor='#c9a962',deltaText='',deltaColor='#c9a962',svgIcon='';
+    let iconBgVar,iconFgVar,deltaVar,deltaText,svgIcon;
 
     if(isGain){
+      iconBgVar='var(--rec-gain-bg)';
+      iconFgVar='var(--rec-gain-fg)';
+      deltaVar='var(--rec-gain-fg)';
       deltaText=`+${Math.abs(r.amount||1)} 张`;
-      svgIcon=`<svg width="16" height="16" fill="none" stroke="${iconColor}" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
+      svgIcon=`<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`;
     }else if(isUse){
-      iconBg='#ECFDF5';iconColor='#059669';
+      iconBgVar='var(--rec-use-bg)';
+      iconFgVar='var(--rec-use-fg)';
+      deltaVar='var(--rec-use-fg)';
       deltaText=`-${Math.abs(r.amount||1)} 张`;
-      deltaColor='#059669';
-      svgIcon=`<svg width="16" height="16" fill="none" stroke="${iconColor}" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
+      svgIcon=`<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>`;
     }else{
-      iconBg='#FEF2F2';iconColor='#EF4444';
+      iconBgVar='var(--rec-pen-bg)';
+      iconFgVar='var(--rec-pen-fg)';
+      deltaVar='var(--rec-pen-fg)';
       deltaText=`违规待收 ${Math.abs(r.amount||1)} 周`;
-      deltaColor='#EF4444';
-      svgIcon=`<svg width="16" height="16" fill="none" stroke="${iconColor}" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
+      svgIcon=`<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
     }
 
     return `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:12px;background:#FAFBFD;border:1px solid var(--border)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--border)">
         <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-          <div style="width:32px;height:32px;border-radius:10px;background:${iconBg};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <div style="width:32px;height:32px;border-radius:10px;background:${iconBgVar};color:${iconFgVar};display:flex;align-items:center;justify-content:center;flex-shrink:0">
             ${svgIcon}
           </div>
           <div style="flex:1;min-width:0">
@@ -596,7 +1287,7 @@ function renderExemptionRecords(records){
             </div>
           </div>
         </div>
-        <div style="font-size:13px;font-weight:800;color:${deltaColor};margin-left:8px;flex-shrink:0">
+        <div style="font-size:13px;font-weight:800;color:${deltaVar};margin-left:8px;flex-shrink:0">
           ${deltaText}
         </div>
       </div>`;
@@ -605,7 +1296,16 @@ function renderExemptionRecords(records){
 
 /* ── 初始化 ── */
 (function init(){
+  // 1. 恢复主题（必须在卡片构建之前，silent=true 不弹 toast）
+  let saved = 'auto';
+  try{ saved = localStorage.getItem(THEME_KEY) || 'auto'; }catch(_){}
+  applyTheme(saved, true);
+
+  // 2. 恢复输入
   restoreExemptionInputs();
+
+  // 3. 构建卡片
+  buildCardLayers();
   init3DCardEvents();
 })();
 </script>
