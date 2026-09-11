@@ -132,7 +132,6 @@ html{
   --rec-pen-bg:rgba(239,68,68,.18);--rec-pen-fg:#fca5a5;
 }
 
-/* auto 模式下 JS 会往 data-resolved 上写 dark，这里对应暗色 */
 :root[data-theme="auto"][data-resolved="dark"]{
   color-scheme: dark;
 
@@ -290,9 +289,9 @@ a{color:inherit;text-decoration:none}
 @keyframes exScaleIn{from{opacity:0;transform:scale(0.92) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(12px) scale(0.96)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
 @keyframes exShimmerSweep{0%,72%{left:-110%}100%{left:220%}}
+@keyframes exSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .ex-scale-in{animation:exScaleIn .45s var(--ease-out-expo) both}
 
-/* ── 3D 卡片 ── */
 .ex-card-scene{
   perspective:1500px;
   perspective-origin:50% 50%;
@@ -515,8 +514,8 @@ a{color:inherit;text-decoration:none}
   background:#26262e;color:#f5f5f7;border:1px solid rgba(255,255,255,.08);
 }
 :root[data-theme="auto"][data-resolved="dark"] #toast{
-    background:#26262e;color:#f5f5f7;border:1px solid rgba(255,255,255,.08);
-  }
+  background:#26262e;color:#f5f5f7;border:1px solid rgba(255,255,255,.08);
+}
 #toast.show{opacity:1;animation:toastIn .35s var(--ease-spring)}
 
 @media(max-width:639px){
@@ -737,12 +736,6 @@ function saveExemptionInputs(seat,name){
   try{localStorage.setItem('glcn_ex_inputs',JSON.stringify({seat,name}))}catch(_){}
 }
 
-/*
- * 主题切换
- * auto 模式下不用纯 CSS media query，改成用 JS 自己判断系统深浅色，
- * 把结果写到 data-resolved 上让 CSS 去选变量。主要是移动端切系统主题
- * 时纯 CSS 方案经常不刷新，必须靠 JS 兜。
- */
 const THEME_KEY = 'glcn_theme';
 const THEME_ORDER = ['auto', 'light', 'dark'];
 const THEME_LABEL = { auto:'自动', light:'亮色', dark:'暗色' };
@@ -755,7 +748,6 @@ function systemPrefersDark(){
   return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
 }
 
-// 当前实际是不是暗色，卡片构建那边要用
 function isDarkMode(){
   const t = getCurrentTheme();
   if(t === 'dark') return true;
@@ -773,6 +765,7 @@ function resolveAutoTheme(){
 
   if(prevResolved !== newResolved){
     root.dataset.resolved = newResolved;
+
     root.style.colorScheme = isDark ? 'dark' : 'light';
 
     const metaCS = document.querySelector('meta[name="color-scheme"]');
@@ -859,7 +852,6 @@ function cycleTheme(){
   applyTheme(next, false);
 }
 
-// 系统主题变化的多重兜底：不同浏览器/WebView 触发的时机不一样
 if(window.matchMedia){
   const mq = window.matchMedia('(prefers-color-scheme: dark)');
   const onSystemThemeChange = () => {
@@ -892,7 +884,6 @@ window.addEventListener('focus', () => {
   }
 });
 
-// 卡片侧面厚度层：靠一堆叠起来的 div 假装出立体感
 function buildCardLayers(){
   const card = document.getElementById('ex-card-3d');
   if(!card) return;
@@ -934,7 +925,6 @@ function buildCardLayers(){
   card.insertBefore(frag, front);
 }
 
-// 卡片旋转：拖拽带动惯性，松手后自己慢慢晃
 let exRotY = 0, exRotX = -6;
 let exVelY = 0, exVelX = 0;
 let exDragging = false;
@@ -1051,12 +1041,104 @@ function init3DCardEvents(){
   start3DCardAutoRotate();
 }
 
+const QUERY_LIMIT_KEY  = 'glcn_ex_query_limit';
+const FREE_QUERY_COUNT = 3;
+const SHORT_COOLDOWN_LIMIT = 15;
+
+const ICON_SEARCH = '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
+const ICON_SPIN   = '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" style="animation:exSpin .8s linear infinite"><path d="M21 12a9 9 0 1 1-6.22-8.56" stroke-linecap="round"/></svg>';
+
+let isQuerying = false;
+
+function todayKey(){
+  const d = new Date();
+  return d.getFullYear() + '-' +
+         String(d.getMonth() + 1).padStart(2, '0') + '-' +
+         String(d.getDate()).padStart(2, '0');
+}
+
+function loadQueryLimit(){
+  const today = todayKey();
+  const st = { date: today, count: 0, cooldownUntil: 0 };
+  try{
+    const raw = localStorage.getItem(QUERY_LIMIT_KEY);
+    if(raw){
+      const p = JSON.parse(raw);
+      if(p && p.date === today){
+        st.count         = Math.max(0, Number(p.count) || 0);
+        st.cooldownUntil = Math.max(0, Number(p.cooldownUntil) || 0);
+      }
+    }
+  }catch(_){}
+  return st;
+}
+
+function saveQueryLimit(st){
+  try{
+    localStorage.setItem(QUERY_LIMIT_KEY, JSON.stringify({
+      date: todayKey(),
+      count: st.count,
+      cooldownUntil: st.cooldownUntil
+    }));
+  }catch(_){}
+}
+
+function cooldownSecondsFor(count){
+  if(count <= FREE_QUERY_COUNT) return 0;
+  if(count <= 6)                return 5;
+  if(count < 20)                return 5 + Math.floor(Math.random() * 11);
+  if(count < 50)                return 600;
+  return 1200;
+}
+
+function registerQueryAndGetCooldown(){
+  const st = loadQueryLimit();
+  st.count += 1;
+  const cd = cooldownSecondsFor(st.count);
+  st.cooldownUntil = cd > 0 ? Date.now() + cd * 1000 : 0;
+  saveQueryLimit(st);
+  return { count: st.count, cooldown: cd };
+}
+
+function setBtnHTML(btn, html){
+  if(btn._lastHTML === html) return;
+  btn._lastHTML = html;
+  btn.innerHTML = html;
+}
+
+function renderQueryGate(){
+  const btn = document.getElementById('ex-query-btn');
+  if(!btn) return;
+  if(isQuerying){
+    btn.disabled = true;
+    btn.style.opacity = '0.7';
+    setBtnHTML(btn, ICON_SPIN + ' 查询中...');
+  } else {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    setBtnHTML(btn, ICON_SEARCH + ' 立即查询');
+  }
+}
+
 async function queryExemptionCard(){
   const seatInput=document.getElementById('ex-input-seat');
   const nameInput=document.getElementById('ex-input-name');
   const errEl=document.getElementById('ex-query-err');
-  const btn=document.getElementById('ex-query-btn');
   const resContainer=document.getElementById('ex-result-container');
+
+  if(isQuerying) return;
+
+  const gate = loadQueryLimit();
+  const wait = gate.cooldownUntil - Date.now();
+  if(wait > 0){
+    const sec = Math.ceil(wait / 1000);
+    if(wait <= SHORT_COOLDOWN_LIMIT * 1000){
+      showToast(sec + ' 秒后可以重试');
+    } else {
+      showToast('操作频繁，请稍后再试');
+    }
+    return;
+  }
 
   const seatVal=parseInt(seatInput?.value?.trim()||'',10);
   const nameVal=nameInput?.value?.trim()||'';
@@ -1073,9 +1155,8 @@ async function queryExemptionCard(){
   }
 
   errEl.style.display='none';
-  btn.disabled=true;
-  btn.style.opacity='0.7';
-  btn.textContent='查询中...';
+  isQuerying = true;
+  renderQueryGate();
 
   try{
     const{data,error}=await sb.rpc('get_student_digital_exemption',{
@@ -1093,8 +1174,12 @@ async function queryExemptionCard(){
     }
 
     saveExemptionInputs(seatVal,nameVal);
+
+    registerQueryAndGetCooldown();
+
     renderExemptionResult(data);
     resContainer.style.display='flex';
+    showToast('查询成功');
 
     setTimeout(()=>{
       resContainer.scrollIntoView({behavior:'smooth',block:'start'});
@@ -1104,9 +1189,8 @@ async function queryExemptionCard(){
     errEl.style.display='block';
     resContainer.style.display='none';
   }finally{
-    btn.disabled=false;
-    btn.style.opacity='1';
-    btn.innerHTML=`<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> 立即查询`;
+    isQuerying = false;
+    renderQueryGate();
   }
 }
 
@@ -1248,6 +1332,8 @@ function renderExemptionRecords(records){
 
   buildCardLayers();
   init3DCardEvents();
+
+  renderQueryGate();
 })();
 </script>
 </body>
