@@ -513,11 +513,11 @@ input[type=checkbox].toggle-cb{display:none}
       <div class="client-hero-logo">
         <svg width="32" height="32" fill="none" stroke="#fff" stroke-width="1.8" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
       </div>
-      <div class="client-hero-title">GLCN Android</div>
+      <div class="client-hero-title">GLCN Service</div>
       <div class="client-hero-sub">作业 / 公告查看 · 多端查看</div>
       <a id="download-btn-link" href="#" target="_blank" class="download-btn-light" style="display:none">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        下载 APK
+         下载
       </a>
       <div id="download-loading" style="font-size:13px;color:rgba(255,255,255,.8);margin-top:4px">正在获取下载链接…</div>
       <div id="download-unavailable" style="display:none;font-size:13px;color:rgba(255,255,255,.8);margin-top:4px">暂无下载链接，请联系管理员</div>
@@ -919,11 +919,39 @@ function syncToggle(cb,toggleId){document.getElementById(toggleId).classList.tog
 function triggerCb(cbId){const cb=document.getElementById(cbId);cb.checked=!cb.checked;cb.dispatchEvent(new Event('change'))}
 function setToggle(cbId,toggleId,val){const cb=document.getElementById(cbId);cb.checked=val;document.getElementById(toggleId).classList.toggle('on',val)}
 
+/* ========== 设备检测 ========== */
+function isIOSDevice(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+}
+const IS_IOS=isIOSDevice();
+
+/* iOS 隐藏「客户端」Tab 与页面 */
+function hideClientTabForIOS(){
+  if(!IS_IOS)return;
+  // 隐藏 PC 顶部 Tab 与底部导航中的客户端入口
+  document.querySelectorAll('.pc-tab[data-tab="client"], .nav-item[data-tab="client"]').forEach(el=>{
+    el.style.display='none';
+    el.setAttribute('aria-hidden','true');
+  });
+  // 隐藏客户端页面
+  const page=document.getElementById('page-client');
+  if(page){
+    page.classList.remove('active');
+    page.style.display='none';
+    page.setAttribute('aria-hidden','true');
+  }
+  // 若当前正停留在客户端页，切回作业页
+  const active=document.querySelector('.nav-item.active,.pc-tab.active');
+  if(active&&active.dataset.tab==='client'){
+    switchTab('assignments');
+  }
+}
+
 function checkIOSPWA(){
-  const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
   const isStandalone=window.navigator.standalone===true;
   const dismissed=localStorage.getItem('glcn_ios_pwa_dismissed');
-  if(isIOS&&!isStandalone&&!dismissed){
+  if(IS_IOS&&!isStandalone&&!dismissed){
     const banner=document.getElementById('ios-pwa-banner');
     if(banner)banner.style.display='flex';
   }
@@ -1101,8 +1129,9 @@ function updateAdminUI(){
     const hasAnn=adminInfo.permissions?.announcements===true||adminInfo.role==='superadmin';
     annBar.style.display=hasAnn?'flex':'none';
 
-    clientAdmin.style.display=(adminInfo.role==='superadmin')?'block':'none';
-    if(adminInfo.role==='superadmin')loadClientUrlForAdmin();
+    // iOS 上客户端页整体隐藏，超管设置区也一并隐藏
+    clientAdmin.style.display=(!IS_IOS&&adminInfo.role==='superadmin')?'block':'none';
+    if(!IS_IOS&&adminInfo.role==='superadmin')loadClientUrlForAdmin();
   }else{
     loginBtn.style.display='';
     adminBadge.style.display='none';
@@ -1130,6 +1159,11 @@ async function trackView(tableName,recordId){
 }
 
 function switchTab(tab,el){
+  // iOS 直接拦截客户端 Tab
+  if(tab==='client'&&IS_IOS)return;
+  const target=document.getElementById('page-'+tab);
+  if(!target)return;
+
   const pages=document.querySelectorAll('.page');
   const navs=document.querySelectorAll('.nav-item,.pc-tab');
   const newIndex=TAB_ORDER.indexOf(tab);
@@ -1138,7 +1172,6 @@ function switchTab(tab,el){
 
   pages.forEach(p=>{p.classList.remove('active','slide-right','slide-left')});
   navs.forEach(n=>n.classList.remove('active'));
-  const target=document.getElementById('page-'+tab);
   target.classList.add('active',direction);
   document.querySelectorAll(`[data-tab="${tab}"]`).forEach(n=>n.classList.add('active'));
 
@@ -1585,6 +1618,7 @@ async function loadDiscussions(){
 }
 
 async function loadClientPage(){
+  if(IS_IOS)return;
   try{
     const{data}=await sb.from('app_settings').select('key,value').in('key',['terms_url','privacy_url','official_website']);
     if(data){
@@ -1599,6 +1633,7 @@ async function fetchClientDownloadUrl(){
   const dlBtn=document.getElementById('download-btn-link');
   const dlLoading=document.getElementById('download-loading');
   const dlUnavail=document.getElementById('download-unavailable');
+  if(!dlBtn||!dlLoading||!dlUnavail)return;
   dlBtn.style.display='none';dlLoading.style.display='';dlUnavail.style.display='none';
   try{
     const{data}=await sb.from('app_settings').select('value').eq('key','client_download_url').maybeSingle();
@@ -1611,9 +1646,11 @@ async function fetchClientDownloadUrl(){
   }catch(_){dlLoading.style.display='none';dlUnavail.style.display='block'}
 }
 async function loadClientUrlForAdmin(){
+  if(IS_IOS)return;
   try{
     const{data}=await sb.from('app_settings').select('value').eq('key','client_download_url').maybeSingle();
-    if(data?.value)document.getElementById('client-url-input').value=data.value;
+    const input=document.getElementById('client-url-input');
+    if(data?.value&&input)input.value=data.value;
   }catch(_){}
 }
 async function saveClientUrl(){
@@ -1637,12 +1674,71 @@ function closeOverlay(id){
 function closeOverlayIfBg(id,e){if(e.target===document.getElementById(id))closeOverlay(id)}
 
 async function init(){
+  // 先根据设备类型裁剪客户端入口
+  hideClientTabForIOS();
+
   restoreSession();
   updateAdminUI();
   await loadSubjects();
   loadAssignments();
-  loadClientPage();
+  if(!IS_IOS)loadClientPage();
   checkIOSPWA();
+}
+
+const EX_LIMIT_KEY = 'glcn_ex_query_limit';
+
+function getTodayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function checkExQueryLimit() {
+  const today = getTodayStr();
+  let stored = {};
+  try {
+    stored = JSON.parse(localStorage.getItem(EX_LIMIT_KEY) || '{}');
+  } catch (_) {}
+
+  if (stored.date !== today) {
+    stored = { date: today, count: 0, cooldownUntil: 0 };
+    localStorage.setItem(EX_LIMIT_KEY, JSON.stringify(stored));
+  }
+
+  const now = Date.now();
+  if (stored.cooldownUntil && now < stored.cooldownUntil) {
+    const remain = Math.ceil((stored.cooldownUntil - now) / 1000);
+    return { allowed: false, remain, count: stored.count, cooldownUntil: stored.cooldownUntil };
+  }
+  return { allowed: true, count: stored.count || 0, cooldownUntil: stored.cooldownUntil || 0 };
+}
+
+function recordExQuery() {
+  const today = getTodayStr();
+  let stored = {};
+  try {
+    stored = JSON.parse(localStorage.getItem(EX_LIMIT_KEY) || '{}');
+  } catch (_) {}
+
+  if (stored.date !== today) {
+    stored = { date: today, count: 0, cooldownUntil: 0 };
+  }
+
+  stored.count = (stored.count || 0) + 1;
+  let cooldownSec = 0;
+
+  if (stored.count > 3) {
+    if (stored.count <= 6) {
+      cooldownSec = 5;
+    } else {
+      cooldownSec = Math.floor(Math.random() * 21) + 10;
+    }
+    stored.cooldownUntil = Date.now() + cooldownSec * 1000;
+  } else {
+    stored.cooldownUntil = 0;
+  }
+
+  localStorage.setItem(EX_LIMIT_KEY, JSON.stringify(stored));
+  return { count: stored.count, cooldownSec, cooldownUntil: stored.cooldownUntil };
 }
 
 let exCardCurrentRotY = 0;
@@ -1776,7 +1872,18 @@ async function queryExemptionCard() {
     return;
   }
 
+  const limitCheck = checkExQueryLimit();
+  if (!limitCheck.allowed) {
+    errEl.textContent = `查询过于频繁，请等待 ${limitCheck.remain} 秒后再试`;
+    errEl.style.display = 'block';
+    showToast(`查询过于频繁，请等待 ${limitCheck.remain} 秒后再试`);
+    return;
+  }
+
   errEl.style.display = 'none';
+
+  recordExQuery();
+
   btn.disabled = true;
   btn.style.opacity = '0.7';
   btn.textContent = '查询中...';
