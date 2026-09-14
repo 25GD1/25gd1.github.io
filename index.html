@@ -58,7 +58,7 @@ textarea{resize:vertical}
 #admin-badge{display:none;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;background:var(--pl);cursor:pointer;transition:transform .15s,background .2s}
 #admin-badge:active{transform:scale(0.96)}
 #admin-badge span{font-size:12px;font-weight:700;color:var(--p);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#login-btn{padding:7px 16px;border-radius:99px;background:var(--p);color:#fff;font-size:12px;font-weight:700;flex-shrink:0;transition:all .15s;box-shadow:0 2px 8px rgba(37,99,235,.25)}
+#login-btn{padding:5px 12px;border-radius:99px;background:var(--p);color:#fff;font-size:11px;font-weight:700;flex-shrink:0;transition:all .15s;box-shadow:0 2px 8px rgba(37,99,235,.25)}
 #login-btn:active{transform:scale(0.96);box-shadow:0 1px 4px rgba(37,99,235,.2)}
 
 .ios-pwa-banner{
@@ -92,11 +92,16 @@ textarea{resize:vertical}
 }
 .ios-pwa-banner button:active{background:rgba(255,255,255,.35)}
 
+/* ===== 布局容器（PC 下侧栏 + 内容） ===== */
+#pc-layout{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+
 #pc-tabs{display:none;gap:4px;padding:8px 16px 0;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);flex-shrink:0;border-bottom:1px solid var(--border)}
-.pc-tab{padding:8px 16px;border-radius:10px 10px 0 0;font-size:13px;font-weight:600;color:var(--muted);transition:all .18s;cursor:pointer;position:relative}
+.pc-tab{display:inline-flex;align-items:center;gap:7px;padding:8px 16px;border-radius:10px 10px 0 0;font-size:13px;font-weight:600;color:var(--muted);transition:all .18s;cursor:pointer;position:relative}
+.pc-tab svg{width:16px;height:16px;flex-shrink:0}
 .pc-tab:hover{color:var(--text);background:rgba(37,99,235,.04)}
 .pc-tab.active{color:var(--p);background:#fff}
 .pc-tab.active::after{content:'';position:absolute;bottom:0;left:12px;right:12px;height:2px;background:var(--p);border-radius:2px}
+
 @media(min-width:640px){
   #pc-tabs{display:flex}
   .bottom-nav{display:none!important}
@@ -108,7 +113,7 @@ textarea{resize:vertical}
   .ios-pwa-banner{top:var(--hdr)}
 }
 
-.pages{flex:1;overflow:hidden;position:relative}
+.pages{flex:1;min-height:0;overflow:hidden;position:relative}
 .page{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;display:none;flex-direction:column;overscroll-behavior-y:contain}
 .page.active{display:flex;animation:fadeIn .35s var(--ease-out-expo)}
 .page.slide-right{animation:slideInRight .35s var(--ease-out-expo)}
@@ -135,8 +140,10 @@ textarea{resize:vertical}
 .scroll-x>*{scroll-snap-align:start}
 
 .list-wrap{display:flex;flex-direction:column;gap:12px;padding:12px 16px}
-.card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;transition:transform .2s,box-shadow .2s}
-.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.card{background:var(--card);border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;transition:transform .2s,box-shadow .2s,border-color .2s}
+@media(hover:hover){
+  .card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+}
 .list-item{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;transition:background .12s;position:relative}
 .list-item:active{background:#F8FAFF}
 .list-item::after{content:'';position:absolute;left:16px;right:16px;bottom:0;height:1px;background:var(--border)}
@@ -434,6 +441,102 @@ input[type=checkbox].toggle-cb{display:none}
 @keyframes exShimmerSweep{0%,70%{left:-100%}100%{left:200%}}
 .ex-scale-in{animation:exScaleIn .45s cubic-bezier(0.16,1,0.3,1) both}
 @keyframes exScaleIn{from{opacity:0;transform:scale(0.92) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+/* ============ PC / 桌面端体验增强 ============ */
+.pc-close-btn{display:none}
+
+@media(min-width:640px){
+  #app{max-width:1180px}
+  /* 桌面端滚动条美化 */
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:#CBD5E1;border-radius:99px;border:3px solid var(--bg)}
+  ::-webkit-scrollbar-thumb:hover{background:#94A3B8}
+  ::-webkit-scrollbar-corner{background:transparent}
+
+  /* 详情弹层右上角关闭按钮（桌面端） */
+  .detail-sheet{position:relative}
+  .pc-close-btn{
+    display:flex;position:absolute;top:14px;right:14px;
+    width:32px;height:32px;border-radius:50%;
+    background:#F1F5F9;color:var(--muted);
+    align-items:center;justify-content:center;
+    font-size:14px;line-height:1;z-index:6;
+    transition:background .15s,color .15s,transform .15s;
+  }
+  .pc-close-btn:hover{background:#E2E8F0;color:var(--text)}
+  .pc-close-btn:active{transform:scale(0.92)}
+  .detail-head{padding-right:56px}
+}
+
+@media(min-width:1024px){
+  :root{--hdr:64px}
+  #app{max-width:1440px}
+
+  /* 顶部栏更舒展 */
+  #main-header{padding:0 28px;gap:12px}
+  .hdr-logo{width:34px;height:34px;border-radius:10px}
+  .hdr-logo span{font-size:17px}
+  .hdr-title{font-size:18px}
+  .hdr-subtitle{font-size:11.5px}
+
+  /* 侧边栏布局 */
+  #pc-layout{flex-direction:row}
+  #pc-tabs{
+    width:232px;flex-shrink:0;
+    flex-direction:column;align-items:stretch;gap:4px;
+    padding:18px 14px;overflow-y:auto;
+    border-bottom:none;border-right:1px solid var(--border);
+    background:rgba(255,255,255,.72);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  }
+  .pc-tab{
+    justify-content:flex-start;
+    padding:11px 14px;border-radius:11px;
+    font-size:13.5px;
+  }
+  .pc-tab svg{width:17px;height:17px}
+  .pc-tab.active{background:var(--pl);color:var(--p)}
+  .pc-tab.active::after{display:none}
+
+  /* 列表改为自适应网格，充分利用宽屏 */
+  .list-wrap{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+    gap:14px;padding:20px 28px;align-content:start;
+  }
+  .list-wrap > .empty,
+  .list-wrap > .spinner{grid-column:1/-1}
+  .list-wrap .card.list-item{height:100%}
+  .list-wrap .card.list-item::after{display:none}
+  .list-wrap .card.list-item:hover{border-color:rgba(37,99,235,.25)}
+
+  .toolbar{padding:14px 28px}
+  .scroll-x{flex-wrap:wrap;overflow:visible}
+  .admin-perm-bar{padding:12px 28px}
+
+  /* 弹层尺寸 */
+  .detail-sheet{max-width:680px;max-height:84vh}
+  .sheet{max-width:560px}
+  .detail-content{font-size:15px}
+
+  /* 客户端页居中收窄 */
+  #page-client{padding:0 28px}
+  .client-hero{max-width:920px;margin:24px auto 0!important;width:100%}
+  #page-client > div:not(.client-hero){max-width:920px;margin-left:auto;margin-right:auto;width:100%}
+}
+
+/* 键盘焦点可见性（桌面端） */
+@media(min-width:640px){
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible{
+    outline:2px solid var(--p);
+    outline-offset:2px;
+  }
+}
 </style>
 </head>
 <body>
@@ -449,7 +552,7 @@ input[type=checkbox].toggle-cb{display:none}
     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
     <span id="admin-name-text"></span>
   </div>
-  <button id="login-btn" onclick="openLogin()">管理员登录</button>
+  <a id="card-btn" href="https://25gd1.github.io/Card" target="_blank" style="display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;background:#059669;color:#fff;font-size:11px;font-weight:700;flex-shrink:0;transition:all .15s;box-shadow:0 2px 8px rgba(5,150,105,.25);text-decoration:none;cursor:pointer;white-space:nowrap"><svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>免罚卡</a><button id="login-btn" onclick="openLogin()">管理员登录</button>
 </header>
 
 <div id="ios-pwa-banner" class="ios-pwa-banner">
@@ -458,12 +561,29 @@ input[type=checkbox].toggle-cb{display:none}
   <button onclick="dismissIOSPWA()">知道了</button>
 </div>
 
+<div id="pc-layout">
+
 <div id="pc-tabs">
-  <button class="pc-tab active" data-tab="assignments">作业</button>
-  <button class="pc-tab" data-tab="announcements">公告</button>
-  <button class="pc-tab" data-tab="discussions">讨论</button>
-  <button class="pc-tab" data-tab="client">客户端</button>
-  <button class="pc-tab" data-tab="exemption-card">我的卡</button>
+  <button class="pc-tab active" data-tab="assignments">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    <span>作业</span>
+  </button>
+  <button class="pc-tab" data-tab="announcements">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+    <span>公告</span>
+  </button>
+  <button class="pc-tab" data-tab="discussions">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    <span>讨论</span>
+  </button>
+  <button class="pc-tab" data-tab="client">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+    <span>客户端</span>
+  </button>
+  <button class="pc-tab" data-tab="exemption-card">
+    <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    <span>我的卡</span>
+  </button>
 </div>
 
 <div class="pages">
@@ -513,7 +633,7 @@ input[type=checkbox].toggle-cb{display:none}
       <div class="client-hero-logo">
         <svg width="32" height="32" fill="none" stroke="#fff" stroke-width="1.8" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="17" r="1"/></svg>
       </div>
-      <div class="client-hero-title">知雨 Service</div>
+      <div class="client-hero-title">GLCN Service</div>
       <div class="client-hero-sub">作业 / 公告查看 · 多端查看</div>
       <a id="download-btn-link" href="#" target="_blank" class="download-btn-light" style="display:none">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -683,6 +803,8 @@ input[type=checkbox].toggle-cb{display:none}
 
 </div>
 
+</div>
+
 <nav class="bottom-nav">
   <button class="nav-item active" data-tab="assignments" onclick="switchTab('assignments',this)">
     <div class="nav-icon">
@@ -720,6 +842,7 @@ input[type=checkbox].toggle-cb{display:none}
 
 <div class="overlay" id="detail-overlay" onclick="closeDetailIfBg(event)">
   <div class="detail-sheet">
+    <button class="pc-close-btn" onclick="closeDetail()" aria-label="关闭">✕</button>
     <div class="sheet-handle"></div>
     <div class="detail-head" id="detail-head"></div>
     <div class="detail-body">
@@ -929,19 +1052,16 @@ const IS_IOS=isIOSDevice();
 /* iOS 隐藏「客户端」Tab 与页面 */
 function hideClientTabForIOS(){
   if(!IS_IOS)return;
-  // 隐藏 PC 顶部 Tab 与底部导航中的客户端入口
   document.querySelectorAll('.pc-tab[data-tab="client"], .nav-item[data-tab="client"]').forEach(el=>{
     el.style.display='none';
     el.setAttribute('aria-hidden','true');
   });
-  // 隐藏客户端页面
   const page=document.getElementById('page-client');
   if(page){
     page.classList.remove('active');
     page.style.display='none';
     page.setAttribute('aria-hidden','true');
   }
-  // 若当前正停留在客户端页，切回作业页
   const active=document.querySelector('.nav-item.active,.pc-tab.active');
   if(active&&active.dataset.tab==='client'){
     switchTab('assignments');
@@ -962,10 +1082,24 @@ function dismissIOSPWA(){
   if(banner)banner.style.display='none';
 }
 
+/* 滚动阴影：.page 是真正的滚动容器，用捕获方式监听 */
 document.querySelector('.pages').addEventListener('scroll',e=>{
   const h=document.getElementById('main-header');
-  if(e.target.scrollTop>4)h.classList.add('hdr-scrolled');else h.classList.remove('hdr-scrolled');
-},{passive:true});
+  const top=(e.target&&e.target.scrollTop)||0;
+  if(top>4)h.classList.add('hdr-scrolled');else h.classList.remove('hdr-scrolled');
+},{capture:true,passive:true});
+
+/* ESC 关闭最上层弹层（桌面端体验） */
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Escape')return;
+  const overlays=[...document.querySelectorAll('.overlay.show')];
+  if(!overlays.length)return;
+  const id=overlays[overlays.length-1].id;
+  if(id==='detail-overlay')closeDetail();
+  else if(id==='login-overlay')closeLogin();
+  else if(id==='admin-menu-overlay')closeAdminMenu();
+  else closeOverlay(id);
+});
 
 function openLogin(){
   document.getElementById('login-err').textContent='';
@@ -1129,7 +1263,6 @@ function updateAdminUI(){
     const hasAnn=adminInfo.permissions?.announcements===true||adminInfo.role==='superadmin';
     annBar.style.display=hasAnn?'flex':'none';
 
-    // iOS 上客户端页整体隐藏，超管设置区也一并隐藏
     clientAdmin.style.display=(!IS_IOS&&adminInfo.role==='superadmin')?'block':'none';
     if(!IS_IOS&&adminInfo.role==='superadmin')loadClientUrlForAdmin();
   }else{
@@ -1159,7 +1292,6 @@ async function trackView(tableName,recordId){
 }
 
 function switchTab(tab,el){
-  // iOS 直接拦截客户端 Tab
   if(tab==='client'&&IS_IOS)return;
   const target=document.getElementById('page-'+tab);
   if(!target)return;
@@ -1674,7 +1806,6 @@ function closeOverlay(id){
 function closeOverlayIfBg(id,e){if(e.target===document.getElementById(id))closeOverlay(id)}
 
 async function init(){
-  // 先根据设备类型裁剪客户端入口
   hideClientTabForIOS();
 
   restoreSession();
