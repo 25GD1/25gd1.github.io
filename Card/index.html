@@ -5,15 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<!-- ★ 夸克 / UC / QQ 浏览器：禁止强制夜间模式 -->
 <meta name="nightmode" content="disable"/>
 <meta name="darkreader-lock"/>
-<meta name="color-scheme" content="light"/>
-<meta name="supported-color-schemes" content="light dark"/>
+<meta name="color-scheme" content="light"/><!-- JS 动态更新 -->
+<meta name="supported-color-schemes" content="light dark"/><!-- 声明支持两种，但实际由 JS 控制 -->
 <meta name="theme-color" content="#F4F7FC" media="(prefers-color-scheme: light)"/>
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)"/>
 <title>免罚卡查询 · GLCN</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
+/* ★ 阻止浏览器强制改色 */
 html{
   color-scheme: light;
   forced-color-adjust: none;
@@ -24,9 +26,17 @@ html{
   -webkit-forced-color-adjust: none;
 }
 
+/* ══════════════════════════════════════════
+   主题变量
+   data-theme="light" → 亮色
+   data-theme="dark"  → 暗色
+   data-theme="auto"  → 跟随系统
+   ══════════════════════════════════════════ */
+
+/* ── 亮色（默认 + data-theme="light"） ── */
 :root,
 :root[data-theme="light"]{
-  color-scheme: light;
+  color-scheme: light;  /* 明确声明亮色，阻止浏览器自动反转 */
 
   --p:#2563EB;
   --pl:#EBF4FF;
@@ -78,8 +88,9 @@ html{
   --ease-spring:cubic-bezier(0.32,0.72,0,1);
 }
 
+/* ── 暗色：手动切换 data-theme="dark" ── */
 :root[data-theme="dark"]{
-  color-scheme: dark;
+  color-scheme: dark;  /* 明确声明暗色 */
 
   --p:#7BA3FF;
   --pl:rgba(123,163,255,.14);
@@ -132,58 +143,59 @@ html{
   --rec-pen-bg:rgba(239,68,68,.18);--rec-pen-fg:#fca5a5;
 }
 
+/* ── 暗色：跟随系统（JS 解析后设置 data-resolved="dark"） ── */
 :root[data-theme="auto"][data-resolved="dark"]{
-  color-scheme: dark;
+    color-scheme: dark;  /* JS 解析后确认是暗色 */
 
-  --p:#7BA3FF;
-  --pl:rgba(123,163,255,.14);
+    --p:#7BA3FF;
+    --pl:rgba(123,163,255,.14);
 
-  --gold:#d4b872;
-  --gold-light:#f0dc9e;
-  --gold-dark:#8a6c2e;
+    --gold:#d4b872;
+    --gold-light:#f0dc9e;
+    --gold-dark:#8a6c2e;
 
-  --bg:#000000;
-  --surface:#0c0c0e;
-  --card-hdr:rgba(0,0,0,.85);
-  --border:#1e1e24;
-  --text:#f5f5f7;
-  --t2:#c2c2cc;
-  --muted:#9a9aa6;
-  --shadow:0 4px 16px rgba(0,0,0,.75),0 1px 3px rgba(0,0,0,.6);
-  --shadow-colored:0 8px 24px rgba(123,163,255,.2);
+    --bg:#000000;
+    --surface:#0c0c0e;
+    --card-hdr:rgba(0,0,0,.85);
+    --border:#1e1e24;
+    --text:#f5f5f7;
+    --t2:#c2c2cc;
+    --muted:#9a9aa6;
+    --shadow:0 4px 16px rgba(0,0,0,.75),0 1px 3px rgba(0,0,0,.6);
+    --shadow-colored:0 8px 24px rgba(123,163,255,.2);
 
-  --card-front-1:#0c0c0e;
-  --card-front-2:#000000;
-  --card-back-1:#0c0c0e;
-  --card-back-2:#000000;
-  --card-border-1:#f0dc9e;
-  --card-border-2:#d4b872;
-  --card-border-3:#a68a3f;
-  --card-text-strong:#f5ecd6;
-  --card-text-soft:#b3a78c;
-  --card-icon-bg:rgba(212,184,114,.16);
-  --card-icon-border:rgba(240,220,158,.55);
-  --card-shadow:
-    0 0 0 1px rgba(240,220,158,.45),
-    0 0 22px rgba(212,184,114,.45),
-    0 0 48px -6px rgba(212,184,114,.28),
-    0 24px 48px -18px rgba(0,0,0,1),
-    0 10px 22px -10px rgba(0,0,0,.9);
-  --card-glare-color:rgba(240,220,158,.45);
-  --card-glare-mid:rgba(240,220,158,.10);
-  --card-shimmer-color:rgba(240,220,158,.6);
+    --card-front-1:#0c0c0e;
+    --card-front-2:#000000;
+    --card-back-1:#0c0c0e;
+    --card-back-2:#000000;
+    --card-border-1:#f0dc9e;
+    --card-border-2:#d4b872;
+    --card-border-3:#a68a3f;
+    --card-text-strong:#f5ecd6;
+    --card-text-soft:#b3a78c;
+    --card-icon-bg:rgba(212,184,114,.16);
+    --card-icon-border:rgba(240,220,158,.55);
+    --card-shadow:
+      0 0 0 1px rgba(240,220,158,.45),
+      0 0 22px rgba(212,184,114,.45),
+      0 0 48px -6px rgba(212,184,114,.28),
+      0 24px 48px -18px rgba(0,0,0,1),
+      0 10px 22px -10px rgba(0,0,0,.9);
+    --card-glare-color:rgba(240,220,158,.45);
+    --card-glare-mid:rgba(240,220,158,.10);
+    --card-shimmer-color:rgba(240,220,158,.6);
 
-  --tag-gold-bg:rgba(212,184,114,.18);
-  --tag-gold-fg:#f0dc9e;
-  --tag-gold-border:rgba(240,220,158,.55);
-  --tag-neutral-bg:#1a1a20;--tag-neutral-fg:#a8a8b3;--tag-neutral-border:#2a2a32;
-  --tag-red-bg:rgba(239,68,68,.18);--tag-red-fg:#fca5a5;--tag-red-border:rgba(248,113,113,.45);
-  --tag-empty-bg:rgba(212,184,114,.16);--tag-debt-bg:rgba(239,68,68,.18);
-  --debt-fg:#fca5a5;--debt-hint:#fecaca;
+    --tag-gold-bg:rgba(212,184,114,.18);
+    --tag-gold-fg:#f0dc9e;
+    --tag-gold-border:rgba(240,220,158,.55);
+    --tag-neutral-bg:#1a1a20;--tag-neutral-fg:#a8a8b3;--tag-neutral-border:#2a2a32;
+    --tag-red-bg:rgba(239,68,68,.18);--tag-red-fg:#fca5a5;--tag-red-border:rgba(248,113,113,.45);
+    --tag-empty-bg:rgba(212,184,114,.16);--tag-debt-bg:rgba(239,68,68,.18);
+    --debt-fg:#fca5a5;--debt-hint:#fecaca;
 
-  --rec-gain-bg:rgba(212,184,114,.18);--rec-gain-fg:#f0dc9e;
-  --rec-use-bg:rgba(16,185,129,.16);--rec-use-fg:#5eead4;
-  --rec-pen-bg:rgba(239,68,68,.18);--rec-pen-fg:#fca5a5;
+    --rec-gain-bg:rgba(212,184,114,.18);--rec-gain-fg:#f0dc9e;
+    --rec-use-bg:rgba(16,185,129,.16);--rec-use-fg:#5eead4;
+    --rec-pen-bg:rgba(239,68,68,.18);--rec-pen-fg:#fca5a5;
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -222,6 +234,7 @@ a{color:inherit;text-decoration:none}
 .hdr-title{font-size:17px;font-weight:700;letter-spacing:-0.2px}
 .hdr-subtitle{font-size:11px;color:var(--muted);line-height:1.3}
 
+/* 主题切换按钮 */
 .hdr-theme-btn{
   display:inline-flex;align-items:center;gap:5px;
   padding:7px 12px;border-radius:99px;
@@ -289,9 +302,13 @@ a{color:inherit;text-decoration:none}
 @keyframes exScaleIn{from{opacity:0;transform:scale(0.92) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(12px) scale(0.96)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
 @keyframes exShimmerSweep{0%,72%{left:-110%}100%{left:220%}}
-@keyframes exSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 .ex-scale-in{animation:exScaleIn .45s var(--ease-out-expo) both}
 
+/* ═══════════════════════════════════════════════════════
+   3D 卡片
+   ★ 关键修复：用 aspect-ratio 替代 calc(--w * 180 / 290)
+     避免"高度依赖宽度、宽度依赖 100% 父级高度"的循环依赖
+   ═══════════════════════════════════════════════════════ */
 .ex-card-scene{
   perspective:1500px;
   perspective-origin:50% 50%;
@@ -301,18 +318,20 @@ a{color:inherit;text-decoration:none}
   user-select:none;-webkit-user-select:none;
   touch-action:pan-y;
   position:relative;
+  overflow:visible;   /* ★ 允许 3D 旋转时向外溢出，避免被裁切 */
 }
 .ex-card-scene.dragging{touch-action:none}
 
 .ex-card-3d{
   --w: min(290px, 78vw);
-  --h: calc(var(--w) * 180 / 290);
   --depth: 8px;
   --half: 4px;
   --r: 20px;
 
   width: var(--w);
-  height: var(--h);
+  height: auto;              /* ★ 不再手算高度 */
+  aspect-ratio: 290 / 180;   /* ★ 由浏览器按比例推导高度 */
+
   position: relative;
   transform-style: preserve-3d;
   cursor: grab;
@@ -514,8 +533,8 @@ a{color:inherit;text-decoration:none}
   background:#26262e;color:#f5f5f7;border:1px solid rgba(255,255,255,.08);
 }
 :root[data-theme="auto"][data-resolved="dark"] #toast{
-  background:#26262e;color:#f5f5f7;border:1px solid rgba(255,255,255,.08);
-}
+    background:#26262e;color:#f5f5f7;border:1px solid rgba(255,255,255,.08);
+  }
 #toast.show{opacity:1;animation:toastIn .35s var(--ease-spring)}
 
 @media(max-width:639px){
@@ -525,10 +544,12 @@ a{color:inherit;text-decoration:none}
   .hdr-theme-btn span{display:none}
 }
 
+/* 主题切换过渡动画 */
 .theme-transitioning *{
   transition: background-color .35s ease, color .25s ease, border-color .25s ease, box-shadow .3s ease !important;
 }
 
+/* 主题按钮切换反馈 */
 .hdr-theme-btn.switching{
   animation: themeSwitchPulse .3s ease;
 }
@@ -536,6 +557,124 @@ a{color:inherit;text-decoration:none}
   0%{ transform: scale(1); }
   50%{ transform: scale(0.9); opacity: 0.7; }
   100%{ transform: scale(1); opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════════
+   PC 端布局与体验优化
+   ═══════════════════════════════════════════════════════ */
+
+/* 查询卡片：网格布局，桌面端按钮与输入框同行 */
+.ex-query-card{
+  display:grid;
+  padding:16px;
+  gap:12px;
+  grid-template-columns:1fr 1fr;
+  grid-template-areas:
+    "header header"
+    "seat   name"
+    "err    err"
+    "btn    btn";
+}
+.ex-query-header{grid-area:header;display:flex;align-items:center;gap:8px}
+.ex-field-seat{grid-area:seat}
+.ex-field-name{grid-area:name}
+#ex-query-err{grid-area:err;display:none}
+.ex-query-btn{grid-area:btn;width:100%}
+
+/* 结果容器与左侧栏 */
+.ex-result-left{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+/* 单条记录卡片 */
+.ex-rec-item{
+  transition:background-color .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+/* 桌面端样式 */
+@media (min-width:960px){
+  .hdr-inner{max-width:1100px;padding:0 28px}
+
+  .ex-page-wrap{
+    max-width:1100px;
+    padding:24px 28px 44px;
+    gap:20px;
+  }
+
+  /* 查询卡片：输入框与按钮同行 */
+  .ex-query-card{
+    grid-template-columns:150px minmax(0,1fr) auto;
+    grid-template-areas:
+      "header header header"
+      "seat   name   btn"
+      "err    err    err";
+    gap:14px;
+    padding:20px 24px;
+  }
+  .ex-query-btn{
+    width:auto;
+    padding:11px 28px;
+    align-self:end;
+  }
+
+  /* 结果布局：左右双栏 */
+  #ex-result-container{
+    flex-direction:row !important;
+    align-items:flex-start;
+    gap:20px !important;
+  }
+  .ex-result-left{
+    flex:0 0 400px;
+    gap:20px;
+  }
+  #ex-records-card{
+    flex:1 1 auto;
+    min-width:0;
+  }
+
+  /* ★ 3D 卡片：桌面端使用固定宽度，避免 100% 造成循环依赖 */
+  .ex-card-3d{--w: 340px}
+  .ex-card-scene{padding:26px 0 30px}
+
+  /* 美化滚动条 */
+  ::-webkit-scrollbar{width:10px;height:10px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{
+    background:color-mix(in srgb, var(--muted) 45%, transparent);
+    border-radius:99px;
+    border:3px solid var(--bg);
+  }
+  ::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+  /* 键盘焦点可见性 */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible{
+    outline:2px solid var(--p);
+    outline-offset:2px;
+    border-radius:var(--r-sm);
+  }
+
+  /* 记录条悬浮反馈 */
+  @media (hover: hover){
+    .ex-rec-item:hover{
+      background:color-mix(in srgb, var(--gold) 6%, var(--surface)) !important;
+      border-color:color-mix(in srgb, var(--gold) 35%, var(--border)) !important;
+      transform:translateX(2px);
+    }
+  }
+
+  /* 头部栏按钮微调 */
+  .hdr-home-btn{padding:7px 16px}
+}
+
+/* 超宽屏：整体稍作收窄避免过度拉伸 */
+@media (min-width:1400px){
+  .hdr-inner{max-width:1200px}
+  .ex-page-wrap{max-width:1200px}
+  .ex-result-left{flex:0 0 440px}
 }
 </style>
 </head>
@@ -548,6 +687,7 @@ a{color:inherit;text-decoration:none}
       <div class="hdr-title">GLCN</div>
       <div class="hdr-subtitle">免罚卡查询</div>
     </div>
+    <!-- 主题切换按钮 -->
     <button class="hdr-theme-btn" id="theme-toggle" onclick="cycleTheme()" title="切换主题">
       <svg id="theme-icon" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
         <circle cx="12" cy="12" r="4"/>
@@ -567,9 +707,9 @@ a{color:inherit;text-decoration:none}
 
 <main class="ex-page-wrap">
 
-  <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px">
-    <div style="display:flex;align-items:center;gap:8px">
-      <div style="width:32px;height:32px;border-radius:10px;background:var(--card-icon-bg);border:1px solid var(--card-icon-border);display:flex;align-items:center;justify-content:center;color:var(--gold)">
+  <div class="card ex-query-card">
+    <div class="ex-query-header">
+      <div style="width:32px;height:32px;border-radius:10px;background:var(--card-icon-bg);border:1px solid var(--card-icon-border);display:flex;align-items:center;justify-content:center;color:var(--gold);flex-shrink:0">
         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
       </div>
       <div>
@@ -578,21 +718,19 @@ a{color:inherit;text-decoration:none}
       </div>
     </div>
 
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <div class="field" style="flex:1;min-width:110px">
-        <label>座号 *</label>
-        <input id="ex-input-seat" type="tel" pattern="[0-9]*" inputmode="numeric" class="ex-gold-border" placeholder="如 1"/>
-      </div>
-      <div class="field" style="flex:1.5;min-width:130px">
-        <label>姓名 *</label>
-        <input id="ex-input-name" class="ex-gold-border" placeholder="如 张三"
-               onkeydown="if(event.key==='Enter')queryExemptionCard()"/>
-      </div>
+    <div class="field ex-field-seat">
+      <label>座号 *</label>
+      <input id="ex-input-seat" type="tel" pattern="[0-9]*" inputmode="numeric" class="ex-gold-border" placeholder="如 1"/>
+    </div>
+    <div class="field ex-field-name">
+      <label>姓名 *</label>
+      <input id="ex-input-name" class="ex-gold-border" placeholder="如 张三"
+             onkeydown="if(event.key==='Enter')queryExemptionCard()"/>
     </div>
 
-    <div class="form-err" id="ex-query-err" style="display:none"></div>
+    <div class="form-err" id="ex-query-err"></div>
 
-    <button class="btn" id="ex-query-btn"
+    <button class="btn ex-query-btn" id="ex-query-btn"
       style="background:var(--gold);color:#fff;box-shadow:0 4px 14px -3px color-mix(in srgb,var(--gold) 50%,transparent);font-weight:700"
       onclick="queryExemptionCard()">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -602,91 +740,95 @@ a{color:inherit;text-decoration:none}
 
   <div id="ex-result-container" style="display:none;flex-direction:column;gap:14px">
 
-    <div class="card" style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
-      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
-        <div id="ex-res-seat-badge"
-          style="width:36px;height:36px;border-radius:10px;background:var(--card-icon-bg);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:14px;font-weight:800;flex-shrink:0;border:1px solid var(--card-icon-border)">
-          1号
-        </div>
-        <div style="flex:1;min-width:0">
-          <div id="ex-res-student-name"
-            style="font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">学生姓名</div>
-          <div id="ex-res-status-sub" style="font-size:11px;color:var(--muted)">状态信息</div>
-        </div>
-      </div>
-      <span class="tag" id="ex-res-balance-tag"
-        style="font-size:12px;padding:4px 12px;background:var(--tag-gold-bg);color:var(--tag-gold-fg);border:1px solid var(--tag-gold-border);flex-shrink:0;margin-left:8px">余 1 张</span>
-    </div>
+    <div class="ex-result-left">
 
-    <div id="ex-3d-card-area" class="ex-scale-in" style="display:none">
-      <div class="ex-card-scene" id="ex-card-scene">
-        <div class="ex-card-3d" id="ex-card-3d">
-
-          <div class="ex-face ex-front">
-            <div class="ex-card-glare"></div>
-            <div class="ex-shimmer"></div>
-
-            <div class="ex-card-top">
-              <svg class="ex-card-star" width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-              <span class="ex-card-badge">免罚卡</span>
-            </div>
-
-            <div class="ex-card-center">
-              <div class="ex-card-icon">
-                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
-              </div>
-              <div class="ex-card-count">
-                <span id="ex-card-number" class="ex-card-number">1</span>
-                <span class="ex-card-unit">张</span>
-              </div>
-              <div class="ex-card-label">班级免罚卡</div>
-            </div>
-
-            <div class="ex-card-bottom">
-              <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-            </div>
+      <div class="card" style="padding:12px 16px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
+          <div id="ex-res-seat-badge"
+            style="width:36px;height:36px;border-radius:10px;background:var(--card-icon-bg);display:flex;align-items:center;justify-content:center;color:var(--gold);font-size:14px;font-weight:800;flex-shrink:0;border:1px solid var(--card-icon-border)">
+            1号
           </div>
-
-          <div class="ex-face ex-back">
-            <div class="ex-card-glare"></div>
-            <div class="ex-shimmer"></div>
-
-            <div class="ex-card-back-top">
-              <span class="ex-card-back-title">班级免罚卡</span>
-              <span id="ex-card-back-date" class="ex-card-back-date">2026.09</span>
-            </div>
-            <div class="ex-card-back-center">
-              <div class="ex-card-back-icon">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-              </div>
-              <div class="ex-card-back-text">表现优异特此发放</div>
-            </div>
-            <div class="ex-card-back-foot">由班主任发放</div>
+          <div style="flex:1;min-width:0">
+            <div id="ex-res-student-name"
+              style="font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">学生姓名</div>
+            <div id="ex-res-status-sub" style="font-size:11px;color:var(--muted)">状态信息</div>
           </div>
+        </div>
+        <span class="tag" id="ex-res-balance-tag"
+          style="font-size:12px;padding:4px 12px;background:var(--tag-gold-bg);color:var(--tag-gold-fg);border:1px solid var(--tag-gold-border);flex-shrink:0;margin-left:8px">余 1 张</span>
+      </div>
 
+      <div id="ex-3d-card-area" class="ex-scale-in" style="display:none">
+        <div class="ex-card-scene" id="ex-card-scene">
+          <div class="ex-card-3d" id="ex-card-3d">
+
+            <div class="ex-face ex-front">
+              <div class="ex-card-glare"></div>
+              <div class="ex-shimmer"></div>
+
+              <div class="ex-card-top">
+                <svg class="ex-card-star" width="15" height="15" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <span class="ex-card-badge">免罚卡</span>
+              </div>
+
+              <div class="ex-card-center">
+                <div class="ex-card-icon">
+                  <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+                </div>
+                <div class="ex-card-count">
+                  <span id="ex-card-number" class="ex-card-number">1</span>
+                  <span class="ex-card-unit">张</span>
+                </div>
+                <div class="ex-card-label">班级免罚卡</div>
+              </div>
+
+              <div class="ex-card-bottom">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+              </div>
+            </div>
+
+            <div class="ex-face ex-back">
+              <div class="ex-card-glare"></div>
+              <div class="ex-shimmer"></div>
+
+              <div class="ex-card-back-top">
+                <span class="ex-card-back-title">班级免罚卡</span>
+                <span id="ex-card-back-date" class="ex-card-back-date">2026.09</span>
+              </div>
+              <div class="ex-card-back-center">
+                <div class="ex-card-back-icon">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <div class="ex-card-back-text">表现优异特此发放</div>
+              </div>
+              <div class="ex-card-back-foot">由班主任发放</div>
+            </div>
+
+          </div>
         </div>
       </div>
-    </div>
 
-    <div id="ex-empty-zero" class="card"
-      style="padding:32px 20px;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center">
-      <div style="width:48px;height:48px;border-radius:16px;background:var(--tag-empty-bg);display:flex;align-items:center;justify-content:center;color:var(--gold)">
-        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <div id="ex-empty-zero" class="card"
+        style="padding:32px 20px;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px;text-align:center">
+        <div style="width:48px;height:48px;border-radius:16px;background:var(--tag-empty-bg);display:flex;align-items:center;justify-content:center;color:var(--gold)">
+          <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div style="font-size:16px;font-weight:700;color:var(--text)">当前无免罚卡</div>
+        <div style="font-size:12px;color:var(--muted)">积极参与班级活动、考试成绩前列等可获取奖励免罚卡哦～</div>
       </div>
-      <div style="font-size:16px;font-weight:700;color:var(--text)">当前无免罚卡</div>
-      <div style="font-size:12px;color:var(--muted)">积极参与班级活动、考试成绩前列等可获取奖励免罚卡哦～</div>
-    </div>
 
-    <div id="ex-debt-alert" class="card"
-      style="padding:24px 20px;display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;text-align:center;background:var(--tag-red-bg);border-color:var(--tag-red-border)">
-      <div style="width:48px;height:48px;border-radius:16px;background:var(--tag-debt-bg);display:flex;align-items:center;justify-content:center;color:var(--debt-fg)">
-        <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      <div id="ex-debt-alert" class="card"
+        style="padding:24px 20px;display:none;align-items:center;justify-content:center;flex-direction:column;gap:8px;text-align:center;background:var(--tag-red-bg);border-color:var(--tag-red-border)">
+        <div style="width:48px;height:48px;border-radius:16px;background:var(--tag-debt-bg);display:flex;align-items:center;justify-content:center;color:var(--debt-fg)">
+          <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div id="ex-debt-title" style="font-size:16px;font-weight:800;color:var(--debt-fg)">有 1 周待处理</div>
+        <div style="font-size:12px;color:var(--debt-hint)">请在班会课上交免罚卡以抵消惩罚，或者正常上交手机</div>
       </div>
-      <div id="ex-debt-title" style="font-size:16px;font-weight:800;color:var(--debt-fg)">有 1 周待处理</div>
-      <div style="font-size:12px;color:var(--debt-hint)">请在班会课上交免罚卡以抵消惩罚，或者正常上交手机</div>
+
     </div>
 
-    <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px">
+    <div class="card" id="ex-records-card" style="padding:16px;display:flex;flex-direction:column;gap:12px">
       <div style="display:flex;align-items:center;justify-content:space-between">
         <div style="font-size:14px;font-weight:700;color:var(--text)">最近记录列表</div>
         <span id="ex-records-count" style="font-size:11px;color:var(--muted)">共 0 条</span>
@@ -736,6 +878,9 @@ function saveExemptionInputs(seat,name){
   try{localStorage.setItem('glcn_ex_inputs',JSON.stringify({seat,name}))}catch(_){}
 }
 
+/* ══════════════════════════════════════════════════════════
+   主题管理
+   ══════════════════════════════════════════════════════════ */
 const THEME_KEY = 'glcn_theme';
 const THEME_ORDER = ['auto', 'light', 'dark'];
 const THEME_LABEL = { auto:'自动', light:'亮色', dark:'暗色' };
@@ -852,6 +997,10 @@ function cycleTheme(){
   applyTheme(next, false);
 }
 
+/* ══════════════════════════════════════════
+   多重系统主题变化检测
+   ══════════════════════════════════════════ */
+
 if(window.matchMedia){
   const mq = window.matchMedia('(prefers-color-scheme: dark)');
   const onSystemThemeChange = () => {
@@ -884,6 +1033,9 @@ window.addEventListener('focus', () => {
   }
 });
 
+/* ══════════════════════════════════════════════════════════
+   构建厚度层
+   ══════════════════════════════════════════════════════════ */
 function buildCardLayers(){
   const card = document.getElementById('ex-card-3d');
   if(!card) return;
@@ -925,6 +1077,9 @@ function buildCardLayers(){
   card.insertBefore(frag, front);
 }
 
+/* ══════════════════════════════════════════
+   3D 卡片 · 旋转引擎
+   ══════════════════════════════════════════ */
 let exRotY = 0, exRotX = -6;
 let exVelY = 0, exVelX = 0;
 let exDragging = false;
@@ -1041,104 +1196,13 @@ function init3DCardEvents(){
   start3DCardAutoRotate();
 }
 
-const QUERY_LIMIT_KEY  = 'glcn_ex_query_limit';
-const FREE_QUERY_COUNT = 3;
-const SHORT_COOLDOWN_LIMIT = 15;
-
-const ICON_SEARCH = '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
-const ICON_SPIN   = '<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24" style="animation:exSpin .8s linear infinite"><path d="M21 12a9 9 0 1 1-6.22-8.56" stroke-linecap="round"/></svg>';
-
-let isQuerying = false;
-
-function todayKey(){
-  const d = new Date();
-  return d.getFullYear() + '-' +
-         String(d.getMonth() + 1).padStart(2, '0') + '-' +
-         String(d.getDate()).padStart(2, '0');
-}
-
-function loadQueryLimit(){
-  const today = todayKey();
-  const st = { date: today, count: 0, cooldownUntil: 0 };
-  try{
-    const raw = localStorage.getItem(QUERY_LIMIT_KEY);
-    if(raw){
-      const p = JSON.parse(raw);
-      if(p && p.date === today){
-        st.count         = Math.max(0, Number(p.count) || 0);
-        st.cooldownUntil = Math.max(0, Number(p.cooldownUntil) || 0);
-      }
-    }
-  }catch(_){}
-  return st;
-}
-
-function saveQueryLimit(st){
-  try{
-    localStorage.setItem(QUERY_LIMIT_KEY, JSON.stringify({
-      date: todayKey(),
-      count: st.count,
-      cooldownUntil: st.cooldownUntil
-    }));
-  }catch(_){}
-}
-
-function cooldownSecondsFor(count){
-  if(count <= FREE_QUERY_COUNT) return 0;
-  if(count <= 6)                return 5;
-  if(count < 20)                return 5 + Math.floor(Math.random() * 11);
-  if(count < 50)                return 600;
-  return 1200;
-}
-
-function registerQueryAndGetCooldown(){
-  const st = loadQueryLimit();
-  st.count += 1;
-  const cd = cooldownSecondsFor(st.count);
-  st.cooldownUntil = cd > 0 ? Date.now() + cd * 1000 : 0;
-  saveQueryLimit(st);
-  return { count: st.count, cooldown: cd };
-}
-
-function setBtnHTML(btn, html){
-  if(btn._lastHTML === html) return;
-  btn._lastHTML = html;
-  btn.innerHTML = html;
-}
-
-function renderQueryGate(){
-  const btn = document.getElementById('ex-query-btn');
-  if(!btn) return;
-  if(isQuerying){
-    btn.disabled = true;
-    btn.style.opacity = '0.7';
-    setBtnHTML(btn, ICON_SPIN + ' 查询中...');
-  } else {
-    btn.disabled = false;
-    btn.style.opacity = '1';
-    setBtnHTML(btn, ICON_SEARCH + ' 立即查询');
-  }
-}
-
+/* ── 查询 ── */
 async function queryExemptionCard(){
   const seatInput=document.getElementById('ex-input-seat');
   const nameInput=document.getElementById('ex-input-name');
   const errEl=document.getElementById('ex-query-err');
+  const btn=document.getElementById('ex-query-btn');
   const resContainer=document.getElementById('ex-result-container');
-
-  if(isQuerying) return;
-
-  const gate = loadQueryLimit();
-  const wait = gate.cooldownUntil - Date.now();
-  if(wait > 0){
-    const sec = Math.ceil(wait / 1000);
-    if(wait <= SHORT_COOLDOWN_LIMIT * 1000){
-      showToast(sec + ' 秒后可以重试');
-    } else {
-      showToast('操作频繁，请稍后再试');
-    }
-    return;
-  }
 
   const seatVal=parseInt(seatInput?.value?.trim()||'',10);
   const nameVal=nameInput?.value?.trim()||'';
@@ -1155,8 +1219,9 @@ async function queryExemptionCard(){
   }
 
   errEl.style.display='none';
-  isQuerying = true;
-  renderQueryGate();
+  btn.disabled=true;
+  btn.style.opacity='0.7';
+  btn.textContent='查询中...';
 
   try{
     const{data,error}=await sb.rpc('get_student_digital_exemption',{
@@ -1174,12 +1239,8 @@ async function queryExemptionCard(){
     }
 
     saveExemptionInputs(seatVal,nameVal);
-
-    registerQueryAndGetCooldown();
-
     renderExemptionResult(data);
     resContainer.style.display='flex';
-    showToast('查询成功');
 
     setTimeout(()=>{
       resContainer.scrollIntoView({behavior:'smooth',block:'start'});
@@ -1189,11 +1250,13 @@ async function queryExemptionCard(){
     errEl.style.display='block';
     resContainer.style.display='none';
   }finally{
-    isQuerying = false;
-    renderQueryGate();
+    btn.disabled=false;
+    btn.style.opacity='1';
+    btn.innerHTML=`<svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> 立即查询`;
   }
 }
 
+/* ── 渲染结果 ── */
 function renderExemptionResult(data){
   const student=data.student||{};
   const balance=typeof data.balance==='number'?data.balance:0;
@@ -1297,12 +1360,12 @@ function renderExemptionRecords(records){
       iconBgVar='var(--rec-pen-bg)';
       iconFgVar='var(--rec-pen-fg)';
       deltaVar='var(--rec-pen-fg)';
-      deltaText=`违规待收 ${Math.abs(r.amount||1)} 周`;
+      deltaText=`待处理 ${Math.abs(r.amount||1)} 周`;
       svgIcon=`<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
     }
 
     return `
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--border)">
+      <div class="ex-rec-item" style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:12px;background:var(--surface);border:1px solid var(--border)">
         <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0">
           <div style="width:32px;height:32px;border-radius:10px;background:${iconBgVar};color:${iconFgVar};display:flex;align-items:center;justify-content:center;flex-shrink:0">
             ${svgIcon}
@@ -1323,17 +1386,19 @@ function renderExemptionRecords(records){
   }).join('');
 }
 
+/* ── 初始化 ── */
 (function init(){
+  // 1. 恢复主题（必须在卡片构建之前，silent=true 不弹 toast）
   let saved = 'auto';
   try{ saved = localStorage.getItem(THEME_KEY) || 'auto'; }catch(_){}
   applyTheme(saved, true);
 
+  // 2. 恢复输入
   restoreExemptionInputs();
 
+  // 3. 构建卡片
   buildCardLayers();
   init3DCardEvents();
-
-  renderQueryGate();
 })();
 </script>
 </body>
