@@ -272,9 +272,14 @@ a{color:inherit;text-decoration:none}
   transition:background-color .25s ease,border-color .25s ease;
 }
 
-.field{display:flex;flex-direction:column;gap:5px}
+.field{
+  display:flex;flex-direction:column;gap:5px;
+  min-width:0;          /* ★ 修复：允许在 grid / flex 中被压缩 */
+}
 .field label{font-size:12px;font-weight:700;color:var(--t2)}
 .field input{
+  width:100%;           /* ★ 修复：跟随容器宽度，避免被内容撑宽 */
+  min-width:0;          /* ★ 修复：覆盖 input 默认固有宽度 */
   padding:11px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);
   background:var(--surface);color:var(--text);outline:none;
   transition:border-color .2s,box-shadow .2s,background-color .25s ease;
@@ -574,8 +579,10 @@ a{color:inherit;text-decoration:none}
     "seat   name"
     "err    err"
     "btn    btn";
+  min-width:0;            /* ★ 修复：避免整体撑出 */
 }
-.ex-query-header{grid-area:header;display:flex;align-items:center;gap:8px}
+.ex-query-card > *{ min-width:0; }   /* ★ 修复：所有网格子项都可被压缩 */
+.ex-query-header{grid-area:header;display:flex;align-items:center;gap:8px;min-width:0}
 .ex-field-seat{grid-area:seat}
 .ex-field-name{grid-area:name}
 #ex-query-err{grid-area:err;display:none}
@@ -591,6 +598,19 @@ a{color:inherit;text-decoration:none}
 /* 单条记录卡片 */
 .ex-rec-item{
   transition:background-color .18s ease, border-color .18s ease, transform .18s ease;
+}
+
+/* ★ 超窄屏：单列排布，避免输入框太挤 */
+@media(max-width:400px){
+  .ex-query-card{
+    grid-template-columns:1fr;
+    grid-template-areas:
+      "header"
+      "seat"
+      "name"
+      "err"
+      "btn";
+  }
 }
 
 /* 桌面端样式 */
@@ -1360,7 +1380,7 @@ function renderExemptionRecords(records){
       iconBgVar='var(--rec-pen-bg)';
       iconFgVar='var(--rec-pen-fg)';
       deltaVar='var(--rec-pen-fg)';
-      deltaText=`待处理 ${Math.abs(r.amount||1)} 周`;
+      deltaText=`违规待收 ${Math.abs(r.amount||1)} 周`;
       svgIcon=`<svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`;
     }
 
