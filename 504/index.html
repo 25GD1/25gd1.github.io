@@ -286,6 +286,56 @@ section[id]{scroll-margin-top:88px}
   vertical-align:middle;
 }
 
+/* ===================== 协议触发条（精致版） ===================== */
+.plan-agreement{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  margin-top:22px;
+  padding:13px 16px;
+  border-radius:15px;
+  border:1px solid #e4e9fb;
+  background:linear-gradient(135deg,#f8faff 0%,#faf7ff 100%);
+  font-family:inherit;
+  font-size:13px;
+  color:#475569;
+  cursor:pointer;
+  text-align:left;
+  transition:
+    transform .45s var(--ease-spring),
+    box-shadow .45s var(--ease-out-expo),
+    border-color .35s ease,
+    background-color .35s ease;
+}
+.plan-agreement .doc-icon{
+  width:32px;height:32px;border-radius:10px;
+  background:var(--grad);
+  display:grid;place-items:center;color:#fff;flex:0 0 auto;
+  box-shadow:0 6px 14px rgba(79,70,229,.28);
+  transition:transform .5s var(--ease-spring);
+}
+.plan-agreement .doc-icon svg{width:16px;height:16px}
+.plan-agreement .agr-txt{flex:1;line-height:1.5}
+.plan-agreement .agr-txt b{color:var(--blue);font-weight:700}
+.plan-agreement .agr-arrow{
+  flex:0 0 auto;color:#94a3b8;
+  transition:transform .45s var(--ease-spring),color .35s ease;
+}
+.plan-agreement .agr-arrow svg{width:15px;height:15px}
+
+@media (hover:hover) and (pointer:fine){
+  .plan-agreement:hover{
+    border-color:#c7d6fb;
+    background:#fff;
+    box-shadow:0 10px 26px rgba(37,99,235,.12);
+    transform:translateY(-2px);
+  }
+  .plan-agreement:hover .doc-icon{transform:scale(1.08) rotate(-6deg)}
+  .plan-agreement:hover .agr-arrow{transform:translateX(3px);color:var(--blue)}
+}
+.plan-agreement:active{transform:scale(.98);transition-duration:.12s}
+
 /* 会员制说明条 */
 .member-note{
   display:flex;align-items:flex-start;justify-content:center;gap:10px;flex-wrap:nowrap;
@@ -418,6 +468,124 @@ footer{background:#0b1220;color:#94a3b8;padding-top:70px}
   will-change:opacity,transform;
 }
 
+/* ===================== 协议弹窗 ===================== */
+.modal{
+  position:fixed;inset:0;z-index:200;
+  display:grid;place-items:center;
+  padding:24px;
+  opacity:0;visibility:hidden;
+  transition:opacity .35s var(--ease-out-expo),visibility .35s;
+}
+.modal.open{opacity:1;visibility:visible}
+
+.modal-overlay{
+  position:absolute;inset:0;
+  background:rgba(15,23,42,.55);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+  cursor:pointer;
+}
+
+.modal-card{
+  position:relative;
+  width:100%;max-width:640px;
+  max-height:min(82vh,760px);
+  display:flex;flex-direction:column;
+  background:#fff;
+  border-radius:26px;
+  box-shadow:0 40px 90px -20px rgba(15,23,42,.45),0 0 0 1px rgba(226,232,240,.8);
+  overflow:hidden;
+  transform:translateY(28px) scale(.96);
+  opacity:0;
+  transition:transform .55s var(--ease-spring),opacity .4s var(--ease-out-expo);
+}
+.modal.open .modal-card{transform:none;opacity:1}
+
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:22px 26px;
+  background:linear-gradient(135deg,#f8faff 0%,#faf7ff 100%);
+  border-bottom:1px solid var(--line);
+  flex:0 0 auto;
+}
+.modal-title-wrap{display:flex;align-items:center;gap:12px;min-width:0}
+.modal-title-icon{
+  width:38px;height:38px;border-radius:12px;
+  background:var(--grad);
+  display:grid;place-items:center;color:#fff;
+  box-shadow:0 8px 18px rgba(79,70,229,.30);
+  flex:0 0 auto;
+}
+.modal-title-icon svg{width:18px;height:18px}
+.modal-title-wrap h3{font-size:17px;font-weight:800;letter-spacing:-.01em;color:var(--ink)}
+.modal-title-wrap p{font-size:12.5px;color:var(--muted);margin-top:1px}
+
+.modal-close{
+  width:38px;height:38px;flex:0 0 auto;
+  border:none;border-radius:12px;
+  background:#eef2fb;
+  color:#64748b;
+  cursor:pointer;
+  display:grid;place-items:center;
+  transition:background-color .3s ease,color .3s ease,transform .45s var(--ease-spring);
+}
+.modal-close svg{width:16px;height:16px}
+@media (hover:hover) and (pointer:fine){
+  .modal-close:hover{background:#e0e7ff;color:var(--blue);transform:rotate(90deg)}
+}
+.modal-close:active{transform:scale(.92)}
+
+.modal-body{
+  flex:1 1 auto;
+  overflow-y:auto;
+  padding:26px 30px 30px;
+  font-size:14.8px;
+  line-height:1.9;
+  color:#475569;
+  -webkit-overflow-scrolling:touch;
+}
+.modal-body p{margin-bottom:14px}
+.modal-body p:last-child{margin-bottom:0}
+.modal-body h4{
+  font-size:15.5px;font-weight:800;color:var(--ink);
+  margin:22px 0 10px;
+}
+.modal-body h4:first-child{margin-top:0}
+.modal-body strong{color:var(--ink);font-weight:700}
+
+/* 滚动条美化 */
+.modal-body::-webkit-scrollbar{width:8px}
+.modal-body::-webkit-scrollbar-track{background:transparent}
+.modal-body::-webkit-scrollbar-thumb{
+  background:#dbe4fb;border-radius:999px;
+  border:2px solid #fff;
+}
+.modal-body::-webkit-scrollbar-thumb:hover{background:#c7d6fb}
+
+/* 加载 / 错误状态 */
+.modal-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;padding:56px 20px;text-align:center;color:var(--muted);font-size:14.5px;
+}
+.spinner{
+  width:30px;height:30px;border-radius:50%;
+  border:3px solid #dbe4fb;border-top-color:var(--blue);
+  animation:spin .8s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.modal-state a{
+  color:var(--blue);font-weight:600;
+  text-decoration:underline;text-underline-offset:3px;
+}
+
+.modal-foot{
+  flex:0 0 auto;
+  padding:16px 26px 20px;
+  border-top:1px solid var(--line);
+  background:#fbfcff;
+  display:flex;justify-content:flex-end;gap:12px;
+}
+.modal-foot .btn{width:100%}
+
 /* ===================== 响应式 ===================== */
 @media (max-width:1024px){
   .plan-card.featured{transform:none}
@@ -454,6 +622,11 @@ footer{background:#0b1220;color:#94a3b8;padding-top:70px}
   .hero-stats{margin-top:48px;gap:22px 28px}
   .hero-stats div{min-width:80px}
   .cta-box{padding:52px 24px;border-radius:26px}
+  .modal{padding:14px}
+  .modal-card{max-height:88vh;border-radius:22px}
+  .modal-head{padding:18px 20px}
+  .modal-body{padding:22px 22px 26px;font-size:14.5px}
+  .modal-foot{padding:14px 20px 18px}
 }
 @media (max-width:520px){
   .footer-grid{grid-template-columns:1fr}
@@ -461,6 +634,8 @@ footer{background:#0b1220;color:#94a3b8;padding-top:70px}
   .hero-actions .btn{flex:1 1 100%}
   .plan-card{padding:30px 24px}
   .member-note{flex-wrap:wrap}
+  .modal-title-wrap h3{font-size:16px}
+  .modal-title-wrap p{font-size:12px}
 }
 
 /* ===================== 降低动效偏好 ===================== */
@@ -472,6 +647,7 @@ footer{background:#0b1220;color:#94a3b8;padding-top:70px}
   }
   .hero h1,.hero-tag,.hero-sub,.hero-actions,.hero-stats{opacity:1}
   .reveal{opacity:1;transform:none}
+  .modal-card{transform:none}
 }
 </style>
 </head>
@@ -517,8 +693,7 @@ footer{background:#0b1220;color:#94a3b8;padding-top:70px}
       <h1>宿舍宽带<br><span class="grad">开通即可连 WiFi</span></h1>
       <p class="hero-sub">
         开通会员后，连接宿舍 WiFi 即可使用对应等级的共享带宽池。<br>
-        <strong>多网聚合技术突破校园 100M 上限</strong>，至尊套餐共享池直达 200M。<br>
-        
+        <strong>多网聚合技术突破校园 100M 上限</strong>，至尊套餐共享池直达 200M。
       </p>
       <div class="hero-actions">
         <a href="#plans" class="btn btn-light">查看会员方案</a>
@@ -585,6 +760,24 @@ footer{background:#0b1220;color:#94a3b8;padding-top:70px}
             <li>开通后即可使用</li>
             <li>游戏加速，延迟更低</li>
           </ul>
+
+          <!-- 协议触发条 -->
+          <button type="button" class="plan-agreement" data-open-agreement>
+            <span class="doc-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="9" y1="13" x2="15" y2="13"/>
+                <line x1="9" y1="17" x2="13" y2="17"/>
+              </svg>
+            </span>
+            <span class="agr-txt">开通套餐即视为同意<b>《服务协议》</b>，点击查看详情</span>
+            <span class="agr-arrow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"/>
+              </svg>
+            </span>
+          </button>
         </article>
       </div>
 
@@ -762,17 +955,57 @@ footer{background:#0b1220;color:#94a3b8;padding-top:70px}
 
       <div class="footer-col">
         <h4>会员权益</h4>
-        <a href="#benefits">VIP 会员 9.9 元</a>
-        <a href="#benefits">SVIP 会员 14.9 元</a>
+        <a href="#benefits">VIP 会员 4.9 元</a>
+        <a href="#benefits">SVIP 会员 9.9 元</a>
       </div>
     </div>
 
     <div class="footer-bottom">
       <span>© 2026 GLCN · 保留所有权利</span>
-         
     </div>
   </div>
 </footer>
+
+<!-- ==================== 协议弹窗 ==================== -->
+<div class="modal" id="agreementModal" aria-hidden="true">
+  <div class="modal-overlay" data-close-agreement></div>
+
+  <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="agreementTitle">
+    <div class="modal-head">
+      <div class="modal-title-wrap">
+        <span class="modal-title-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="9" y1="13" x2="15" y2="13"/>
+            <line x1="9" y1="17" x2="13" y2="17"/>
+          </svg>
+        </span>
+        <div>
+          <h3 id="agreementTitle">GLCN 服务协议</h3>
+          <p>请在开通套餐前仔细阅读</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close" data-close-agreement aria-label="关闭协议">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body" id="agreementBody">
+      <div class="modal-state">
+        <span class="spinner"></span>
+        <p>正在加载协议内容…</p>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button type="button" class="btn btn-grad btn-sm" data-close-agreement>我已阅读并同意</button>
+    </div>
+  </div>
+</div>
 
 <script>
 (function () {
@@ -820,8 +1053,124 @@ footer{background:#0b1220;color:#94a3b8;padding-top:70px}
     setMenu(false);
   });
 
+  /* ---------- 协议弹窗 ---------- */
+  var AGREEMENT_URL = 'https://25gd1.github.io/504/1.txt';
+
+  var modal = document.getElementById('agreementModal');
+  var modalBody = document.getElementById('agreementBody');
+  var agreementLoaded = false;
+  var lastFocused = null;
+
+  function escapeHtml(str) {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  /* 把纯文本渲染成漂亮的段落 / 标题 */
+  function renderAgreement(text) {
+    var lines = String(text).replace(/\r\n?/g, '\n').split('\n');
+    var html = '';
+    var para = [];
+
+    function flush() {
+      if (para.length) {
+        html += '<p>' + para.map(escapeHtml).join('<br>') + '</p>';
+        para = [];
+      }
+    }
+
+    lines.forEach(function (line) {
+      var trimmed = line.trim();
+
+      if (!trimmed) { flush(); return; }
+
+      /* # 开头的行作为小标题 */
+      if (/^#{1,3}\s+/.test(trimmed)) {
+        flush();
+        html += '<h4>' + escapeHtml(trimmed.replace(/^#{1,3}\s+/, '')) + '</h4>';
+        return;
+      }
+
+      /* 形如「第X条」「一、」「1.」的短行也作为小标题 */
+      if (/^(第[一二三四五六七八九十百]+条|[一二三四五六七八九十]+、|\d+[\.、])/.test(trimmed) && trimmed.length <= 30) {
+        flush();
+        html += '<h4>' + escapeHtml(trimmed) + '</h4>';
+        return;
+      }
+
+      para.push(line);
+    });
+
+    flush();
+    return html || '<p>协议内容为空。</p>';
+  }
+
+  function loadAgreement() {
+    modalBody.innerHTML =
+      '<div class="modal-state">' +
+        '<span class="spinner"></span>' +
+        '<p>正在加载协议内容…</p>' +
+      '</div>';
+
+    fetch(AGREEMENT_URL, { cache: 'no-store' })
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.text();
+      })
+      .then(function (text) {
+        modalBody.innerHTML = renderAgreement(text);
+        modalBody.scrollTop = 0;
+        agreementLoaded = true;
+      })
+      .catch(function () {
+        modalBody.innerHTML =
+          '<div class="modal-state">' +
+            '<p>协议内容加载失败，请检查网络后重试。</p>' +
+            '<a href="' + AGREEMENT_URL + '" target="_blank" rel="noopener noreferrer">在新标签页中打开协议原文</a>' +
+          '</div>';
+      });
+  }
+
+  function openAgreement() {
+    lastFocused = document.activeElement;
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+
+    if (!agreementLoaded) loadAgreement();
+
+    /* 焦点移到关闭按钮，方便键盘操作 */
+    window.setTimeout(function () {
+      var closeBtn = modal.querySelector('.modal-close');
+      if (closeBtn) closeBtn.focus();
+    }, 60);
+  }
+
+  function closeAgreement() {
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    if (lastFocused && typeof lastFocused.focus === 'function') {
+      lastFocused.focus();
+    }
+  }
+
+  document.querySelectorAll('[data-open-agreement]').forEach(function (btn) {
+    btn.addEventListener('click', openAgreement);
+  });
+
+  document.querySelectorAll('[data-close-agreement]').forEach(function (el) {
+    el.addEventListener('click', closeAgreement);
+  });
+
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && links.classList.contains('open')) setMenu(false);
+    if (e.key === 'Escape' && modal.classList.contains('open')) {
+      closeAgreement();
+    }
   });
 
   /* ---------- 滚动出现动画 ---------- */
