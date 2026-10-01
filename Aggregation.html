@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>每课一练 · 参考答案</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+      background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4c1d95 70%, #6d28d9 100%);
+      background-attachment: fixed;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* 背景光斑装饰 */
+    body::before,
+    body::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    body::before {
+      width: 420px;
+      height: 420px;
+      background: #3b82f6;
+      top: -120px;
+      left: -120px;
+      animation: float1 9s ease-in-out infinite;
+    }
+
+    body::after {
+      width: 380px;
+      height: 380px;
+      background: #8b5cf6;
+      bottom: -110px;
+      right: -100px;
+      animation: float2 11s ease-in-out infinite;
+    }
+
+    @keyframes float1 {
+      0%, 100% { transform: translate(0, 0); }
+      50%      { transform: translate(40px, 30px); }
+    }
+
+    @keyframes float2 {
+      0%, 100% { transform: translate(0, 0); }
+      50%      { transform: translate(-35px, -25px); }
+    }
+
+    /* 卡片容器 */
+    .card {
+      position: relative;
+      z-index: 1;
+      width: min(90vw, 420px);
+      padding: 44px 32px 38px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      box-shadow: 0 24px 60px rgba(15, 10, 60, 0.55),
+                  inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      text-align: center;
+      animation: rise 0.7s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(26px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .card h1 {
+      font-size: 1.55rem;
+      letter-spacing: 3px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #a5b4fc, #d8b4fe, #93c5fd);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .card p.subtitle {
+      font-size: 0.8rem;
+      letter-spacing: 2px;
+      color: rgba(199, 210, 254, 0.7);
+      margin-bottom: 32px;
+    }
+
+    .divider {
+      width: 60px;
+      height: 3px;
+      margin: 0 auto 32px;
+      border-radius: 3px;
+      background: linear-gradient(90deg, #6366f1, #a855f7);
+    }
+
+    /* 按钮 */
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      padding: 17px 22px;
+      margin-bottom: 18px;
+      border: none;
+      border-radius: 14px;
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 600;
+      letter-spacing: 2px;
+      color: #fff;
+      text-decoration: none;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+    }
+
+    .btn:last-of-type {
+      margin-bottom: 0;
+    }
+
+    .btn-1 {
+      background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%);
+      box-shadow: 0 10px 24px rgba(79, 70, 229, 0.45);
+    }
+
+    .btn-2 {
+      background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #c084fc 100%);
+      box-shadow: 0 10px 24px rgba(124, 58, 237, 0.45);
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+      filter: brightness(1.08);
+    }
+
+    .btn-1:hover { box-shadow: 0 16px 32px rgba(99, 102, 241, 0.6); }
+    .btn-2:hover { box-shadow: 0 16px 32px rgba(168, 85, 247, 0.6); }
+
+    .btn:active {
+      transform: translateY(-1px) scale(0.985);
+    }
+
+    /* 扫光效果 */
+    .btn::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: -120%;
+      width: 60%;
+      height: 100%;
+      background: linear-gradient(100deg,
+                  transparent 0%,
+                  rgba(255, 255, 255, 0.35) 50%,
+                  transparent 100%);
+      transform: skewX(-20deg);
+      transition: left 0.6s ease;
+    }
+
+    .btn:hover::after {
+      left: 130%;
+    }
+
+    .btn .icon {
+      font-size: 1.15rem;
+      line-height: 1;
+    }
+
+    .btn .arrow {
+      font-size: 0.9rem;
+      opacity: 0.75;
+      transition: transform 0.25s ease;
+    }
+
+    .btn:hover .arrow {
+      transform: translateX(4px);
+    }
+
+    /* 语文按钮下方的额外提示 */
+    .btn-hint {
+      margin: -6px 0 18px;
+      font-size: 0.72rem;
+      letter-spacing: 0.5px;
+      color: rgba(199, 210, 254, 0.7);
+      text-align: center;
+      line-height: 1.5;
+      padding: 0 4px;
+    }
+
+    .btn-hint .hint-icon {
+      margin-right: 4px;
+      opacity: 0.9;
+    }
+
+    .footer {
+      margin-top: 28px;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      color: rgba(165, 180, 252, 0.45);
+    }
+
+    @media (max-width: 380px) {
+      .card { padding: 34px 22px 28px; }
+      .card h1 { font-size: 1.3rem; }
+      .btn { font-size: 0.95rem; padding: 15px 16px; }
+      .btn-hint { font-size: 0.68rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <main class="card">
+    <h1>每课一练</h1>
+    <p class="subtitle">参考答案</p>
+    <div class="divider"></div>
+
+    <!-- 语文按钮 -->
+    <a class="btn btn-1"
+       href="https://25gd1.github.io/CN/CN.html"
+       target="_blank"
+       rel="noopener noreferrer">
+      <span class="icon">♪♯</span>
+      <span>语文每课一练</span>
+      <span class="arrow">→</span>
+    </a>
+
+    <!-- 语文额外提示 -->
+    <p class="btn-hint">
+      <span class="hint-icon">♺</span>语文文件较大，加载需耐心，请保持网络顺畅
+    </p>
+
+    <!-- 政治按钮 -->
+    <a class="btn btn-2"
+       href="https://25gd1.github.io/CK/ZZ.html"
+       target="_blank"
+       rel="noopener noreferrer">
+      <span class="icon">♭♮</span>
+      <span>政治每课一练</span>
+      <span class="arrow">→</span>
+    </a>
+
+    <p class="footer">新标签页打开</p>
+  </main>
+
+</body>
+</html>
