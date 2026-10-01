@@ -41,6 +41,7 @@ html{
   forced-color-adjust:none;-webkit-forced-color-adjust:none;
 }
 
+/* ══════════════ 亮色 ══════════════ */
 :root,
 :root[data-theme="light"],
 :root[data-theme="auto"][data-resolved="light"]{
@@ -92,6 +93,7 @@ html{
     0 2px 8px rgba(20,30,60,.05);
 }
 
+/* ══════════════ 暗色 ══════════════ */
 :root[data-theme="dark"],
 :root[data-theme="auto"][data-resolved="dark"]{
   color-scheme:dark;
@@ -150,6 +152,7 @@ a{color:inherit;text-decoration:none}
 textarea{resize:vertical}
 img,svg{display:block}
 
+/* ══════════════ 主题切换颜色过渡 ══════════════ */
 html.theme-changing,
 html.theme-changing body,
 html.theme-changing #app,
@@ -208,12 +211,14 @@ html.theme-changing .disc-avatar{
 @keyframes exShimmerSweep{0%,70%{left:-100%}100%{left:200%}}
 @keyframes exScaleIn{from{opacity:0;transform:scale(.94) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 
+/* ══════════════ App ══════════════ */
 #app{
   display:flex;flex-direction:column;height:100%;
   max-width:720px;margin:0 auto;
   background:transparent;position:relative;
 }
 
+/* ── Header ── */
 .hdr{
   position:sticky;top:0;z-index:100;
   height:var(--hdr);
@@ -332,6 +337,9 @@ html.theme-changing .disc-avatar{
 .page.slide-right{animation:pageSlideR .26s var(--ease-out-expo)}
 .page.slide-left{animation:pageSlideL .26s var(--ease-out-expo)}
 
+/* ══════════════════════════════════════════════
+   ★ 底部导航 — 纯 CSS 数学对齐（无 JS 测量）
+   ══════════════════════════════════════════════ */
 .bottom-nav{
   flex-shrink:0;
   padding:8px 12px calc(8px + var(--safe-b));
@@ -339,7 +347,7 @@ html.theme-changing .disc-avatar{
   z-index:90;
 }
 .nav-track{
-
+  /* 列数 & 激活索引由 JS 通过 CSS 变量注入 */
   --nav-cols: 5;
   --nav-active: 0;
 
@@ -357,6 +365,16 @@ html.theme-changing .disc-avatar{
   transition:background-color .2s ease,border-color .2s ease,box-shadow .26s ease;
 }
 
+/* 
+  数学推导（box-sizing:border-box）：
+  track 外宽 W、border 1px、padding 4px
+  → 内容盒宽 = W - 2 - 8
+  → 每列宽 = (W - 10) / cols
+  → thumb 定位在 padding-box 上：
+     left:4px 使左边缘对齐内容盒左边缘 (= 外边缘 + 1 + 4)
+     width:calc((100% - 8px) / cols) —— 100% 指 padding-box 宽 = W - 2
+                                      → (W - 2 - 8) / cols ✓
+     translateX(idx * 100%) —— 100% 指 thumb 自身宽 = 每列宽
 */
 .nav-thumb{
   position:absolute;
@@ -403,6 +421,7 @@ html.theme-changing .disc-avatar{
 
 #pc-tabs{display:none}
 
+/* ══════════════ 工具栏 / 列表 ══════════════ */
 .toolbar{
   display:flex;align-items:center;gap:8px;
   padding:12px 16px 10px;
@@ -599,6 +618,7 @@ html.theme-changing .disc-avatar{
 .btn-sm{padding:7px 13px;font-size:12px;border-radius:10px}
 .btn:disabled{opacity:.55;cursor:not-allowed;transform:none!important}
 
+/* ══════════════ 遮罩 / 面板 ══════════════ */
 .overlay{
   position:fixed;inset:0;z-index:200;
   background:rgba(8,12,22,.48);
@@ -763,6 +783,7 @@ html.theme-changing .disc-avatar{
   background:var(--tag-amber-bg);padding:2px 8px;border-radius:99px;
 }
 
+/* ══════════════ 客户端页 ══════════════ */
 .client-hero{
   margin:14px 16px 0;
   background:
@@ -1055,6 +1076,7 @@ input[type=checkbox].toggle-cb{display:none}
 
   #pc-layout{flex-direction:row}
 
+  /* ═══ PC 侧栏 — CSS 变量对齐 ═══ */
   #pc-tabs{
     --tab-h: 40px;
     --tab-gap: 4px;
@@ -1480,7 +1502,7 @@ input[type=checkbox].toggle-cb{display:none}
 <div class="overlay" id="login-overlay" onclick="closeLoginIfBg(event)">
   <div class="login-sheet">
     <div class="login-title">管理员登录</div>
-    <div class="login-sub">仅管理员可登录。</div>
+    <div class="login-sub">仅管理员可登录，学生直接浏览即可</div>
     <div class="login-form">
       <div class="field"><label>账号</label><input id="login-username" placeholder="管理员账号" autocomplete="username"/></div>
       <div class="field"><label>密码</label><input id="login-password" type="password" placeholder="密码" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
@@ -1663,7 +1685,9 @@ function syncToggle(cb,toggleId){document.getElementById(toggleId).classList.tog
 function triggerCb(cbId){const cb=document.getElementById(cbId);cb.checked=!cb.checked;cb.dispatchEvent(new Event('change'))}
 function setToggle(cbId,toggleId,val){const cb=document.getElementById(cbId);cb.checked=val;document.getElementById(toggleId).classList.toggle('on',val)}
 
-
+/* ══════════════════════════════════════════════
+   主题管理 — 瞬时切换（无卡顿）
+   ══════════════════════════════════════════════ */
 const THEME_KEY='glcn_theme';
 const THEME_ORDER=['auto','light','dark'];
 const THEME_LABEL={auto:'自动',light:'亮色',dark:'暗色'};
@@ -1712,6 +1736,7 @@ function applyTheme(mode, silent){
   if(!THEME_ORDER.includes(mode))mode='auto';
   const root=document.documentElement;
 
+  // 加过渡类，让颜色变化平滑
   root.classList.add('theme-changing');
   if(_themeTransitionTimer)clearTimeout(_themeTransitionTimer);
   _themeTransitionTimer=setTimeout(()=>{
@@ -1719,6 +1744,7 @@ function applyTheme(mode, silent){
     _themeTransitionTimer=null;
   }, 260);
 
+  // 瞬时切换（无延迟、无重排）
   root.dataset.theme=mode;
   delete root.dataset.resolved;
   if(mode==='auto'){ resolveAutoTheme(); }
@@ -1737,6 +1763,7 @@ function cycleTheme(e){
   const idx=THEME_ORDER.indexOf(cur);
   const next=THEME_ORDER[(idx+1)%THEME_ORDER.length];
 
+  // 立即写入 localStorage（异步，避免阻塞点击反馈）
   setTimeout(()=>{
     try{localStorage.setItem(THEME_KEY,next)}catch(_){}
   }, 0);
@@ -1747,8 +1774,10 @@ function cycleTheme(e){
     setTimeout(()=>btn.classList.remove('switching'),420);
   }
 
+  // 立刻切换主题（无任何延迟）
   applyTheme(next, true);
 
+  // Toast 延迟显示
   setTimeout(()=>{
     let label=THEME_LABEL[next];
     if(next==='auto')label = isDarkMode() ? '自动（暗色）' : '自动（亮色）';
@@ -1771,6 +1800,9 @@ window.addEventListener('focus',()=>{
   if(getCurrentTheme()==='auto')resolveAutoTheme();
 });
 
+/* ══════════════════════════════════════════════
+   ★ 导航指示器 — 只更新 CSS 变量（无测量、无布局读取）
+   ══════════════════════════════════════════════ */
 function updateNavIndicators(immediate){
   // 底部导航
   const navTrack = document.getElementById('nav-track');
@@ -1815,7 +1847,9 @@ function updateNavIndicators(immediate){
   }
 }
 
-
+/* ══════════════════════════════════════════════
+   设备检测
+   ══════════════════════════════════════════════ */
 function isIOSDevice(){
   return /iPad|iPhone|iPod/.test(navigator.userAgent)
     || (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
