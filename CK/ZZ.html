@@ -225,8 +225,6 @@ body{
 
 /* ============================================================
    自定义滚动条（替代浏览器原生）
-   ------------------------------------------------------------
-   完全由代码控制大小 / 颜色 / 拖拽，手机上也能轻松抓取
    ============================================================ */
 .custom-scrollbar{
   position:absolute;
@@ -448,6 +446,9 @@ body{
    ============================================================ */
 const PDF_URL = 'https://25gd1.github.io/CK/22.pdf';
 
+/* 阅读进度存储键（按文档区分，不同 PDF 互不干扰） */
+const PROGRESS_KEY = 'glc_reader_progress:' + PDF_URL;
+
 /* ============================================================
    目录结构
    ============================================================ */
@@ -650,6 +651,81 @@ function layoutKeyOf() {
 }
 
 /* ============================================================
+   ★ 阅读进度持久化
+   ============================================================ */
+let saveTimer = null;
+
+function saveProgress(immediate) {
+  if (!state.pdf || !state.pageEls.length) return;
+
+  const doSave = () => {
+    try {
+      const v = els.viewer;
+      const idx = clamp(state.currentPage - 1, 0, state.pageEls.length - 1);
+      const el = state.pageEls[idx];
+      if (!el) return;
+
+      const pageTop = state.pageOffsets[idx] != null ? state.pageOffsets[idx] : (el.offsetTop || 0);
+      const pageH = el._h || el.offsetHeight || 1;
+      const offsetRatio = pageH > 0 ? (v.scrollTop - pageTop) / pageH : 0;
+      const range = v.scrollHeight - v.clientHeight;
+
+      const data = {
+        v: 1,
+        page: state.currentPage,
+        offsetRatio: clamp(offsetRatio, -1, 2),          // 页内相对位置（0 = 该页顶部）
+        ratio: range > 0 ? clamp(v.scrollTop / range, 0, 1) : 0, // 兜底：整体进度比例
+        fitWidth: state.fitWidth,
+        zoom: state.zoom,
+        total: state.pdf.numPages,
+        savedAt: Date.now(),
+      };
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify(data));
+    } catch (_) { /* 隐私模式 / 存储满：静默忽略 */ }
+  };
+
+  clearTimeout(saveTimer);
+  if (immediate) doSave();
+  else saveTimer = setTimeout(doSave, 500);
+}
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(PROGRESS_KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw);
+    if (!d || typeof d !== 'object') return null;
+    const p = Number(d.page);
+    if (!isFinite(p) || p < 1) return null;
+    return d;
+  } catch (_) { return null; }
+}
+
+/* 把保存的进度还原到滚动位置 */
+function restoreProgress(p) {
+  if (!state.pdf || !state.pageEls.length) return;
+
+  const v = els.viewer;
+  const n = clamp(Math.round(Number(p.page) || 1), 1, state.pdf.numPages);
+  const idx = n - 1;
+  const el = state.pageEls[idx];
+  const maxTop = Math.max(0, v.scrollHeight - v.clientHeight);
+
+  let top = null;
+  if (el && el._h) {
+    const base = state.pageOffsets[idx] != null ? state.pageOffsets[idx] : (el.offsetTop || 0);
+    const off = Number(p.offsetRatio);
+    top = base + (isFinite(off) ? off : 0) * el._h;
+  } else if (typeof p.ratio === 'number' && isFinite(p.ratio)) {
+    top = p.ratio * maxTop;
+  }
+  if (top == null || !isFinite(top)) top = state.pageOffsets[idx] || 0;
+
+  v.scrollTop = clamp(top, 0, maxTop);
+  setCurrentPage(n, true);
+}
+
+/* ============================================================
    自定义滚动条
    ============================================================ */
 let thumbDragging = false;
@@ -720,6 +796,7 @@ function endThumbDrag() {
   scrollActiveTimer = setTimeout(() => {
     if (!thumbDragging) els.scrollbar.classList.remove('active');
   }, 400);
+  saveProgress(false);
 }
 
 /* 触摸 / 鼠标事件 */
@@ -884,8 +961,26 @@ async function initPdf(pdf) {
   state.sizes = sizes;
   state.baseWidth = sizes[0].w;
 
+  // 先取出上次进度，再建 DOM，这样缩放状态可以直接生效
+  const saved = loadProgress();
+
   els.loadingOverlay?.remove();
+  // 恢复位置前先隐藏阅读区，避免闪一下第 1 页
+  els.viewer.style.opacity = '0';
+  let revealed = false;
+  const revealViewer = () => { if (!revealed) { revealed = true; els.viewer.style.opacity = ''; } };
+  setTimeout(revealViewer, 900); // 保险
+
   buildPages();
+
+  if (saved && saved.fitWidth === false) {
+    state.fitWidth = false;
+    state.zoom = clamp(Number(saved.zoom) || 1, 0.3, 4);
+  } else {
+    state.fitWidth = true;
+  }
+  els.fitBtn.classList.toggle('on', state.fitWidth);
+
   els.viewer.scrollTop = 0;
   setCurrentPage(1, true);
   updateZoomLabel();
@@ -893,6 +988,16 @@ async function initPdf(pdf) {
 
   requestAnimationFrame(() => {
     refreshLayout(true, false);
+
+    // ★ 恢复阅读进度
+    if (saved && saved.page) {
+      restoreProgress(saved);
+      if (state.currentPage > 1) {
+        showToast('已恢复上次阅读进度 · 第 ' + state.currentPage + ' 页');
+      }
+    }
+
+    revealViewer();
     setupObserver();
     updateVisibleNow();
     updateCurrentPageNow();
@@ -1188,6 +1293,7 @@ let scrollScheduled = false, pageScheduled = false;
 els.viewer.addEventListener('scroll', () => {
   markScrollbarActive();
   updateScrollbar();
+  saveProgress(false);          // ★ 滚动时防抖保存进度
 
   if (!scrollScheduled) {
     scrollScheduled = true;
@@ -1254,6 +1360,7 @@ function gotoPage(n, smooth = false) {
 
   renderPage(n - 1);
   setCurrentPage(n, true);
+  saveProgress(false);          // ★ 跳页后保存
 
   el.classList.add('flash');
   setTimeout(() => el.classList.remove('flash'), 850);
@@ -1324,6 +1431,7 @@ function applyZoom(newZoom, useFit) {
   if (!useFit) state.zoom = clamp(newZoom, 0.3, 4);
   els.fitBtn.classList.toggle('on', state.fitWidth);
   relayoutAndRerender(true);
+  saveProgress(false);          // ★ 缩放后保存（含 fitWidth / zoom）
 }
 
 /* ============================================================
@@ -1333,18 +1441,18 @@ function openSidebar() { els.sidebar.classList.remove('hidden'); els.backdrop.cl
 function closeSidebar() { els.sidebar.classList.add('hidden'); els.backdrop.classList.remove('show'); }
 
 /* ============================================================
-   复制提示
+   提示条
    ============================================================ */
 let toastTimer = null;
-function showCopyToast(text) {
-  els.copyToast.textContent = text || '已复制选中文字';
+function showToast(text) {
+  els.copyToast.textContent = text || '';
   els.copyToast.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => els.copyToast.classList.remove('show'), 1600);
 }
 document.addEventListener('copy', () => {
   const sel = window.getSelection && window.getSelection();
-  if (sel && sel.toString().trim().length > 0) showCopyToast('已复制选中文字');
+  if (sel && sel.toString().trim().length > 0) showToast('已复制选中文字');
 });
 
 /* ============================================================
@@ -1354,8 +1462,15 @@ function setupTouch() {
   const v = els.viewer;
   let touchStartX = 0, touchStartY = 0;
   let initialDist = 0, initialScale = 1;
-  let renderTimer = null;
   let isPinching = false;
+  let pinchCenterX = 0, pinchCenterY = 0;
+
+  let pinchTarget = null;
+
+  function findPageEl(clientX, clientY) {
+    const el = document.elementFromPoint(clientX, clientY);
+    return el ? el.closest('.page') : null;
+  }
 
   v.addEventListener('touchstart', e => {
     if (e.touches.length === 1) {
@@ -1367,6 +1482,17 @@ function setupTouch() {
       const t = e.touches;
       initialDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
       initialScale = currentScale();
+      pinchCenterX = (t[0].clientX + t[1].clientX) / 2;
+      pinchCenterY = (t[0].clientY + t[1].clientY) / 2;
+
+      const pel = findPageEl(pinchCenterX, pinchCenterY);
+      if (pel) {
+        const r = pel.getBoundingClientRect();
+        pinchTarget = { el: pel, offX: pinchCenterX - r.left, offY: pinchCenterY - r.top };
+      } else {
+        pinchTarget = null;
+      }
+
       v.style.touchAction = 'none';
       e.preventDefault();
     }
@@ -1378,27 +1504,31 @@ function setupTouch() {
       const t = e.touches;
       const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
       const ratio = dist / initialDist;
+      const newScale = clamp(initialScale * ratio, 0.3, 4);
+
       state.fitWidth = false;
       els.fitBtn.classList.remove('on');
-      state.zoom = clamp(initialScale * ratio, 0.3, 4);
+      state.zoom = newScale;
+      updateZoomLabel();
+
+      const visual = newScale / initialScale;
+      state.pageEls.forEach(el => {
+        el.style.transformOrigin = '0 0';
+        el.style.transform = `scale(${visual})`;
+      });
+
+      if (pinchTarget && pinchTarget.el.isConnected) {
+        const r = pinchTarget.el.getBoundingClientRect();
+        const expectX = r.left + pinchTarget.offX * visual;
+        const expectY = r.top + pinchTarget.offY * visual;
+        const dx = pinchCenterX - expectX;
+        const dy = pinchCenterY - expectY;
+        els.viewer.scrollLeft -= dx;
+        els.viewer.scrollTop -= dy;
+      }
 
       els.viewer.classList.add('zoomed');
       els.viewer.style.overflowX = 'auto';
-
-      state.layoutKey = '';
-      refreshLayout(true, true);
-      updateZoomLabel();
-
-      clearTimeout(renderTimer);
-      renderTimer = setTimeout(() => {
-        state.pageEls.forEach(el => {
-          const c = el.querySelector('canvas');
-          if (c) c.classList.add('rendering');
-          el._renderedKey = null;
-        });
-        refreshLayout(true, false);
-        updateVisibleNow();
-      }, 150);
     } else if (e.touches.length === 1 && !isPinching) {
       if (state.fitWidth) {
         const t = e.touches[0];
@@ -1414,18 +1544,32 @@ function setupTouch() {
       isPinching = false;
       v.style.touchAction = '';
       initialDist = 0;
-      clearTimeout(renderTimer);
+
+      state.pageEls.forEach(el => {
+        el.style.transform = '';
+        el.style.transformOrigin = '';
+      });
+
+      const sh = els.viewer.scrollHeight - els.viewer.clientHeight;
+      const ratio = sh > 0 ? els.viewer.scrollTop / sh : 0;
+
       state.layoutKey = '';
       refreshLayout(true, false);
-      state.pageEls.forEach(el => {
-        const c = el.querySelector('canvas');
-        if (c) c.classList.add('rendering');
-        el._renderedKey = null;
-      });
       updateScrollMode();
+
+      const sh2 = els.viewer.scrollHeight - els.viewer.clientHeight;
+      els.viewer.scrollTop = ratio * sh2;
+
+      state.visibleSet.forEach(idx => {
+        const el = state.pageEls[idx];
+        if (el) el._renderedKey = null;
+      });
+
       requestAnimationFrame(() => {
         updateVisibleNow();
         updateCurrentPageNow();
+        updateScrollbar();
+        saveProgress(false);    // ★ 双指缩放结束后保存
       });
     }
   }, { passive: true });
@@ -1476,6 +1620,13 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); gotoPage(state.currentPage + 1); }
   else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); gotoPage(state.currentPage - 1); }
   else if (e.key === 'Escape') closeSidebar();
+});
+
+/* ★ 离开页面 / 切后台时立即落盘 */
+window.addEventListener('pagehide', () => saveProgress(true));
+window.addEventListener('beforeunload', () => saveProgress(true));
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') saveProgress(true);
 });
 
 let rzTimer;
