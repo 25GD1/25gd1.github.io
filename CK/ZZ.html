@@ -1,0 +1,1530 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#4f46e5">
+<title>果粒橙·每课一练</title>
+<style>
+:root{
+  --accent:#4f46e5;
+  --accent-2:#6366f1;
+  --accent-soft:#eef2ff;
+  --bg:#e9ebf0;
+  --panel:#ffffff;
+  --sidebar:#f8f9fb;
+  --border:#e5e7ef;
+  --text:#1f2333;
+  --muted:#7c8398;
+  --toolbar-h:52px;
+  --safe-top:env(safe-area-inset-top,0px);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+  --safe-left:env(safe-area-inset-left,0px);
+  --safe-right:env(safe-area-inset-right,0px);
+  --ease-out:cubic-bezier(.22,1,.36,1);
+  --ease-in-out:cubic-bezier(.65,0,.35,1);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  height:100%;margin:0;width:100%;max-width:100vw;overflow:hidden;
+  overscroll-behavior:none;position:fixed;top:0;left:0;right:0;bottom:0;
+}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  color:var(--text);background:var(--bg);-webkit-font-smoothing:antialiased;
+  -webkit-text-size-adjust:100%;touch-action:manipulation;
+}
+.app{display:flex;height:100vh;height:100dvh;width:100vw;max-width:100vw;overflow:hidden}
+
+/* 侧边栏 */
+.sidebar{
+  width:300px;flex:0 0 300px;background:var(--sidebar);
+  border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:0;
+  transition:transform .3s var(--ease-out);
+  padding-top:var(--safe-top);
+  transform:translateZ(0);
+  will-change:transform;
+}
+.sidebar.hidden{transform:translateX(-100%) translateZ(0)}
+.sidebar-backdrop{
+  display:none;position:fixed;inset:0;background:rgba(16,24,40,.45);
+  z-index:15;opacity:0;transition:opacity .28s var(--ease-out);
+  backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);touch-action:none;
+}
+.sidebar-backdrop.show{display:block;opacity:1}
+
+.brand{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)}
+.brand-icon{
+  width:36px;height:36px;border-radius:10px;flex:0 0 36px;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  color:#fff;display:grid;place-items:center;font-size:17px;
+  box-shadow:0 2px 8px rgba(79,70,229,.35);
+}
+.brand-text{display:flex;flex-direction:column;min-width:0}
+.brand-text strong{font-size:14px;letter-spacing:.2px}
+.brand-text span{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+
+/* 目录：隐藏原生滚动条 */
+.toc{
+  flex:1;overflow-y:auto;overflow-x:hidden;padding:8px 8px 20px;
+  -webkit-overflow-scrolling:touch;overscroll-behavior:contain;
+  scrollbar-width:none;-ms-overflow-style:none;
+}
+.toc::-webkit-scrollbar{display:none;width:0;height:0}
+
+.part{margin-bottom:2px}
+.part-head{
+  display:flex;align-items:center;gap:8px;width:100%;border:0;background:transparent;
+  padding:12px 10px;border-radius:10px;cursor:pointer;text-align:left;
+  font-size:13px;font-weight:700;color:#333a52;letter-spacing:.2px;font-family:inherit;min-height:44px;
+  transition:background .15s var(--ease-out);
+}
+.part-head:active{background:#eef0f6}
+.caret{
+  font-size:9px;color:var(--muted);flex:0 0 auto;line-height:1;
+  transition:transform .22s var(--ease-out);
+  will-change:transform;
+}
+.part.collapsed .caret{transform:rotate(-90deg)}
+.part.collapsed .part-body{display:none}
+
+.unit{margin:1px 0 4px}
+.unit-head{
+  display:block;width:100%;border:0;background:transparent;text-align:left;cursor:pointer;
+  padding:10px 10px 10px 22px;border-radius:8px;
+  font-size:12.5px;font-weight:600;color:#5a6280;line-height:1.5;font-family:inherit;min-height:40px;
+  transition:background .15s var(--ease-out),color .15s var(--ease-out);
+}
+.unit-head:active{background:#eef0f6;color:var(--accent)}
+
+.lesson{
+  display:flex;align-items:center;gap:8px;width:100%;border:0;background:transparent;
+  text-align:left;cursor:pointer;padding:10px 10px 10px 30px;border-radius:8px;
+  font-size:13px;color:#4a5168;line-height:1.45;font-family:inherit;
+  border-left:2px solid transparent;
+  transition:background .18s var(--ease-out),color .18s var(--ease-out),border-left-color .18s var(--ease-out);
+  min-height:44px;
+}
+.lesson:active{background:#eef0f6;color:var(--text)}
+.lesson .name{flex:1;min-width:0}
+.lesson .pg{font-size:10.5px;color:#a7adbe;flex:0 0 auto;font-variant-numeric:tabular-nums}
+.lesson.active{background:var(--accent-soft);color:var(--accent);font-weight:600;border-left-color:var(--accent);}
+.lesson.active .pg{color:var(--accent-2)}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;position:relative;overflow:hidden}
+.toolbar{
+  height:var(--toolbar-h);flex:0 0 var(--toolbar-h);
+  display:flex;align-items:center;gap:6px;
+  padding:0 8px;padding-top:var(--safe-top);
+  background:var(--panel);border-bottom:1px solid var(--border);
+  box-shadow:0 1px 3px rgba(16,24,40,.04);z-index:5;width:100%;overflow:hidden;
+}
+.tb-group{display:flex;align-items:center;gap:4px}
+.tb-spacer{flex:1}
+.icon-btn{
+  width:38px;height:38px;display:grid;place-items:center;
+  border:1px solid var(--border);background:#fff;border-radius:10px;cursor:pointer;
+  color:#4a5168;font-size:16px;line-height:1;font-family:inherit;padding:0;flex:0 0 38px;
+  transition:background .16s var(--ease-out),border-color .16s var(--ease-out),transform .16s var(--ease-out);
+}
+.icon-btn:active:not(:disabled){
+  background:#f0f1f7;border-color:#d0d4e0;color:var(--accent);
+  transform:scale(.94);
+}
+.icon-btn:disabled{opacity:.3;cursor:default}
+
+.pager{display:flex;align-items:center;gap:4px;font-size:12.5px;color:var(--muted);padding:0 2px;font-variant-numeric:tabular-nums;}
+.pager input{
+  width:48px;height:34px;text-align:center;border:1px solid var(--border);border-radius:8px;
+  font-size:13px;color:var(--text);background:#fff;font-variant-numeric:tabular-nums;outline:none;
+  font-family:inherit;padding:0 2px;
+  transition:border-color .18s var(--ease-out),box-shadow .18s var(--ease-out);
+}
+.pager input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(79,70,229,.12)}
+.zoom-label{font-size:11px;color:var(--muted);min-width:38px;text-align:center;font-variant-numeric:tabular-nums}
+.text-btn{
+  height:38px;padding:0 18px;border:1px solid var(--border);background:#fff;border-radius:10px;
+  cursor:pointer;font-size:12.5px;color:#4a5168;font-family:inherit;white-space:nowrap;
+  min-height:38px;min-width:92px;display:inline-flex;align-items:center;justify-content:center;
+  transition:background .16s var(--ease-out),border-color .16s var(--ease-out),color .16s var(--ease-out);
+}
+.text-btn:active{background:#f0f1f7;border-color:#d0d4e0;color:var(--accent)}
+.text-btn.on{background:var(--accent-soft);border-color:#c7d2fe;color:var(--accent);font-weight:600}
+
+.search-wrap{
+  display:flex;align-items:center;gap:5px;height:36px;padding:0 9px;
+  border:1px solid var(--border);border-radius:10px;background:#fafbfd;
+  width:150px;flex-shrink:1;
+  transition:border-color .18s var(--ease-out),background .18s var(--ease-out),box-shadow .18s var(--ease-out);
+}
+.search-wrap:focus-within{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(79,70,229,.1)}
+.search-wrap input{
+  border:0;background:transparent;outline:none;font-size:13px;width:100%;color:var(--text);
+  font-family:inherit;-webkit-appearance:none;
+}
+.search-wrap input::placeholder{color:#a8aec0}
+.search-wrap .sicon{color:#a8aec0;font-size:12px;line-height:1;flex:0 0 auto}
+
+/* 阅读区：隐藏原生滚动条 */
+.viewer{
+  flex:1;overflow-y:auto;overflow-x:hidden;position:relative;
+  padding:12px 0 60px;background:var(--bg);
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-y;
+  overscroll-behavior-y:contain;overscroll-behavior-x:none;
+  contain:layout paint;width:100%;max-width:100vw;
+  transform:translateZ(0);
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+}
+.viewer::-webkit-scrollbar{display:none;width:0;height:0}
+
+.viewer.zoomed{
+  overflow-x:auto;
+  touch-action:pan-x pan-y;
+  overscroll-behavior-x:contain;
+}
+.viewer.zoomed .textLayer{touch-action:pan-x pan-y;}
+
+.page{
+  margin:0 auto 10px;background:#fff;border-radius:4px;
+  box-shadow:0 1px 3px rgba(16,24,40,.08),0 3px 10px rgba(16,24,40,.05);
+  position:relative;overflow:hidden;
+  contain:layout paint style;
+  transform:translateZ(0);
+}
+.page canvas{
+  display:block;width:100%;height:100%;position:absolute;inset:0;z-index:1;
+  opacity:1;
+  transition:opacity .06s linear;
+}
+.page canvas.rendering{opacity:0;transition:none}
+
+.textLayer{
+  position:absolute;inset:0;overflow:hidden;line-height:1;text-align:initial;z-index:2;
+  pointer-events:auto;user-select:text;-webkit-user-select:text;
+  contain:layout paint;
+  display:none;touch-action:pan-y;
+}
+.page.hasText .textLayer{display:block}
+.textLayer span{
+  color:transparent;-webkit-text-fill-color:transparent;position:absolute;white-space:pre;
+  cursor:text;transform-origin:0 0;user-select:text;-webkit-user-select:text;
+}
+.textLayer span::selection{background:rgba(79,70,229,.35);color:transparent;-webkit-text-fill-color:transparent;}
+
+.page .ph{
+  position:absolute;inset:0;display:grid;place-items:center;
+  color:#cdd1dc;font-size:12px;letter-spacing:.6px;user-select:none;z-index:0;
+}
+.page.flash{
+  outline:2px solid rgba(79,70,229,.55);
+  outline-offset:-2px;
+  transition:outline-color .2s var(--ease-out);
+}
+
+/* ============================================================
+   自定义滚动条（替代浏览器原生）
+   ------------------------------------------------------------
+   完全由代码控制大小 / 颜色 / 拖拽，手机上也能轻松抓取
+   ============================================================ */
+.custom-scrollbar{
+  position:absolute;
+  top:var(--toolbar-h);
+  right:2px;
+  bottom:10px;
+  width:24px;
+  z-index:8;
+  pointer-events:none;
+  opacity:1;
+  transition:opacity .25s var(--ease-out);
+}
+.custom-scrollbar.hidden-bar{opacity:0;pointer-events:none}
+.custom-scrollbar-thumb{
+  position:absolute;
+  right:5px;
+  width:14px;
+  min-height:64px;
+  border-radius:7px;
+  background:rgba(100,116,139,.30);
+  pointer-events:auto;
+  touch-action:none;
+  cursor:grab;
+  will-change:transform;
+  transition:background .2s var(--ease-out),box-shadow .2s var(--ease-out);
+}
+.custom-scrollbar.active .custom-scrollbar-thumb{
+  background:rgba(79,70,229,.72);
+  box-shadow:0 0 0 3px rgba(79,70,229,.15);
+}
+.custom-scrollbar-thumb:active{cursor:grabbing}
+
+.loading-overlay{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;
+  background:rgba(233,235,240,.92);z-index:10;
+  backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+}
+.spinner{
+  width:36px;height:36px;border:3px solid #d5d9e4;border-top-color:var(--accent);
+  border-radius:50%;animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-overlay p{font-size:13px;color:var(--muted);margin:0}
+
+.error-box{
+  max-width:380px;margin:16vh auto;text-align:center;padding:30px 24px;
+  background:#fff;border-radius:14px;box-shadow:0 4px 14px rgba(16,24,40,.08);
+}
+.error-box .e-icon{font-size:36px;margin-bottom:10px}
+.error-box h3{margin:0 0 8px;font-size:15px;color:#d93025}
+.error-box p{margin:0 0 18px;font-size:12.5px;color:var(--muted);line-height:1.7}
+.error-box code{
+  display:block;font-size:11px;background:#f5f6fa;padding:8px 12px;border-radius:8px;
+  color:#c7254e;word-break:break-all;text-align:left;
+  font-family:ui-monospace,Menlo,Consolas,monospace;margin-bottom:14px;
+}
+
+.fab{
+  position:fixed;bottom:calc(20px + var(--safe-bottom));right:calc(16px + var(--safe-right));
+  width:48px;height:48px;border-radius:50%;border:0;cursor:pointer;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#fff;
+  font-size:20px;display:none;place-items:center;
+  box-shadow:0 3px 14px rgba(79,70,229,.4);z-index:12;
+  transition:transform .18s var(--ease-out),opacity .22s var(--ease-out);
+  opacity:0;transform:scale(.8);
+}
+.fab.show{display:grid;opacity:1;transform:scale(1)}
+.fab:active{transform:scale(.88)}
+
+.copy-toast{
+  position:fixed;left:50%;bottom:calc(80px + var(--safe-bottom));
+  transform:translateX(-50%) translateY(12px);
+  background:rgba(31,35,51,.92);color:#fff;font-size:12.5px;padding:9px 18px;
+  border-radius:20px;opacity:0;pointer-events:none;
+  transition:opacity .22s var(--ease-out),transform .22s var(--ease-out);
+  z-index:30;white-space:nowrap;
+  backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+}
+.copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+@media (max-width:820px){
+  .sidebar{
+    position:fixed;z-index:20;height:100%;
+    box-shadow:6px 0 28px rgba(16,24,40,.12);
+  }
+  .search-wrap{width:110px}
+  .search-wrap input{font-size:16px}
+  .viewer{padding:6px 0 50px}
+  .page{border-radius:0;margin-bottom:6px;box-shadow:0 1px 2px rgba(16,24,40,.06)}
+  .toolbar{padding:0 6px;gap:4px}
+  .icon-btn{width:38px;height:38px;flex:0 0 38px;font-size:16px}
+  .text-btn{height:38px;min-height:38px;font-size:12.5px;padding:0 14px;min-width:84px}
+  .pager input{width:44px;height:34px}
+  .pager{padding:0}
+
+  /* 移动端滚动条更宽 */
+  .custom-scrollbar{
+    right:0;
+    bottom:8px;
+    width:28px;
+  }
+  .custom-scrollbar-thumb{
+    right:6px;
+    width:16px;
+    min-height:72px;
+    border-radius:8px;
+    background:rgba(100,116,139,.35);
+  }
+}
+
+@media (max-width:420px){
+  .search-wrap{display:none}
+  .zoom-label{display:none}
+  .pager span:first-of-type{display:none}
+  .text-btn{padding:0 12px;min-width:78px;font-size:12px}
+}
+@media (max-width:360px){.pager{display:none}}
+@media (min-width:821px){
+  .sidebar.hidden{margin-left:-300px;transform:none}
+  .fab{display:none!important}
+}
+@media (orientation:landscape) and (max-height:500px){
+  :root{--toolbar-h:44px}
+  .toolbar{padding:0 6px}
+  .icon-btn{width:34px;height:34px;flex:0 0 34px;font-size:15px}
+  .text-btn{height:34px;min-height:34px;font-size:12px;padding:0 12px;min-width:74px}
+  .viewer{padding-top:4px}
+}
+
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms!important;animation-duration:.01ms!important}
+}
+</style>
+</head>
+<body>
+
+<script>
+/* PC 端检测：跳转到 error.html */
+(function(){
+  var ua = navigator.userAgent || '';
+  var platform = navigator.platform || '';
+  var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i.test(ua);
+  var isTablet = /iPad|Tablet|PlayBook|Silk/i.test(ua);
+  var isPCPlatform = /Win|Mac|Linux|X11/i.test(platform) && !isMobile && !isTablet;
+  var hasFinePointer = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
+  var isWideScreen = window.innerWidth > 1024;
+
+  if (isPCPlatform || (isWideScreen && hasFinePointer && !isMobile)) {
+    try { window.location.replace('https://25gd1.github.io/CK/error.html'); } catch(e) {}
+  }
+})();
+</script>
+
+<div class="sidebar-backdrop" id="backdrop"></div>
+
+<div class="app">
+  <aside class="sidebar hidden" id="sidebar">
+    <div class="brand">
+      <div class="brand-icon">📖</div>
+      <div class="brand-text">
+        <strong> 目录</strong>
+        <span id="docName">正在加载…</span>
+      </div>
+    </div>
+    <nav class="toc" id="toc"></nav>
+  </aside>
+
+  <main class="main">
+    <header class="toolbar" id="toolbar">
+      <button class="icon-btn" id="menuBtn" title="目录" style="display:none">☰</button>
+
+      <div class="tb-group">
+        <button class="icon-btn" id="prevBtn" title="上一页" disabled>‹</button>
+        <div class="pager">
+          <input id="pageInput" type="text" inputmode="numeric" value="–" title="输入页码">
+          <span>/</span>
+          <span id="pageCount">–</span>
+        </div>
+        <button class="icon-btn" id="nextBtn" title="下一页" disabled>›</button>
+      </div>
+
+      <div class="tb-group">
+        <button class="icon-btn" id="zoomOut" title="缩小">−</button>
+        <span class="zoom-label" id="zoomLabel">–</span>
+        <button class="icon-btn" id="zoomIn" title="放大">＋</button>
+        <button class="text-btn on" id="fitBtn" title="适应屏幕宽度"><span class="fit-btn-text">适应宽度</span></button>
+      </div>
+
+      <div class="tb-spacer"></div>
+
+      <div class="search-wrap">
+        <span class="sicon">🔍</span>
+        <input id="searchInput" type="search" placeholder="搜索…" enterkeyhint="search" title="输入关键词后按回车">
+      </div>
+    </header>
+
+    <div class="viewer" id="viewer">
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>正在加载 PDF…</p>
+      </div>
+    </div>
+
+    <!-- 自定义滚动条 -->
+    <div class="custom-scrollbar" id="customScrollbar">
+      <div class="custom-scrollbar-thumb" id="customScrollThumb"></div>
+    </div>
+  </main>
+</div>
+
+<button class="fab" id="fabTop" title="回到顶部">↑</button>
+<div class="copy-toast" id="copyToast">已复制选中文字</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+/* ============================================================
+   固定远程链接
+   ============================================================ */
+const PDF_URL = 'https://25gd1.github.io/CK/22.pdf';
+
+/* ============================================================
+   目录结构
+   ============================================================ */
+const TOC_DATA = [
+  { title: '第一部分 中国特色社会主义', units: [
+    { title: '第一单元 中国特色社会主义的开创、坚持、捍卫、发展', lessons: [
+      '第1课 社会主义在中国的确立与探索',
+      '第2课 中国特色社会主义的开创和发展',
+      '第3课 中国特色社会主义进入新时代',
+      '第4课 社会主义基本经济制度',
+      '第5课 推动高质量发展',
+      '第6课 推动形成全面对外开放新局面',
+    ]},
+    { title: '第三单元 中国特色社会主义政治建设', lessons: [
+      '第7课 党是最高政治领导力量',
+      '第8课 用制度体系保证人民当家作主',
+      '第9课 发展社会主义民主政治',
+    ]},
+    { title: '第四单元 中国特色社会主义文化建设', lessons: [
+      '第10课 文化自信与文明交流互鉴',
+      '第11课 以社会主义核心价值观引领文化建设',
+    ]},
+    { title: '第五单元 中国特色社会主义社会建设', lessons: [
+      '第12课 增进民生福祉',
+      '第13课 社会治理与总体国家安全观',
+    ]},
+    { title: '第六单元 中国特色社会主义生态文明建设', lessons: [
+      '第14课 推进绿色发展',
+      '第15课 建设美丽中国',
+    ]},
+  ]},
+  { title: '第二部分 心理健康与职业生涯', units: [
+    { title: '第一单元 时代导航 生涯筑梦', lessons: [
+      { title: '第1课（时代导航）' },
+      '第2课 生涯规划 筑梦未来',
+    ]},
+    { title: '第二单元 认识自我 健康成长', lessons: [
+      '第3课 发现自我 完善自我',
+      '第4课 直面挫折 积极应对',
+      '第5课 认识情绪 管理情绪',
+    ]},
+    { title: '第三单元 和谐交往 快乐生活', lessons: [
+      '第7课 珍视亲情 学会感恩',
+      '第8课 良师相伴 亦师亦友',
+      '第9课 友好相处 学会合作',
+      '第10课 和谐校园 共同维护',
+    ]},
+    { title: '第四单元 学会学习 终身受益', lessons: [
+      '第11课 主动学习 高效学习',
+      '第12课 终身学习 持续发展',
+    ]},
+    { title: '第五单元 规划生涯 放飞梦想', lessons: [
+      '第13课 立足专业 谋划发展',
+      '第14课 执行规划 夯实基础',
+      '第15课 完善规划 奋发有为',
+    ]},
+  ]},
+  { title: '第三部分 哲学与人生', units: [
+    { title: '第一单元 立足客观实际 树立人生理想', lessons: [
+      '第1课 时代精神的精华',
+      '第2课 树立科学的世界观',
+      '第3课 追求人生理想',
+    ]},
+    { title: '第二单元 辩证看问题 走好人生路', lessons: [
+      '第4课 用联系的观点看问题',
+      '第5课 用发展的观点看问题',
+      '第6课 用对立统一的观点看问题',
+    ]},
+    { title: '第三单元 实践出真知 创新增才干', lessons: [
+      '第7课 实践出真知',
+      '第8课 在实践中提高认识能力',
+      '第9课 创新增才干',
+    ]},
+    { title: '第四单元 坚持唯物史观 在奉献中实现人生价值', lessons: [
+      '第10课 人类社会及其发展规律',
+      '第11课 社会历史的主体',
+      '第12课 实现人生价值',
+    ]},
+  ]},
+  { title: '第四部分 职业道德与法治', units: [
+    { title: '第一单元 感悟道德力量', lessons: [
+      '第1课 追求向上向善的道德',
+      '第2课 让美德照亮幸福人生',
+    ]},
+    { title: '第二单元 践行职业道德', lessons: [
+      '第3课 增强职业道德意识',
+      '第4课 在工作中做合格建设者',
+      '第5课 弘扬劳动精神、劳模精神、工匠精神',
+      '第6课 提升职业道德境界',
+    ]},
+    { title: '第三单元 全面依法治国', lessons: [
+      '第7课 中国特色社会主义法治道路',
+      '第8课 建设法治中国',
+      '第9课 坚持依宪治国',
+    ]},
+    { title: '第四单元 遵守法律规范', lessons: [
+      '第10课 养成遵纪守法好习惯',
+      '第11课 依法从事民事活动',
+      '第12课 自觉抵制犯罪',
+      '第13课 学会依法维权',
+    ]},
+  ]},
+];
+
+const PAGE_HINTS = {
+  '第1课 社会主义在中国的确立与探索':1, '第2课 中国特色社会主义的开创和发展':2,
+  '第3课 中国特色社会主义进入新时代':3, '第4课 社会主义基本经济制度':4,
+  '第5课 推动高质量发展':5, '第6课 推动形成全面对外开放新局面':6,
+  '第7课 党是最高政治领导力量':6, '第8课 用制度体系保证人民当家作主':7,
+  '第9课 发展社会主义民主政治':8, '第10课 文化自信与文明交流互鉴':8,
+  '第11课 以社会主义核心价值观引领文化建设':9, '第12课 增进民生福祉':10,
+  '第13课 社会治理与总体国家安全观':10, '第14课 推进绿色发展':11,
+  '第15课 建设美丽中国':11, '第1课（时代导航）':11, '第2课 生涯规划 筑梦未来':12,
+  '第3课 发现自我 完善自我':12, '第4课 直面挫折 积极应对':13,
+  '第5课 认识情绪 管理情绪':13, '第7课 珍视亲情 学会感恩':14,
+  '第8课 良师相伴 亦师亦友':14, '第9课 友好相处 学会合作':15,
+  '第10课 和谐校园 共同维护':15, '第11课 主动学习 高效学习':15,
+  '第12课 终身学习 持续发展':16, '第13课 立足专业 谋划发展':16,
+  '第14课 执行规划 夯实基础':16, '第15课 完善规划 奋发有为':17,
+  '第1课 时代精神的精华':17, '第2课 树立科学的世界观':18,
+  '第3课 追求人生理想':19, '第4课 用联系的观点看问题':20,
+  '第5课 用发展的观点看问题':20, '第6课 用对立统一的观点看问题':21,
+  '第7课 实践出真知':22, '第8课 在实践中提高认识能力':22,
+  '第9课 创新增才干':23, '第10课 人类社会及其发展规律':24,
+  '第11课 社会历史的主体':25, '第12课 实现人生价值':25,
+  '第1课 追求向上向善的道德':27, '第2课 让美德照亮幸福人生':28,
+  '第3课 增强职业道德意识':28, '第4课 在工作中做合格建设者':28,
+  '第5课 弘扬劳动精神、劳模精神、工匠精神':29, '第6课 提升职业道德境界':29,
+  '第7课 中国特色社会主义法治道路':30, '第8课 建设法治中国':30,
+  '第9课 坚持依宪治国':31, '第10课 养成遵纪守法好习惯':33,
+  '第11课 依法从事民事活动':33, '第12课 自觉抵制犯罪':34,
+  '第13课 学会依法维权':34,
+  '第一单元 中国特色社会主义的开创、坚持、捍卫、发展':1,
+  '第三单元 中国特色社会主义政治建设':6, '第四单元 中国特色社会主义文化建设':8,
+  '第五单元 中国特色社会主义社会建设':10, '第六单元 中国特色社会主义生态文明建设':11,
+  '第一单元 时代导航 生涯筑梦':11, '第二单元 认识自我 健康成长':12,
+  '第三单元 和谐交往 快乐生活':14, '第四单元 学会学习 终身受益':15,
+  '第五单元 规划生涯 放飞梦想':16, '第一单元 立足客观实际 树立人生理想':17,
+  '第二单元 辩证看问题 走好人生路':20, '第三单元 实践出真知 创新增才干':22,
+  '第四单元 坚持唯物史观 在奉献中实现人生价值':24, '第一单元 感悟道德力量':27,
+  '第二单元 践行职业道德':28, '第三单元 全面依法治国':30,
+  '第四单元 遵守法律规范':33,
+};
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+const $ = id => document.getElementById(id);
+const els = {
+  toc: $('toc'), viewer: $('viewer'), sidebar: $('sidebar'), backdrop: $('backdrop'),
+  pageCount: $('pageCount'), pageInput: $('pageInput'),
+  prevBtn: $('prevBtn'), nextBtn: $('nextBtn'),
+  zoomIn: $('zoomIn'), zoomOut: $('zoomOut'), zoomLabel: $('zoomLabel'), fitBtn: $('fitBtn'),
+  docName: $('docName'), searchInput: $('searchInput'), menuBtn: $('menuBtn'),
+  fabTop: $('fabTop'), loadingOverlay: $('loadingOverlay'), copyToast: $('copyToast'),
+  scrollbar: $('customScrollbar'), scrollThumb: $('customScrollThumb'),
+};
+
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const norm = s => String(s).replace(/\s+/g, '');
+
+const measureCanvas = document.createElement('canvas');
+const measureCtx = measureCanvas.getContext('2d');
+
+const state = {
+  pdf: null, sizes: [], pageEls: [], pageOffsets: [],
+  pageTexts: null, anchors: new Map(),
+  currentPage: 1, zoom: 1, fitWidth: true, baseWidth: 0,
+  layoutKey: '', renderGen: 0, visibleSet: new Set(),
+};
+
+const MAX_CANVAS_PIXELS = 6 * 1024 * 1024;
+
+function getDevicePixelRatio() {
+  return Math.min(Math.max(window.devicePixelRatio || 1, 1), 2);
+}
+
+function currentScale() {
+  if (!state.baseWidth) return 1;
+  if (state.fitWidth) {
+    const pad = window.innerWidth <= 820 ? 8 : 40;
+    const avail = Math.max(240, els.viewer.clientWidth - pad);
+    return clamp(avail / state.baseWidth, 0.3, 3);
+  }
+  return state.zoom;
+}
+
+function computeRenderScale(idx) {
+  const size = state.sizes[idx];
+  const cssScale = currentScale();
+  const dpr = getDevicePixelRatio();
+  let scale = cssScale * dpr;
+  const pixels = size.w * scale * size.h * scale;
+  if (pixels > MAX_CANVAS_PIXELS) scale *= Math.sqrt(MAX_CANVAS_PIXELS / pixels);
+  return scale;
+}
+
+function layoutKeyOf() {
+  return currentScale().toFixed(4) + '|' + els.viewer.clientWidth + '|' + (state.fitWidth ? 'F' : 'Z');
+}
+
+/* ============================================================
+   自定义滚动条
+   ============================================================ */
+let thumbDragging = false;
+let thumbDragStartY = 0;
+let thumbDragStartScrollTop = 0;
+let scrollActiveTimer = null;
+
+function updateScrollbar() {
+  if (!state.pdf) return;
+
+  const v = els.viewer;
+  const sh = v.scrollHeight;
+  const ch = v.clientHeight;
+  const st = v.scrollTop;
+
+  // 内容不足以滚动时隐藏
+  if (sh <= ch + 4) {
+    els.scrollbar.classList.add('hidden-bar');
+    return;
+  }
+  els.scrollbar.classList.remove('hidden-bar');
+
+  const trackH = els.scrollbar.clientHeight;
+  if (trackH <= 0) return;
+
+  const thumbH = Math.max(64, Math.round((ch / sh) * trackH));
+  const maxTop = Math.max(0, trackH - thumbH);
+  const range = sh - ch;
+  const top = range > 0 ? Math.round((st / range) * maxTop) : 0;
+
+  els.scrollThumb.style.height = thumbH + 'px';
+  els.scrollThumb.style.transform = `translateY(${top}px)`;
+}
+
+function markScrollbarActive() {
+  els.scrollbar.classList.add('active');
+  clearTimeout(scrollActiveTimer);
+  scrollActiveTimer = setTimeout(() => {
+    if (!thumbDragging) els.scrollbar.classList.remove('active');
+  }, 700);
+}
+
+function startThumbDrag(clientY) {
+  thumbDragging = true;
+  thumbDragStartY = clientY;
+  thumbDragStartScrollTop = els.viewer.scrollTop;
+  els.scrollbar.classList.add('active');
+}
+
+function moveThumbDrag(clientY) {
+  if (!thumbDragging) return;
+  const trackH = els.scrollbar.clientHeight;
+  const thumbH = els.scrollThumb.offsetHeight;
+  const maxTop = trackH - thumbH;
+  if (maxTop <= 0) return;
+
+  const dy = clientY - thumbDragStartY;
+  const range = els.viewer.scrollHeight - els.viewer.clientHeight;
+  const delta = (dy / maxTop) * range;
+
+  els.viewer.scrollTop = clamp(thumbDragStartScrollTop + delta, 0, range);
+}
+
+function endThumbDrag() {
+  if (!thumbDragging) return;
+  thumbDragging = false;
+  clearTimeout(scrollActiveTimer);
+  scrollActiveTimer = setTimeout(() => {
+    if (!thumbDragging) els.scrollbar.classList.remove('active');
+  }, 400);
+}
+
+/* 触摸 / 鼠标事件 */
+els.scrollThumb.addEventListener('touchstart', e => {
+  e.preventDefault();
+  e.stopPropagation();
+  startThumbDrag(e.touches[0].clientY);
+}, { passive: false });
+
+els.scrollThumb.addEventListener('mousedown', e => {
+  e.preventDefault();
+  startThumbDrag(e.clientY);
+});
+
+document.addEventListener('touchmove', e => {
+  if (thumbDragging) {
+    e.preventDefault();
+    moveThumbDrag(e.touches[0].clientY);
+  }
+}, { passive: false });
+
+document.addEventListener('mousemove', e => {
+  if (thumbDragging) {
+    e.preventDefault();
+    moveThumbDrag(e.clientY);
+  }
+});
+
+document.addEventListener('touchend', endThumbDrag);
+document.addEventListener('mouseup', endThumbDrag);
+document.addEventListener('touchcancel', endThumbDrag);
+
+/* ============================================================
+   滑动模式
+   ============================================================ */
+function updateScrollMode() {
+  if (state.fitWidth) {
+    els.viewer.classList.remove('zoomed');
+    els.viewer.style.overflowX = 'hidden';
+    els.viewer.scrollLeft = 0;
+  } else {
+    els.viewer.classList.add('zoomed');
+    els.viewer.style.overflowX = 'auto';
+  }
+}
+
+/* ============================================================
+   目录（默认折叠）
+   ============================================================ */
+function buildToc() {
+  const frag = document.createDocumentFragment();
+  TOC_DATA.forEach(part => {
+    const partEl = document.createElement('div');
+    partEl.className = 'part collapsed';
+
+    const head = document.createElement('button');
+    head.className = 'part-head';
+    head.innerHTML = '<span class="caret">▾</span><span class="ptitle"></span>';
+    head.querySelector('.ptitle').textContent = part.title;
+    head.addEventListener('click', () => partEl.classList.toggle('collapsed'));
+    partEl.appendChild(head);
+
+    const body = document.createElement('div');
+    body.className = 'part-body';
+
+    part.units.forEach(unit => {
+      const unitEl = document.createElement('div');
+      unitEl.className = 'unit';
+      const uh = document.createElement('button');
+      uh.className = 'unit-head';
+      uh.dataset.anchor = unit.title;
+      uh.textContent = unit.title;
+      uh.addEventListener('click', () => { jumpToAnchor(unit.title); closeSidebar(); });
+      unitEl.appendChild(uh);
+
+      const box = document.createElement('div');
+      box.className = 'lessons';
+      unit.lessons.forEach(l => {
+        const title = typeof l === 'string' ? l : l.title;
+        const b = document.createElement('button');
+        b.className = 'lesson';
+        b.dataset.anchor = title;
+        b.innerHTML = '<span class="name"></span><span class="pg">–</span>';
+        b.querySelector('.name').textContent = title;
+        b.addEventListener('click', () => { jumpToAnchor(title); closeSidebar(); });
+        box.appendChild(b);
+      });
+      unitEl.appendChild(box);
+      body.appendChild(unitEl);
+    });
+    partEl.appendChild(body);
+    frag.appendChild(partEl);
+  });
+  els.toc.appendChild(frag);
+}
+
+function updateTocLabels() {
+  document.querySelectorAll('.lesson').forEach(el => {
+    const p = state.anchors.get(el.dataset.anchor);
+    if (p) el.querySelector('.pg').textContent = 'P' + p;
+  });
+}
+
+let lastHighlighted = null;
+function highlightToc(anchorTitle) {
+  if (lastHighlighted === anchorTitle) return;
+  lastHighlighted = anchorTitle;
+
+  document.querySelectorAll('.lesson, .unit-head').forEach(el => {
+    el.classList.toggle('active', el.dataset.anchor === anchorTitle);
+  });
+
+  const active = els.toc.querySelector('.lesson.active');
+  if (!active) return;
+
+  const parentPart = active.closest('.part');
+  if (parentPart && parentPart.classList.contains('collapsed')) {
+    parentPart.classList.remove('collapsed');
+  }
+
+  const toc = els.toc;
+  const elTop = active.offsetTop;
+  const elBottom = elTop + active.offsetHeight;
+  const viewTop = toc.scrollTop;
+  const viewBottom = viewTop + toc.clientHeight;
+  if (elTop < viewTop + 40) toc.scrollTop = Math.max(0, elTop - 40);
+  else if (elBottom > viewBottom - 40) toc.scrollTop = elBottom - toc.clientHeight + 40;
+}
+
+/* ============================================================
+   加载
+   ============================================================ */
+async function loadDocument() {
+  els.docName.textContent = '22.pdf';
+  try {
+    const pdf = await pdfjsLib.getDocument({
+      url: PDF_URL,
+      disableRange: false,
+      disableStream: false,
+      rangeChunkSize: 65536,
+      disableAutoFetch: true,
+    }).promise;
+    await initPdf(pdf);
+  } catch (err) {
+    console.error('加载失败:', err);
+    showError(err);
+  }
+}
+
+async function initPdf(pdf) {
+  state.pdf = pdf;
+  els.pageCount.textContent = pdf.numPages;
+
+  const sizes = await Promise.all(
+    Array.from({ length: pdf.numPages }, (_, i) =>
+      pdf.getPage(i + 1).then(p => {
+        const vp = p.getViewport({ scale: 1 });
+        return { w: vp.width, h: vp.height };
+      })
+    )
+  );
+  state.sizes = sizes;
+  state.baseWidth = sizes[0].w;
+
+  els.loadingOverlay?.remove();
+  buildPages();
+  els.viewer.scrollTop = 0;
+  setCurrentPage(1, true);
+  updateZoomLabel();
+  updateScrollMode();
+
+  requestAnimationFrame(() => {
+    refreshLayout(true, false);
+    setupObserver();
+    updateVisibleNow();
+    updateCurrentPageNow();
+    updateScrollbar();
+  });
+
+  buildAnchors().catch(err => console.warn('目录定位失败：', err));
+}
+
+function showError(err) {
+  els.loadingOverlay?.remove();
+  const msg = err ? (err.message || String(err)) : '未知错误';
+  els.viewer.innerHTML = `
+    <div class="error-box">
+      <div class="e-icon">⚠️</div>
+      <h3>PDF 加载失败</h3>
+      <p>未能从以下地址读取文件：</p>
+      <code>${PDF_URL}</code>
+      <p>请检查网络连接，或确认该链接是否可访问。错误信息：</p>
+      <code>${msg}</code>
+    </div>`;
+}
+
+/* ============================================================
+   页面 DOM
+   ============================================================ */
+function buildPages() {
+  els.viewer.querySelectorAll('.page').forEach(e => e.remove());
+  state.pageEls = [];
+
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < state.pdf.numPages; i++) {
+    const div = document.createElement('div');
+    div.className = 'page';
+    div.dataset.page = String(i + 1);
+    div.dataset.idx = String(i);
+    div.innerHTML = `<div class="ph">第 ${i + 1} 页</div>`;
+    frag.appendChild(div);
+    state.pageEls.push(div);
+  }
+  els.viewer.appendChild(frag);
+}
+
+function refreshLayout(force = false, skipOffsets = false) {
+  const key = layoutKeyOf();
+  if (!force && key === state.layoutKey) return;
+  state.layoutKey = key;
+
+  const scale = currentScale();
+  const containerW = els.viewer.clientWidth;
+
+  for (let i = 0; i < state.pageEls.length; i++) {
+    const el = state.pageEls[i];
+    const s = state.sizes[i];
+    let w = Math.round(s.w * scale);
+    if (state.fitWidth) w = Math.min(w, containerW);
+    const h = Math.round(s.h * (w / s.w));
+
+    if (el._w !== w) { el.style.width = w + 'px'; el._w = w; }
+    if (el._h !== h) { el.style.height = h + 'px'; el._h = h; }
+  }
+
+  if (!skipOffsets) {
+    state.pageOffsets = state.pageEls.map(el => el.offsetTop);
+  }
+  updateScrollbar();
+}
+
+/* ============================================================
+   渲染
+   ============================================================ */
+async function renderPage(idx) {
+  const el = state.pageEls[idx];
+  if (!el) return;
+
+  const key = state.layoutKey;
+  if (el._renderedKey === key) return;
+  if (el._rendering) return;
+
+  if (el._renderTask) {
+    try { el._renderTask.cancel(); } catch (_) {}
+    el._renderTask = null;
+  }
+  el._rendering = true;
+
+  try {
+    const page = await state.pdf.getPage(idx + 1);
+    if (el._renderedKey === key) return;
+
+    const scale = computeRenderScale(idx);
+    const vp = page.getViewport({ scale });
+
+    let canvas = el.querySelector('canvas');
+    if (!canvas) {
+      canvas = document.createElement('canvas');
+      canvas.className = 'rendering';
+      el.insertBefore(canvas, el.firstChild);
+    } else {
+      canvas.classList.add('rendering');
+    }
+    canvas.width = Math.floor(vp.width);
+    canvas.height = Math.floor(vp.height);
+    canvas.style.width = '100%';
+    canvas.style.height = '100%';
+
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    const task = page.render({ canvasContext: ctx, viewport: vp });
+    el._renderTask = task;
+    await task.promise;
+
+    el._renderTask = null;
+    el._renderedKey = key;
+
+    canvas.classList.remove('rendering');
+    el.querySelector('.ph')?.remove();
+
+    scheduleTextLayer(page, idx, key);
+  } catch (err) {
+    if (err && err.name !== 'RenderingCancelledException') {
+      console.warn('渲染第 ' + (idx + 1) + ' 页失败', err);
+    }
+  } finally {
+    el._rendering = false;
+  }
+}
+
+function unrenderPage(idx) {
+  const el = state.pageEls[idx];
+  if (!el) return;
+  if (el._renderTask) { try { el._renderTask.cancel(); } catch (_) {} el._renderTask = null; }
+  el.querySelector('canvas')?.remove();
+  el.querySelector('.textLayer')?.remove();
+  el.classList.remove('hasText');
+  el._renderedKey = null;
+  if (!el.querySelector('.ph')) {
+    const ph = document.createElement('div');
+    ph.className = 'ph';
+    ph.textContent = '第 ' + (idx + 1) + ' 页';
+    el.appendChild(ph);
+  }
+}
+
+/* ============================================================
+   文字层
+   ============================================================ */
+let textLayerQueue = [];
+let textLayerScheduled = false;
+
+function scheduleTextLayer(page, idx, key) {
+  textLayerQueue.push({ page, idx, key });
+  if (textLayerScheduled) return;
+  textLayerScheduled = true;
+  requestAnimationFrame(() => {
+    textLayerScheduled = false;
+    const queue = textLayerQueue;
+    textLayerQueue = [];
+    queue.forEach(job => buildTextLayer(job.page, job.idx, job.key));
+  });
+}
+
+async function buildTextLayer(page, idx, key) {
+  const el = state.pageEls[idx];
+  if (!el || el._renderedKey !== key) return;
+
+  const cssScale = currentScale();
+  const cssViewport = page.getViewport({ scale: cssScale });
+
+  let textContent;
+  try { textContent = await page.getTextContent(); }
+  catch (_) { return; }
+  if (el._renderedKey !== key) return;
+
+  let layer = el.querySelector('.textLayer');
+  if (!layer) {
+    layer = document.createElement('div');
+    layer.className = 'textLayer';
+    el.appendChild(layer);
+  }
+  layer.textContent = '';
+  layer.style.width = cssViewport.width + 'px';
+  layer.style.height = cssViewport.height + 'px';
+
+  const frag = document.createDocumentFragment();
+  for (const item of textContent.items) {
+    if (!item.str) continue;
+    const tx = pdfjsLib.Util.transform(cssViewport.transform, item.transform);
+    const angle = Math.atan2(tx[1], tx[0]);
+    const fontHeight = Math.hypot(tx[2], tx[3]) || 10;
+
+    const span = document.createElement('span');
+    span.textContent = item.str;
+    span.style.left = tx[4] + 'px';
+    span.style.top = (tx[5] - fontHeight) + 'px';
+    span.style.fontSize = fontHeight + 'px';
+    span.style.fontFamily = 'sans-serif';
+
+    const targetWidth = item.width * cssScale;
+    let transformStr = angle ? `rotate(${angle}rad)` : '';
+    if (targetWidth > 0) {
+      measureCtx.font = `${fontHeight}px sans-serif`;
+      const measured = measureCtx.measureText(item.str).width || 1;
+      const sx = targetWidth / measured;
+      transformStr = (transformStr + ` scaleX(${sx})`).trim();
+    }
+    if (transformStr) span.style.transform = transformStr;
+    frag.appendChild(span);
+  }
+  layer.appendChild(frag);
+  el.classList.add('hasText');
+}
+
+/* ============================================================
+   可见性
+   ============================================================ */
+let observer = null;
+
+function setupObserver() {
+  if (observer) observer.disconnect();
+  observer = new IntersectionObserver(entries => {
+    for (const entry of entries) {
+      const idx = +entry.target.dataset.idx;
+      if (entry.isIntersecting) {
+        state.visibleSet.add(idx);
+        const el = state.pageEls[idx];
+        if (el && el._renderedKey !== state.layoutKey) renderPage(idx);
+      } else {
+        state.visibleSet.delete(idx);
+        const el = state.pageEls[idx];
+        if (el && el._renderedKey && !isNearViewport(idx)) unrenderPage(idx);
+      }
+    }
+  }, {
+    root: els.viewer,
+    rootMargin: '800px 0px',
+    threshold: 0,
+  });
+  state.pageEls.forEach(el => observer.observe(el));
+}
+
+function isNearViewport(idx) {
+  const top = state.pageOffsets[idx];
+  const h = state.pageEls[idx]._h || 0;
+  const vTop = els.viewer.scrollTop;
+  const vBottom = vTop + els.viewer.clientHeight;
+  return !(top + h < vTop - 1600 || top > vBottom + 1600);
+}
+
+function updateVisibleNow() {
+  state.visibleSet.forEach(idx => {
+    const el = state.pageEls[idx];
+    if (el && el._renderedKey !== state.layoutKey) renderPage(idx);
+  });
+}
+
+function updateCurrentPageNow() {
+  if (!state.pdf) return;
+  const st = els.viewer.scrollTop + 80;
+  const arr = state.pageOffsets;
+  let lo = 0, hi = arr.length - 1, cur = 1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (arr[mid] <= st) { cur = mid + 1; lo = mid + 1; }
+    else hi = mid - 1;
+  }
+  setCurrentPage(cur);
+}
+
+function setCurrentPage(n, force = false) {
+  if (!state.pdf) return;
+  n = clamp(n, 1, state.pdf.numPages);
+  if (!force && n === state.currentPage) return;
+  state.currentPage = n;
+
+  if (els.pageInput.value !== String(n)) els.pageInput.value = n;
+  els.prevBtn.disabled = n <= 1;
+  els.nextBtn.disabled = n >= state.pdf.numPages;
+
+  let best = null, bestPage = -1;
+  state.anchors.forEach((p, title) => {
+    if (p <= n && p > bestPage) { bestPage = p; best = title; }
+  });
+  if (best) highlightToc(best);
+}
+
+/* ============================================================
+   滚动
+   ============================================================ */
+let scrollScheduled = false, pageScheduled = false;
+
+els.viewer.addEventListener('scroll', () => {
+  markScrollbarActive();
+  updateScrollbar();
+
+  if (!scrollScheduled) {
+    scrollScheduled = true;
+    requestAnimationFrame(() => {
+      scrollScheduled = false;
+      updateVisibleNow();
+      els.fabTop.classList.toggle('show', els.viewer.scrollTop > 400);
+    });
+  }
+  if (!pageScheduled) {
+    pageScheduled = true;
+    requestAnimationFrame(() => {
+      pageScheduled = false;
+      updateCurrentPageNow();
+    });
+  }
+}, { passive: true });
+
+/* ============================================================
+   重排
+   ============================================================ */
+function relayoutAndRerender(keepRatio = true) {
+  const sh = els.viewer.scrollHeight - els.viewer.clientHeight;
+  const ratio = keepRatio && sh > 0 ? els.viewer.scrollTop / sh : 0;
+
+  state.renderGen++;
+
+  state.pageEls.forEach(el => {
+    const c = el.querySelector('canvas');
+    if (c) c.classList.add('rendering');
+    el._renderedKey = null;
+  });
+
+  state.layoutKey = '';
+  refreshLayout(true, false);
+  updateZoomLabel();
+  updateScrollMode();
+
+  const sh2 = els.viewer.scrollHeight - els.viewer.clientHeight;
+  els.viewer.scrollTop = ratio * sh2;
+
+  requestAnimationFrame(() => {
+    updateVisibleNow();
+    updateCurrentPageNow();
+    updateScrollbar();
+  });
+}
+
+/* ============================================================
+   跳转
+   ============================================================ */
+function gotoPage(n, smooth = false) {
+  if (!state.pdf) return;
+  n = clamp(Math.round(n), 1, state.pdf.numPages);
+  const el = state.pageEls[n - 1];
+  if (!el) return;
+
+  if (!state.fitWidth) els.viewer.scrollLeft = 0;
+
+  const top = Math.max(0, state.pageOffsets[n - 1] - 12);
+  const dist = Math.abs(top - els.viewer.scrollTop);
+  const useSmooth = smooth && dist < els.viewer.clientHeight * 2;
+  els.viewer.scrollTo({ top, behavior: useSmooth ? 'smooth' : 'auto' });
+
+  renderPage(n - 1);
+  setCurrentPage(n, true);
+
+  el.classList.add('flash');
+  setTimeout(() => el.classList.remove('flash'), 850);
+}
+
+function jumpToAnchor(title) {
+  const p = state.anchors.get(title);
+  if (!p) return;
+  highlightToc(title);
+  gotoPage(p, false);
+}
+
+/* ============================================================
+   文本索引
+   ============================================================ */
+async function buildAnchors() {
+  const pdf = state.pdf;
+  const pages = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const tc = await page.getTextContent();
+    pages.push(norm(tc.items.map(it => it.str).join('')));
+  }
+  state.pageTexts = pages;
+  const search = (needle, from = 1) => {
+    const n = norm(needle); if (!n) return null;
+    for (let i = Math.max(0, from - 1); i < pages.length; i++) {
+      if (pages[i].includes(n)) return i + 1;
+    }
+    return null;
+  };
+  const clampPage = p => (p == null ? null : clamp(p, 1, pdf.numPages));
+  let cursor = 1;
+  for (const part of TOC_DATA) {
+    for (const unit of part.units) {
+      let up = search(unit.title, cursor) ?? PAGE_HINTS[unit.title] ?? cursor;
+      up = clampPage(up) || 1;
+      state.anchors.set(unit.title, up);
+      if (up > cursor) cursor = up;
+      for (const l of unit.lessons) {
+        const title = typeof l === 'string' ? l : l.title;
+        let lp = search(title, cursor);
+        if (lp == null) {
+          const rest = title.replace(/^第\d+课[（(]?/, '').replace(/[）)]$/, '');
+          if (rest && rest.length > 3) lp = search(rest, cursor);
+        }
+        if (lp == null) lp = PAGE_HINTS[title];
+        if (lp == null) { const m = title.match(/^第\d+课/); if (m) lp = search(m[0], cursor); }
+        lp = clampPage(lp);
+        if (lp != null) { state.anchors.set(title, lp); if (lp > cursor) cursor = lp; }
+      }
+    }
+  }
+  updateTocLabels();
+  setCurrentPage(state.currentPage, true);
+}
+
+/* ============================================================
+   缩放
+   ============================================================ */
+function updateZoomLabel() {
+  els.zoomLabel.textContent = Math.round(currentScale() * 100) + '%';
+}
+
+function applyZoom(newZoom, useFit) {
+  if (!state.pdf) return;
+  state.fitWidth = !!useFit;
+  if (!useFit) state.zoom = clamp(newZoom, 0.3, 4);
+  els.fitBtn.classList.toggle('on', state.fitWidth);
+  relayoutAndRerender(true);
+}
+
+/* ============================================================
+   侧边栏
+   ============================================================ */
+function openSidebar() { els.sidebar.classList.remove('hidden'); els.backdrop.classList.add('show'); }
+function closeSidebar() { els.sidebar.classList.add('hidden'); els.backdrop.classList.remove('show'); }
+
+/* ============================================================
+   复制提示
+   ============================================================ */
+let toastTimer = null;
+function showCopyToast(text) {
+  els.copyToast.textContent = text || '已复制选中文字';
+  els.copyToast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => els.copyToast.classList.remove('show'), 1600);
+}
+document.addEventListener('copy', () => {
+  const sel = window.getSelection && window.getSelection();
+  if (sel && sel.toString().trim().length > 0) showCopyToast('已复制选中文字');
+});
+
+/* ============================================================
+   触摸：横滑锁定 + 双指缩放
+   ============================================================ */
+function setupTouch() {
+  const v = els.viewer;
+  let touchStartX = 0, touchStartY = 0;
+  let initialDist = 0, initialScale = 1;
+  let renderTimer = null;
+  let isPinching = false;
+
+  v.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      isPinching = false;
+    } else if (e.touches.length === 2) {
+      isPinching = true;
+      const t = e.touches;
+      initialDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+      initialScale = currentScale();
+      v.style.touchAction = 'none';
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  v.addEventListener('touchmove', e => {
+    if (e.touches.length === 2 && isPinching && initialDist > 0) {
+      e.preventDefault();
+      const t = e.touches;
+      const dist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+      const ratio = dist / initialDist;
+      state.fitWidth = false;
+      els.fitBtn.classList.remove('on');
+      state.zoom = clamp(initialScale * ratio, 0.3, 4);
+
+      els.viewer.classList.add('zoomed');
+      els.viewer.style.overflowX = 'auto';
+
+      state.layoutKey = '';
+      refreshLayout(true, true);
+      updateZoomLabel();
+
+      clearTimeout(renderTimer);
+      renderTimer = setTimeout(() => {
+        state.pageEls.forEach(el => {
+          const c = el.querySelector('canvas');
+          if (c) c.classList.add('rendering');
+          el._renderedKey = null;
+        });
+        refreshLayout(true, false);
+        updateVisibleNow();
+      }, 150);
+    } else if (e.touches.length === 1 && !isPinching) {
+      if (state.fitWidth) {
+        const t = e.touches[0];
+        const dx = Math.abs(t.clientX - touchStartX);
+        const dy = Math.abs(t.clientY - touchStartY);
+        if (dx > dy && dx > 10) e.preventDefault();
+      }
+    }
+  }, { passive: false });
+
+  v.addEventListener('touchend', e => {
+    if (e.touches.length < 2 && isPinching) {
+      isPinching = false;
+      v.style.touchAction = '';
+      initialDist = 0;
+      clearTimeout(renderTimer);
+      state.layoutKey = '';
+      refreshLayout(true, false);
+      state.pageEls.forEach(el => {
+        const c = el.querySelector('canvas');
+        if (c) c.classList.add('rendering');
+        el._renderedKey = null;
+      });
+      updateScrollMode();
+      requestAnimationFrame(() => {
+        updateVisibleNow();
+        updateCurrentPageNow();
+      });
+    }
+  }, { passive: true });
+}
+
+/* ============================================================
+   事件
+   ============================================================ */
+els.fabTop.addEventListener('click', () => {
+  els.viewer.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+els.prevBtn.addEventListener('click', () => gotoPage(state.currentPage - 1));
+els.nextBtn.addEventListener('click', () => gotoPage(state.currentPage + 1));
+
+els.pageInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const n = parseInt(els.pageInput.value, 10);
+  if (!isNaN(n)) gotoPage(n); else els.pageInput.value = state.currentPage;
+});
+els.pageInput.addEventListener('blur', () => {
+  const n = parseInt(els.pageInput.value, 10);
+  if (isNaN(n) || n < 1 || n > (state.pdf?.numPages || 1)) {
+    els.pageInput.value = state.currentPage;
+  } else { gotoPage(n); }
+});
+
+els.zoomIn.addEventListener('click', () => applyZoom(currentScale() * 1.25, false));
+els.zoomOut.addEventListener('click', () => applyZoom(currentScale() / 1.25, false));
+els.fitBtn.addEventListener('click', () => applyZoom(1, true));
+
+els.searchInput.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  const q = els.searchInput.value.trim();
+  if (!q || !state.pageTexts) return;
+  const n = norm(q);
+  for (let i = 0; i < state.pageTexts.length; i++) {
+    if (state.pageTexts[i].includes(n)) { gotoPage(i + 1); els.searchInput.blur(); return; }
+  }
+  els.searchInput.blur();
+});
+
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  const sel = window.getSelection && window.getSelection();
+  if (sel && sel.toString().length > 0) return;
+
+  if (e.key === 'ArrowRight' || e.key === 'PageDown') { e.preventDefault(); gotoPage(state.currentPage + 1); }
+  else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); gotoPage(state.currentPage - 1); }
+  else if (e.key === 'Escape') closeSidebar();
+});
+
+let rzTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(rzTimer);
+  rzTimer = setTimeout(() => {
+    if (!state.pdf) return;
+    relayoutAndRerender(true);
+    els.menuBtn.style.display = window.innerWidth <= 820 ? 'grid' : 'none';
+    if (window.innerWidth > 820) {
+      els.sidebar.classList.remove('hidden');
+      els.backdrop.classList.remove('show');
+    }
+    updateScrollbar();
+  }, 160);
+});
+
+let dprQuery = null;
+function watchDpr() {
+  if (!window.matchMedia) return;
+  try {
+    dprQuery = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+    dprQuery.addEventListener('change', () => {
+      if (state.pdf) relayoutAndRerender(true);
+      watchDpr();
+    }, { once: true });
+  } catch (_) {}
+}
+watchDpr();
+
+els.menuBtn.addEventListener('click', () => {
+  if (els.sidebar.classList.contains('hidden')) openSidebar(); else closeSidebar();
+});
+els.backdrop.addEventListener('click', closeSidebar);
+
+/* ============================================================
+   启动
+   ============================================================ */
+buildToc();
+setupTouch();
+
+if (window.innerWidth <= 820) {
+  els.menuBtn.style.display = 'grid';
+  els.sidebar.classList.add('hidden');
+} else {
+  els.sidebar.classList.remove('hidden');
+}
+
+loadDocument();
+</script>
+</body>
+</html>
