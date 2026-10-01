@@ -152,7 +152,6 @@ body{
 .page{
   margin:0 auto 6px;background:#fff;
   position:relative;overflow:hidden;
-  /* ⭐ 缩放性能：使用 contain 创建独立合成层 */
   contain:layout style paint;
   will-change:transform;
 }
@@ -170,7 +169,6 @@ body{
   outline-offset:-2px;
 }
 
-/* ⭐ 缩放时隐藏占位文字，减少绘制 */
 .page.scaling .ph{opacity:0}
 
 .custom-scrollbar{
@@ -234,7 +232,8 @@ body{
   background:rgba(31,35,51,.92);color:#fff;font-size:12.5px;padding:9px 18px;
   border-radius:20px;opacity:0;pointer-events:none;
   transition:opacity .22s var(--ease-out),transform .22s var(--ease-out);
-  z-index:30;white-space:nowrap;
+  z-index:30;white-space:nowrap;max-width:86vw;text-align:center;
+  overflow:hidden;text-overflow:ellipsis;
 }
 .copy-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
@@ -279,7 +278,7 @@ body{
   }
 })();
 
-/* ⭐ 阻止 iOS Safari 系统级双指缩放/旋转，让 JS 完全接管 */
+/* 阻止 iOS Safari 系统级双指缩放/旋转，让 JS 完全接管 */
 ['gesturestart','gesturechange','gestureend'].forEach(evt => {
   document.addEventListener(evt, e => e.preventDefault(), { passive: false });
 });
@@ -429,13 +428,60 @@ const els = {
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
+/* ============================================================
+   ⭐ 阅读进度持久化存储
+   ------------------------------------------------------------
+   保存内容：
+     page     当前阅读页码
+     zoom     缩放比例（非适应宽度模式时有效）
+     fitWidth 是否处于「适应宽度」模式
+     ts       最后保存时间戳
+   ============================================================ */
+const ProgressStore = {
+  KEY: 'cn_reader_progress_v1',
+
+  /* 读取并校验（maxPages 用于夹紧页码范围） */
+  load(maxPages) {
+    try {
+      const raw = localStorage.getItem(this.KEY);
+      if (!raw) return null;
+      const d = JSON.parse(raw);
+      if (!d || typeof d !== 'object') return null;
+
+      let page = parseInt(d.page, 10);
+      if (!Number.isFinite(page) || page < 1) return null;
+      if (maxPages) page = clamp(page, 1, maxPages);
+
+      const zoom = (typeof d.zoom === 'number' && Number.isFinite(d.zoom))
+        ? clamp(d.zoom, 0.3, 4) : 1;
+
+      return {
+        page,
+        zoom,
+        fitWidth: d.fitWidth !== false,   // 默认 true
+        ts: Number(d.ts) || 0,
+      };
+    } catch (e) {
+      return null;
+    }
+  },
+
+  save(data) {
+    try { localStorage.setItem(this.KEY, JSON.stringify(data)); } catch (e) {}
+  },
+
+  clear() {
+    try { localStorage.removeItem(this.KEY); } catch (e) {}
+  },
+};
+
 const state = {
   pdf: null, sizes: [], pageEls: [], pageOffsets: [],
   currentPage: 1, zoom: 1, fitWidth: true, baseWidth: 0,
   layoutKey: '', visibleSet: new Set(),
-  /* ⭐ 缩放性能：记录每个页面的基础尺寸，缩放时只改 transform */
   basePageW: 0, basePageH: 0,
   isPinching: false,
+  restoring: false,     // ⭐ 恢复进度期间不写入存储
 };
 
 const MAX_CANVAS_PIXELS = 6 * 1024 * 1024;
@@ -468,10 +514,59 @@ function layoutKeyOf() {
   return currentScale().toFixed(4) + '|' + els.viewer.clientWidth + '|' + (state.fitWidth ? 'F' : 'Z');
 }
 
-/* ⭐ 关键：fitBtn 状态与 state.fitWidth 严格同步 */
 function syncFitBtn() {
   els.fitBtn.classList.toggle('on', !!state.fitWidth);
   els.zoomLabel.textContent = Math.round(currentScale() * 100) + '%';
+}
+
+/* ============================================================
+   ⭐ 进度保存调度（防抖）+ 立即保存
+   ============================================================ */
+let saveTimer = null;
+const SAVE_DEBOUNCE = 700;
+
+function saveProgressNow() {
+  if (!state.pdf || state.restoring) return;
+  ProgressStore.save({
+    page: state.currentPage,
+    zoom: state.zoom,
+    fitWidth: state.fitWidth,
+    ts: Date.now(),
+  });
+}
+
+function scheduleSaveProgress(delay = SAVE_DEBOUNCE) {
+  if (state.restoring || !state.pdf) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveProgressNow, delay);
+}
+
+/* 离开页面 / 切到后台时立即落盘（同步写，安全） */
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    clearTimeout(saveTimer);
+    saveProgressNow();
+  }
+});
+window.addEventListener('pagehide', () => {
+  clearTimeout(saveTimer);
+  saveProgressNow();
+});
+window.addEventListener('beforeunload', () => {
+  clearTimeout(saveTimer);
+  saveProgressNow();
+});
+
+/* ============================================================
+   Toast
+   ============================================================ */
+let toastTimer = null;
+function showToast(text, ms = 2000) {
+  if (!els.copyToast) return;
+  els.copyToast.textContent = text;
+  els.copyToast.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => els.copyToast.classList.remove('show'), ms);
 }
 
 /* ============================================================
@@ -633,6 +728,9 @@ async function loadDocument() {
 }
 
 async function initPdf(pdf) {
+  /* ⭐ 恢复期间禁止写入，避免用初始值覆盖已保存进度 */
+  state.restoring = true;
+
   state.pdf = pdf;
   els.pageCount.textContent = pdf.numPages;
 
@@ -649,17 +747,41 @@ async function initPdf(pdf) {
 
   els.loadingOverlay?.remove();
   buildPages();
+
+  /* ---------- ⭐ 读取上次进度 ---------- */
+  const saved = ProgressStore.load(pdf.numPages);
+
+  /* 先恢复缩放设置（必须在布局前确定） */
+  if (saved && saved.fitWidth === false) {
+    state.fitWidth = false;
+    state.zoom = saved.zoom;
+  } else {
+    state.fitWidth = true;
+    state.zoom = 1;
+  }
+
   els.viewer.scrollTop = 0;
-  setCurrentPage(1, true);
+  state.layoutKey = '';
+  refreshLayout(true, false);
   syncFitBtn();
   updateScrollMode();
 
   requestAnimationFrame(() => {
-    refreshLayout(true, false);
     setupObserver();
     updateVisibleNow();
     updateCurrentPageNow();
     updateScrollbar();
+
+    /* 再恢复页码 */
+    if (saved && saved.page > 1) {
+      gotoPage(saved.page, false);
+      const ago = saved.ts ? Math.max(0, Math.round((Date.now() - saved.ts) / 60000)) : 0;
+      showToast(`已恢复上次阅读进度：第 ${saved.page} 页`, 2400);
+    }
+
+    state.restoring = false;
+    /* 恢复完成后写一次，确保数据一致 */
+    scheduleSaveProgress(1200);
   });
 }
 
@@ -694,7 +816,7 @@ function buildPages() {
 }
 
 /* ============================================================
-   ⭐ 布局：分离"设置尺寸"和"读取位置"，避免强制同步布局
+   布局
    ============================================================ */
 function refreshLayout(force = false, skipOffsets = false) {
   const key = layoutKeyOf();
@@ -704,7 +826,6 @@ function refreshLayout(force = false, skipOffsets = false) {
   const scale = currentScale();
   const containerW = els.viewer.clientWidth;
 
-  /* 第一遍：只写样式，不读布局 */
   for (let i = 0; i < state.pageEls.length; i++) {
     const el = state.pageEls[i];
     const s = state.sizes[i];
@@ -715,7 +836,6 @@ function refreshLayout(force = false, skipOffsets = false) {
     if (el._h !== h) { el.style.height = h + 'px'; el._h = h; }
   }
 
-  /* 第二遍：批量读取 offsetTop（浏览器只做一次重排）*/
   if (!skipOffsets) {
     const offsets = new Array(state.pageEls.length);
     for (let i = 0; i < state.pageEls.length; i++) {
@@ -727,7 +847,7 @@ function refreshLayout(force = false, skipOffsets = false) {
 }
 
 /* ============================================================
-   ⭐ 缩放性能核心：CSS Transform 快速缩放（不触发重排）
+   缩放快速预览（transform）
    ============================================================ */
 function applyTransformScale(scale) {
   const containerW = els.viewer.clientWidth;
@@ -737,7 +857,6 @@ function applyTransformScale(scale) {
     let w = Math.round(s.w * scale);
     if (state.fitWidth) w = Math.min(w, containerW);
     const h = Math.round(s.h * (w / s.w));
-    /* 只改 transform，不改 layout 尺寸 → 不触发重排 */
     el.style.transform = `scale(${w / el._w})`;
     el.style.transformOrigin = 'top left';
     el.classList.add('scaling');
@@ -753,7 +872,7 @@ function clearTransformScale() {
 }
 
 /* ============================================================
-   渲染：新建 canvas + 原子替换
+   渲染
    ============================================================ */
 const renderQueue = [];
 let activeRenders = 0;
@@ -769,7 +888,6 @@ function queueRender(idx) {
   processQueue();
 }
 
-/* ⭐ 按可视优先级排序渲染队列 */
 function queueRenderPriority(indices) {
   const scrollTop = els.viewer.scrollTop;
   const viewH = els.viewer.clientHeight;
@@ -889,6 +1007,9 @@ function setCurrentPage(n, force = false) {
   if (els.pageInput.value !== String(n)) els.pageInput.value = n;
   els.prevBtn.disabled = n <= 1;
   els.nextBtn.disabled = n >= state.pdf.numPages;
+
+  /* ⭐ 页码变化 → 保存进度 */
+  scheduleSaveProgress();
 }
 
 /* ============================================================
@@ -898,6 +1019,10 @@ let scrollScheduled = false, pageScheduled = false;
 els.viewer.addEventListener('scroll', () => {
   markScrollbarActive();
   updateScrollbar();
+
+  /* ⭐ 滚动时也做防抖保存（页码由 setCurrentPage 写入） */
+  scheduleSaveProgress(900);
+
   if (!scrollScheduled) {
     scrollScheduled = true;
     requestAnimationFrame(() => {
@@ -980,6 +1105,8 @@ function applyZoom(newZoom, useFit) {
   if (!useFit) state.zoom = clamp(newZoom, 0.3, 4);
   syncFitBtn();
   relayoutAndRerender(true);
+  /* ⭐ 缩放状态变化 → 保存 */
+  scheduleSaveProgress(400);
 }
 
 /* ============================================================
@@ -1036,7 +1163,7 @@ els.menuBtn.addEventListener('click', () => {
 els.backdrop.addEventListener('click', closeSidebar);
 
 /* ============================================================
-   ⭐ 触摸：双指缩放 —— transform 实时预览 + 结束后一次性重渲染
+   触摸：双指缩放
    ============================================================ */
 function setupTouch() {
   const v = els.viewer;
@@ -1047,7 +1174,6 @@ function setupTouch() {
   let pendingScale = null;
   let pinchEndTimer = null;
 
-  /* ⭐ 缩放过程中：只更新 CSS transform，零重排零重绘 */
   function applyPinchTransform() {
     pinchRaf = null;
     if (pendingScale == null) return;
@@ -1058,11 +1184,9 @@ function setupTouch() {
     state.zoom = newZoom;
     syncFitBtn();
 
-    /* 只改 transform，不触发 layout */
     applyTransformScale(newZoom);
   }
 
-  /* ⭐ 缩放结束：清除 transform，一次性重排+重渲染 */
   function finalizePinch() {
     if (!isPinching) return;
     isPinching = false;
@@ -1072,14 +1196,11 @@ function setupTouch() {
     if (pinchRaf) { cancelAnimationFrame(pinchRaf); pinchRaf = null; }
     pendingScale = null;
 
-    /* 记录当前滚动比例，重排后恢复 */
     const sh0 = v.scrollHeight - v.clientHeight;
     const ratio = sh0 > 0 ? v.scrollTop / sh0 : 0;
 
-    /* 清除 transform，准备真实布局 */
     clearTransformScale();
 
-    /* 延迟触发真实重排，避免双指刚离开时渲染抖动 */
     clearTimeout(pinchEndTimer);
     pinchEndTimer = setTimeout(() => {
       state.pageEls.forEach(el => {
@@ -1095,11 +1216,12 @@ function setupTouch() {
       v.scrollTop = ratio * sh1;
 
       requestAnimationFrame(() => {
-        /* 优先渲染可视区域 */
         const visible = [...state.visibleSet];
         queueRenderPriority(visible);
         updateCurrentPageNow();
         syncFitBtn();
+        /* ⭐ 捏合缩放结束 → 保存 */
+        scheduleSaveProgress(400);
       });
     }, PINCH_RENDER_DELAY);
   }
@@ -1113,7 +1235,6 @@ function setupTouch() {
       const t = e.touches;
       initialDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY) || 1;
       initialScale = currentScale();
-      /* 取消可能进行中的 finalize */
       clearTimeout(pinchEndTimer);
     }
   }, { passive: false });
