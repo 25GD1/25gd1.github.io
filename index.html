@@ -41,6 +41,7 @@ html{
   forced-color-adjust:none;-webkit-forced-color-adjust:none;
 }
 
+/* ══════════════ 亮色 ══════════════ */
 :root,
 :root[data-theme="light"],
 :root[data-theme="auto"][data-resolved="light"]{
@@ -92,6 +93,7 @@ html{
     0 2px 8px rgba(20,30,60,.05);
 }
 
+/* ══════════════ 暗色 ══════════════ */
 :root[data-theme="dark"],
 :root[data-theme="auto"][data-resolved="dark"]{
   color-scheme:dark;
@@ -150,6 +152,7 @@ a{color:inherit;text-decoration:none}
 textarea{resize:vertical}
 img,svg{display:block}
 
+/* ══════════════ 主题切换颜色过渡 ══════════════ */
 html.theme-changing,
 html.theme-changing body,
 html.theme-changing #app,
@@ -208,12 +211,14 @@ html.theme-changing .disc-avatar{
 @keyframes exShimmerSweep{0%,70%{left:-100%}100%{left:200%}}
 @keyframes exScaleIn{from{opacity:0;transform:scale(.94) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
 
+/* ══════════════ App ══════════════ */
 #app{
   display:flex;flex-direction:column;height:100%;
   max-width:720px;margin:0 auto;
   background:transparent;position:relative;
 }
 
+/* ── Header ── */
 .hdr{
   position:sticky;top:0;z-index:100;
   height:var(--hdr);
@@ -332,6 +337,9 @@ html.theme-changing .disc-avatar{
 .page.slide-right{animation:pageSlideR .26s var(--ease-out-expo)}
 .page.slide-left{animation:pageSlideL .26s var(--ease-out-expo)}
 
+/* ══════════════════════════════════════════════
+   ★ 底部导航 — 纯 CSS 数学对齐（无 JS 测量）
+   ══════════════════════════════════════════════ */
 .bottom-nav{
   flex-shrink:0;
   padding:8px 12px calc(8px + var(--safe-b));
@@ -339,8 +347,10 @@ html.theme-changing .disc-avatar{
   z-index:90;
 }
 .nav-track{
+  /* 列数 & 激活索引由 JS 通过 CSS 变量注入 */
   --nav-cols: 5;
   --nav-active: 0;
+
   position:relative;
   display:grid;
   grid-template-columns:repeat(var(--nav-cols), minmax(0, 1fr));
@@ -354,6 +364,18 @@ html.theme-changing .disc-avatar{
   box-shadow:var(--shadow-nav);
   transition:background-color .2s ease,border-color .2s ease,box-shadow .26s ease;
 }
+
+/* 
+  数学推导（box-sizing:border-box）：
+  track 外宽 W、border 1px、padding 4px
+  → 内容盒宽 = W - 2 - 8
+  → 每列宽 = (W - 10) / cols
+  → thumb 定位在 padding-box 上：
+     left:4px 使左边缘对齐内容盒左边缘 (= 外边缘 + 1 + 4)
+     width:calc((100% - 8px) / cols) —— 100% 指 padding-box 宽 = W - 2
+                                      → (W - 2 - 8) / cols ✓
+     translateX(idx * 100%) —— 100% 指 thumb 自身宽 = 每列宽
+*/
 .nav-thumb{
   position:absolute;
   top:4px;
@@ -368,6 +390,7 @@ html.theme-changing .disc-avatar{
   pointer-events:none;
   z-index:0;
 }
+
 .nav-item{
   position:relative;
   z-index:1;
@@ -398,6 +421,7 @@ html.theme-changing .disc-avatar{
 
 #pc-tabs{display:none}
 
+/* ══════════════ 工具栏 / 列表 ══════════════ */
 .toolbar{
   display:flex;align-items:center;gap:8px;
   padding:12px 16px 10px;
@@ -594,6 +618,7 @@ html.theme-changing .disc-avatar{
 .btn-sm{padding:7px 13px;font-size:12px;border-radius:10px}
 .btn:disabled{opacity:.55;cursor:not-allowed;transform:none!important}
 
+/* ══════════════ 遮罩 / 面板 ══════════════ */
 .overlay{
   position:fixed;inset:0;z-index:200;
   background:rgba(8,12,22,.48);
@@ -758,6 +783,7 @@ html.theme-changing .disc-avatar{
   background:var(--tag-amber-bg);padding:2px 8px;border-radius:99px;
 }
 
+/* ══════════════ 客户端页 ══════════════ */
 .client-hero{
   margin:14px 16px 0;
   background:
@@ -1050,6 +1076,7 @@ input[type=checkbox].toggle-cb{display:none}
 
   #pc-layout{flex-direction:row}
 
+  /* ═══ PC 侧栏 — CSS 变量对齐 ═══ */
   #pc-tabs{
     --tab-h: 40px;
     --tab-gap: 4px;
@@ -1250,7 +1277,7 @@ input[type=checkbox].toggle-cb{display:none}
       </div>
       <div class="client-hero-title">GLCN Service</div>
       <div class="client-hero-sub">作业 / 公告查看 · 多端查看</div>
-      <a id="download-btn-link" href="#" target="_blank" rel="noopener" class="download-btn-light" style="display:none" onclick="handleDownloadClick(event)">
+      <a id="download-btn-link" href="#" target="_blank" rel="noopener" class="download-btn-light" style="display:none">
         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
          下载
       </a>
@@ -1642,9 +1669,6 @@ const SUPABASE_URL='https://backend.appmiaoda.com/projects/supabase3151280755934
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdXRoZW50aWNhdGVkIiwiZXhwIjoyMDk0NTU5NTg4LCJpc3MiOiJzdXBhYmFzZSIsInJvbGUiOiJhbm9uIiwic3ViIjoiYW5vbiJ9.e6fwFRd5ouX4DNkNb2n2xNIooLmsd_JyOMqPmeaawf0';
 const sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON);
 
-/* 本地 App 包名（用于 Android Intent 唤起） */
-const APP_PACKAGE_NAME='com.miaoda.appbqz2uwhepjb5';
-
 let adminInfo=null,allSubjects=[],allAssignments=[],currentFilter='all',detailData=null,detailType='',lastTabIndex=0;
 const TAB_ORDER=['assignments','announcements','discussions','client','exemption-card'];
 
@@ -1662,7 +1686,7 @@ function triggerCb(cbId){const cb=document.getElementById(cbId);cb.checked=!cb.c
 function setToggle(cbId,toggleId,val){const cb=document.getElementById(cbId);cb.checked=val;document.getElementById(toggleId).classList.toggle('on',val)}
 
 /* ══════════════════════════════════════════════
-   主题管理
+   主题管理 — 瞬时切换（无卡顿）
    ══════════════════════════════════════════════ */
 const THEME_KEY='glcn_theme';
 const THEME_ORDER=['auto','light','dark'];
@@ -1711,17 +1735,22 @@ let _themeTransitionTimer=null;
 function applyTheme(mode, silent){
   if(!THEME_ORDER.includes(mode))mode='auto';
   const root=document.documentElement;
+
+  // 加过渡类，让颜色变化平滑
   root.classList.add('theme-changing');
   if(_themeTransitionTimer)clearTimeout(_themeTransitionTimer);
   _themeTransitionTimer=setTimeout(()=>{
     root.classList.remove('theme-changing');
     _themeTransitionTimer=null;
   }, 260);
+
+  // 瞬时切换（无延迟、无重排）
   root.dataset.theme=mode;
   delete root.dataset.resolved;
   if(mode==='auto'){ resolveAutoTheme(); }
   syncThemeMeta();
   updateThemeIcon(mode);
+
   if(!silent&&typeof showToast==='function'){
     let label=THEME_LABEL[mode];
     if(mode==='auto')label=isDarkMode()?'自动（暗色）':'自动（亮色）';
@@ -1733,15 +1762,22 @@ function cycleTheme(e){
   const cur=getCurrentTheme();
   const idx=THEME_ORDER.indexOf(cur);
   const next=THEME_ORDER[(idx+1)%THEME_ORDER.length];
+
+  // 立即写入 localStorage（异步，避免阻塞点击反馈）
   setTimeout(()=>{
     try{localStorage.setItem(THEME_KEY,next)}catch(_){}
   }, 0);
+
   const btn=document.getElementById('theme-toggle');
   if(btn){
     btn.classList.add('switching');
     setTimeout(()=>btn.classList.remove('switching'),420);
   }
+
+  // 立刻切换主题（无任何延迟）
   applyTheme(next, true);
+
+  // Toast 延迟显示
   setTimeout(()=>{
     let label=THEME_LABEL[next];
     if(next==='auto')label = isDarkMode() ? '自动（暗色）' : '自动（亮色）';
@@ -1765,9 +1801,10 @@ window.addEventListener('focus',()=>{
 });
 
 /* ══════════════════════════════════════════════
-   导航指示器
+   ★ 导航指示器 — 只更新 CSS 变量（无测量、无布局读取）
    ══════════════════════════════════════════════ */
 function updateNavIndicators(immediate){
+  // 底部导航
   const navTrack = document.getElementById('nav-track');
   const navThumb = document.getElementById('nav-thumb');
   if(navTrack){
@@ -1789,6 +1826,7 @@ function updateNavIndicators(immediate){
     }
   }
 
+  // PC 侧栏
   const pcTabs = document.getElementById('pc-tabs');
   const pcThumb = document.getElementById('side-thumb');
   if(pcTabs){
@@ -2566,9 +2604,7 @@ async function fetchClientDownloadUrl(){
     const{data}=await sb.from('app_settings').select('value').eq('key','client_download_url').maybeSingle();
     const url=data?.value;
     if(url){
-      dlBtn.href=url;
-      dlBtn.dataset.url=url;
-      dlBtn.style.display='inline-flex';dlLoading.style.display='none';
+      dlBtn.href=url;dlBtn.style.display='inline-flex';dlLoading.style.display='none';
     }else{
       dlLoading.style.display='none';dlUnavail.style.display='block';
     }
@@ -2593,71 +2629,6 @@ async function saveClientUrl(){
   }catch(e){showToast('保存失败：'+e.message)}
 }
 
-/* ══════════════════════════════════════════════
-   ★ 下载：先唤起本地 App，再下载
-   ══════════════════════════════════════════════ */
-function isAndroidDevice(){
-  return /Android/i.test(navigator.userAgent||'');
-}
-
-function handleDownloadClick(e){
-  const dlBtn=document.getElementById('download-btn-link');
-  if(!dlBtn)return;
-  const url=dlBtn.dataset.url||dlBtn.getAttribute('href')||'';
-  if(!url||url==='#'){e.preventDefault();return}
-
-  // 非安卓直接走默认下载
-  if(!isAndroidDevice())return;
-
-  e.preventDefault();
-  openLocalAppOrDownload(url);
-}
-
-function openLocalAppOrDownload(url){
-  let appOpened=false;
-
-  const onVis=()=>{ if(document.hidden) appOpened=true; };
-  const onBlur=()=>{ appOpened=true; };
-  document.addEventListener('visibilitychange',onVis);
-  window.addEventListener('blur',onBlur);
-  window.addEventListener('pagehide',onBlur);
-
-  // Android Intent URL：优先按包名唤起主 Activity
-  // 使用 intent: (无 //) 更兼容；同时带上 scheme/action/category
-  const intentUrl='intent:#Intent'
-    +';package='+APP_PACKAGE_NAME
-    +';action=android.intent.action.MAIN'
-    +';category=android.intent.category.LAUNCHER'
-    +';launchFlags=0x10000000'
-    +';end';
-
-  // 方式1：隐藏 a 标签点击（最通用，几乎所有 Android 浏览器都支持）
-  try{
-    const a=document.createElement('a');
-    a.href=intentUrl;
-    a.style.display='none';
-    a.rel='noopener';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>{ try{document.body.removeChild(a)}catch(_){} },200);
-  }catch(_){}
-
-  // 方式2：location.href 兜底（有些浏览器 a.click 不触发 intent）
-  setTimeout(()=>{
-    if(appOpened||document.hidden)return;
-    try{ window.location.href=intentUrl; }catch(_){}
-  },80);
-
-  // 若 2 秒内未唤起 App（页面仍可见），开始下载
-  setTimeout(()=>{
-    document.removeEventListener('visibilitychange',onVis);
-    window.removeEventListener('blur',onBlur);
-    window.removeEventListener('pagehide',onBlur);
-    if(appOpened||document.hidden)return;
-    window.location.href=url;
-  },2000);
-}
-
 function closeOverlay(id){
   const el=document.getElementById(id);
   el.classList.remove('show');
@@ -2680,6 +2651,7 @@ async function init(){
   restoreSession();
   updateAdminUI();
 
+  // 初始化导航指示器（无动画）
   updateNavIndicators(true);
 
   await loadSubjects();
@@ -2687,6 +2659,7 @@ async function init(){
   if(!IS_IOS)loadClientPage();
   checkIOSPWA();
 
+  // 字体加载完成后重新对齐（防止字体导致宽度变化）
   if(document.fonts && document.fonts.ready){
     document.fonts.ready.then(()=>updateNavIndicators(true));
   }
