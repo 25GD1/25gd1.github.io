@@ -152,7 +152,6 @@ body{
 .page{
   margin:0 auto 6px;background:#fff;
   position:relative;overflow:hidden;
-  /* ⭐ 缩放性能：使用 contain 创建独立合成层 */
   contain:layout style paint;
   will-change:transform;
 }
@@ -169,8 +168,6 @@ body{
   outline:2px solid rgba(79,70,229,.55);
   outline-offset:-2px;
 }
-
-/* ⭐ 缩放时隐藏占位文字，减少绘制 */
 .page.scaling .ph{opacity:0}
 
 .custom-scrollbar{
@@ -198,7 +195,20 @@ body{
   border-radius:50%;animation:spin .7s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-overlay p{font-size:13px;color:var(--muted);margin:0}
+.loading-overlay p{font-size:13px;color:var(--muted);margin:0;text-align:center;padding:0 20px}
+.loading-overlay .progress-bar{
+  width:min(260px,70vw);height:6px;border-radius:3px;background:#d5d9e4;overflow:hidden;
+  margin-top:4px;display:none;
+}
+.loading-overlay .progress-bar.show{display:block}
+.loading-overlay .progress-fill{
+  height:100%;width:0%;border-radius:3px;
+  background:linear-gradient(90deg,var(--accent),var(--accent-2));
+  transition:width .2s ease-out;
+}
+.loading-overlay .progress-text{
+  font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;
+}
 
 .error-box{
   max-width:380px;margin:16vh auto;text-align:center;padding:30px 24px;
@@ -212,6 +222,11 @@ body{
   color:#c7254e;word-break:break-all;text-align:left;
   font-family:ui-monospace,Menlo,Consolas,monospace;margin-bottom:14px;
 }
+.error-box button{
+  padding:10px 24px;border-radius:10px;border:1px solid var(--border);
+  background:#fff;color:var(--accent);font-size:13px;font-family:inherit;cursor:pointer;
+}
+.error-box button:active{background:#f0f1f7}
 
 .fab{
   position:fixed;
@@ -279,7 +294,7 @@ body{
   }
 })();
 
-/* ⭐ 阻止 iOS Safari 系统级双指缩放/旋转，让 JS 完全接管 */
+/* 阻止 iOS Safari 系统级双指缩放/旋转 */
 ['gesturestart','gesturechange','gestureend'].forEach(evt => {
   document.addEventListener(evt, e => e.preventDefault(), { passive: false });
 });
@@ -323,7 +338,11 @@ body{
     <div class="viewer" id="viewer">
       <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
-        <p>正在加载 PDF…</p>
+        <p id="loadingText">正在加载 PDF…</p>
+        <div class="progress-bar" id="progressBar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-text" id="progressText"></div>
       </div>
     </div>
 
@@ -336,12 +355,13 @@ body{
 <button class="fab" id="fabTop" title="回到顶部">↑</button>
 <div class="copy-toast" id="copyToast">已复制选中文字</div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- ✅ 换用 jsDelivr，国内访问稳定 -->
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <script>
 const PDF_URL = 'https://25gd1.github.io/CN/' + encodeURIComponent('语文.pdf');
 
 /* ============================================================
-   目录固定搭配（页码已核对）
+   目录
    ============================================================ */
 const TOC_DATA = [
   { title: '基础模块 上册', units: [
@@ -413,8 +433,9 @@ const TOC_DATA = [
   ]},
 ];
 
+/* ✅ 换用 jsDelivr CDN */
 pdfjsLib.GlobalWorkerOptions.workerSrc =
-  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
 
 const $ = id => document.getElementById(id);
 const els = {
@@ -425,6 +446,8 @@ const els = {
   docName: $('docName'), menuBtn: $('menuBtn'),
   fabTop: $('fabTop'), loadingOverlay: $('loadingOverlay'), copyToast: $('copyToast'),
   scrollbar: $('customScrollbar'), scrollThumb: $('customScrollThumb'),
+  loadingText: $('loadingText'), progressBar: $('progressBar'),
+  progressFill: $('progressFill'), progressText: $('progressText'),
 };
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -433,7 +456,6 @@ const state = {
   pdf: null, sizes: [], pageEls: [], pageOffsets: [],
   currentPage: 1, zoom: 1, fitWidth: true, baseWidth: 0,
   layoutKey: '', visibleSet: new Set(),
-  /* ⭐ 缩放性能：记录每个页面的基础尺寸，缩放时只改 transform */
   basePageW: 0, basePageH: 0,
   isPinching: false,
 };
@@ -468,7 +490,6 @@ function layoutKeyOf() {
   return currentScale().toFixed(4) + '|' + els.viewer.clientWidth + '|' + (state.fitWidth ? 'F' : 'Z');
 }
 
-/* ⭐ 关键：fitBtn 状态与 state.fitWidth 严格同步 */
 function syncFitBtn() {
   els.fitBtn.classList.toggle('on', !!state.fitWidth);
   els.zoomLabel.textContent = Math.round(currentScale() * 100) + '%';
@@ -613,23 +634,120 @@ function highlightToc(anchorTitle) {
 }
 
 /* ============================================================
-   加载 PDF
+   ✅ 加载 PDF（双保险方案）
    ============================================================ */
+
+/* 更新加载提示文字 */
+function updateLoadingText(text) {
+  if (els.loadingText) els.loadingText.textContent = text;
+}
+
+/* 更新进度条 */
+function updateProgress(loaded, total) {
+  if (!els.progressBar) return;
+  if (!total || total <= 0) {
+    /* 拿不到总大小时，显示"已下载 X MB" */
+    els.progressBar.classList.remove('show');
+    els.progressText.textContent = loaded
+      ? `已下载 ${(loaded / 1024 / 1024).toFixed(1)} MB`
+      : '';
+    return;
+  }
+  const pct = Math.min(100, Math.round((loaded / total) * 100));
+  els.progressBar.classList.add('show');
+  els.progressFill.style.width = pct + '%';
+  els.progressText.textContent = `${pct}% (${(loaded / 1024 / 1024).toFixed(1)} / ${(total / 1024 / 1024).toFixed(1)} MB)`;
+}
+
 async function loadDocument() {
   els.docName.textContent = '语文.pdf';
+  updateLoadingText('正在加载 PDF…');
+
+  /* —— 方案 A：流式加载（首屏快，边下边看）—— */
   try {
-    const pdf = await pdfjsLib.getDocument({
-      url: PDF_URL,
-      disableRange: false,
-      disableStream: false,
-      rangeChunkSize: 131072,
-      disableAutoFetch: true,
-    }).promise;
+    const pdf = await loadWithStreaming();
+    await initPdf(pdf);
+    return;
+  } catch (err) {
+    console.warn('[PDF] 流式加载失败，准备完整下载：', err);
+    updateLoadingText('流式加载失败，正在完整下载…');
+  }
+
+  /* —— 方案 B：完整下载（兜底，最稳）—— */
+  try {
+    const pdf = await loadWithFullFetch();
     await initPdf(pdf);
   } catch (err) {
-    console.error('加载失败:', err);
+    console.error('[PDF] 加载彻底失败:', err);
     showError(err);
   }
+}
+
+/* 流式加载（带进度和超时） */
+function loadWithStreaming() {
+  return new Promise((resolve, reject) => {
+    const task = pdfjsLib.getDocument({
+      url: PDF_URL,
+      rangeChunkSize: 262144,      /* 256KB 一块 */
+      disableAutoFetch: false,     /* 让 pdf.js 自动预取 */
+      disableStream: false,        /* 开启流式 */
+      disableRange: false,         /* 允许 range 请求 */
+      cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
+      cMapPacked: true,
+    });
+
+    /* 进度回调 */
+    if (task.onProgress) {
+      task.onProgress = ({ loaded, total }) => {
+        updateProgress(loaded, total);
+      };
+    }
+
+    /* 超时保护：30 秒还没首屏就切兜底方案 */
+    const timeout = setTimeout(() => {
+      try { task.destroy(); } catch (_) {}
+      reject(new Error('流式加载超时（30 秒）'));
+    }, 30000);
+
+    task.promise.then(pdf => {
+      clearTimeout(timeout);
+      resolve(pdf);
+    }).catch(err => {
+      clearTimeout(timeout);
+      reject(err);
+    });
+  });
+}
+
+/* 完整下载（fetch 到内存，最稳） */
+async function loadWithFullFetch() {
+  updateLoadingText('正在下载 PDF 文件…');
+  if (els.progressBar) els.progressBar.classList.remove('show');
+
+  const resp = await fetch(PDF_URL, { cache: 'force-cache' });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' ' + resp.statusText);
+
+  const total = parseInt(resp.headers.get('content-length') || '0', 10) || 0;
+  const reader = resp.body.getReader();
+  const chunks = [];
+  let loaded = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    chunks.push(value);
+    loaded += value.length;
+    updateProgress(loaded, total);
+  }
+
+  updateLoadingText('正在解析 PDF…');
+  const blob = new Blob(chunks, { type: 'application/pdf' });
+  const buffer = await blob.arrayBuffer();
+  return await pdfjsLib.getDocument({
+    data: buffer,
+    cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
+    cMapPacked: true,
+  }).promise;
 }
 
 async function initPdf(pdf) {
@@ -672,8 +790,9 @@ function showError(err) {
       <h3>PDF 加载失败</h3>
       <p>未能从以下地址读取文件：</p>
       <code>${PDF_URL}</code>
-      <p>请检查网络连接。错误信息：</p>
+      <p>错误信息：</p>
       <code>${msg}</code>
+      <button onclick="location.reload()">重新加载</button>
     </div>`;
 }
 
@@ -694,7 +813,7 @@ function buildPages() {
 }
 
 /* ============================================================
-   ⭐ 布局：分离"设置尺寸"和"读取位置"，避免强制同步布局
+   布局
    ============================================================ */
 function refreshLayout(force = false, skipOffsets = false) {
   const key = layoutKeyOf();
@@ -704,7 +823,6 @@ function refreshLayout(force = false, skipOffsets = false) {
   const scale = currentScale();
   const containerW = els.viewer.clientWidth;
 
-  /* 第一遍：只写样式，不读布局 */
   for (let i = 0; i < state.pageEls.length; i++) {
     const el = state.pageEls[i];
     const s = state.sizes[i];
@@ -715,7 +833,6 @@ function refreshLayout(force = false, skipOffsets = false) {
     if (el._h !== h) { el.style.height = h + 'px'; el._h = h; }
   }
 
-  /* 第二遍：批量读取 offsetTop（浏览器只做一次重排）*/
   if (!skipOffsets) {
     const offsets = new Array(state.pageEls.length);
     for (let i = 0; i < state.pageEls.length; i++) {
@@ -726,9 +843,6 @@ function refreshLayout(force = false, skipOffsets = false) {
   updateScrollbar();
 }
 
-/* ============================================================
-   ⭐ 缩放性能核心：CSS Transform 快速缩放（不触发重排）
-   ============================================================ */
 function applyTransformScale(scale) {
   const containerW = els.viewer.clientWidth;
   for (let i = 0; i < state.pageEls.length; i++) {
@@ -737,7 +851,6 @@ function applyTransformScale(scale) {
     let w = Math.round(s.w * scale);
     if (state.fitWidth) w = Math.min(w, containerW);
     const h = Math.round(s.h * (w / s.w));
-    /* 只改 transform，不改 layout 尺寸 → 不触发重排 */
     el.style.transform = `scale(${w / el._w})`;
     el.style.transformOrigin = 'top left';
     el.classList.add('scaling');
@@ -753,7 +866,7 @@ function clearTransformScale() {
 }
 
 /* ============================================================
-   渲染：新建 canvas + 原子替换
+   渲染
    ============================================================ */
 const renderQueue = [];
 let activeRenders = 0;
@@ -769,7 +882,6 @@ function queueRender(idx) {
   processQueue();
 }
 
-/* ⭐ 按可视优先级排序渲染队列 */
 function queueRenderPriority(indices) {
   const scrollTop = els.viewer.scrollTop;
   const viewH = els.viewer.clientHeight;
@@ -1036,7 +1148,7 @@ els.menuBtn.addEventListener('click', () => {
 els.backdrop.addEventListener('click', closeSidebar);
 
 /* ============================================================
-   ⭐ 触摸：双指缩放 —— transform 实时预览 + 结束后一次性重渲染
+   触摸缩放
    ============================================================ */
 function setupTouch() {
   const v = els.viewer;
@@ -1047,7 +1159,6 @@ function setupTouch() {
   let pendingScale = null;
   let pinchEndTimer = null;
 
-  /* ⭐ 缩放过程中：只更新 CSS transform，零重排零重绘 */
   function applyPinchTransform() {
     pinchRaf = null;
     if (pendingScale == null) return;
@@ -1058,11 +1169,9 @@ function setupTouch() {
     state.zoom = newZoom;
     syncFitBtn();
 
-    /* 只改 transform，不触发 layout */
     applyTransformScale(newZoom);
   }
 
-  /* ⭐ 缩放结束：清除 transform，一次性重排+重渲染 */
   function finalizePinch() {
     if (!isPinching) return;
     isPinching = false;
@@ -1072,14 +1181,11 @@ function setupTouch() {
     if (pinchRaf) { cancelAnimationFrame(pinchRaf); pinchRaf = null; }
     pendingScale = null;
 
-    /* 记录当前滚动比例，重排后恢复 */
     const sh0 = v.scrollHeight - v.clientHeight;
     const ratio = sh0 > 0 ? v.scrollTop / sh0 : 0;
 
-    /* 清除 transform，准备真实布局 */
     clearTransformScale();
 
-    /* 延迟触发真实重排，避免双指刚离开时渲染抖动 */
     clearTimeout(pinchEndTimer);
     pinchEndTimer = setTimeout(() => {
       state.pageEls.forEach(el => {
@@ -1095,7 +1201,6 @@ function setupTouch() {
       v.scrollTop = ratio * sh1;
 
       requestAnimationFrame(() => {
-        /* 优先渲染可视区域 */
         const visible = [...state.visibleSet];
         queueRenderPriority(visible);
         updateCurrentPageNow();
@@ -1113,7 +1218,6 @@ function setupTouch() {
       const t = e.touches;
       initialDist = Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY) || 1;
       initialScale = currentScale();
-      /* 取消可能进行中的 finalize */
       clearTimeout(pinchEndTimer);
     }
   }, { passive: false });
