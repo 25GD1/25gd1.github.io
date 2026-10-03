@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<title>请使用移动端访问网站</title>
+
+<!-- 移动端检测 & 自动跳转（放在最前面，避免页面闪烁） -->
+<script>
+(function () {
+  var ua = navigator.userAgent || '';
+
+  // 常见移动端 UA 关键词
+  var mobileRe = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|HarmonyOS|Windows Phone|Kindle|Silk/i;
+
+  // iPadOS 13+ 默认桌面 UA，需要靠触控点 + Macintosh 识别
+  var isIPadOS = /Macintosh/i.test(ua) && navigator.maxTouchPoints > 1;
+
+  var isMobile = mobileRe.test(ua) || isIPadOS;
+
+  if (isMobile) {
+    // 使用 replace，避免用户点返回时又跳回当前页造成死循环
+    window.location.replace('https://25gd1.github.io/CN/');
+  }
+})();
+</script>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html, body {
+    height: 100%;
+  }
+
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 55%, #070b12 100%);
+    color: #e2e8f0;
+    overflow: hidden;
+  }
+
+  /* 卡片 */
+  .card {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    padding: 52px 32px 44px;
+    text-align: center;
+    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45),
+                inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    animation: fadeUp 0.7s cubic-bezier(0.2, 0.8, 0.3, 1) both;
+  }
+
+  /* 顶部光晕 */
+  .card::before {
+    content: "";
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 220px;
+    height: 120px;
+    background: radial-gradient(ellipse at center,
+                rgba(56, 189, 248, 0.35) 0%, transparent 70%);
+    filter: blur(8px);
+    pointer-events: none;
+  }
+
+  /* 手机图标 */
+  .phone {
+    display: block;
+    width: 76px;
+    height: 76px;
+    margin: 0 auto 30px;
+    fill: none;
+    stroke: #38bdf8;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 14px rgba(56, 189, 248, 0.55));
+    animation: float 3s ease-in-out infinite;
+  }
+
+  /* 主标题 */
+  h1 {
+    font-size: clamp(20px, 5.6vw, 25px);
+    font-weight: 600;
+    letter-spacing: 1px;
+    line-height: 1.5;
+    color: #f8fafc;
+  }
+
+  /* 分隔线 */
+  .divider {
+    width: 48px;
+    height: 3px;
+    margin: 22px auto;
+    border-radius: 3px;
+    background: linear-gradient(90deg, #38bdf8, #818cf8);
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.6);
+  }
+
+  /* 副标题 */
+  p {
+    font-size: 14px;
+    line-height: 1.9;
+    color: #94a3b8;
+    letter-spacing: 0.5px;
+  }
+
+  .hint {
+    display: inline-block;
+    margin-top: 26px;
+    padding: 8px 18px;
+    font-size: 12.5px;
+    letter-spacing: 0.5px;
+    color: #7dd3fc;
+    border: 1px solid rgba(56, 189, 248, 0.35);
+    border-radius: 999px;
+    background: rgba(56, 189, 248, 0.08);
+  }
+
+  /* 动画 */
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-8px); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card, .phone { animation: none; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="card">
+    <svg class="phone" viewBox="0 0 64 64" aria-hidden="true">
+      <rect x="18" y="4" width="28" height="56" rx="7"></rect>
+      <line x1="28" y1="52" x2="36" y2="52"></line>
+    </svg>
+
+    <h1>请使用移动端访问网站</h1>
+    <div class="divider"></div>
+    <p>本页面为移动端页面<br>请使用手机或平板设备打开</p>
+    <span class="hint">📱 手机可以正常访问</span>
+  </div>
+
+</body>
+</html>
