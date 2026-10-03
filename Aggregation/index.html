@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>每课一练 · 参考答案</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    background: #05071c;
+    color: #fff;
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ═══ 背景层 ═══ */
+  .bg {
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 20%, #1e1b4b 0%, transparent 55%),
+      radial-gradient(ellipse at 80% 80%, #3b0764 0%, transparent 55%),
+      radial-gradient(ellipse at 50% 50%, #0b1030 0%, #05071c 100%);
+    z-index: 0;
+  }
+  /* 缓慢漂移的极光 */
+  .aurora {
+    position: fixed; inset: -10%;
+    background:
+      radial-gradient(circle at 30% 30%, rgba(99,102,241,0.35), transparent 45%),
+      radial-gradient(circle at 70% 60%, rgba(168,85,247,0.28), transparent 45%),
+      radial-gradient(circle at 40% 80%, rgba(59,130,246,0.22), transparent 50%);
+    filter: blur(60px);
+    animation: auroraMove 25s ease-in-out infinite alternate;
+    z-index: 1;
+    will-change: transform;
+  }
+  @keyframes auroraMove {
+    0%   { transform: translate(0,0) rotate(0deg) scale(1); }
+    50%  { transform: translate(3%, -2%) rotate(8deg) scale(1.06); }
+    100% { transform: translate(-2%, 3%) rotate(-6deg) scale(1.03); }
+  }
+
+  /* 粒子层 */
+  #particles {
+    position: fixed; inset: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  /* ═══ 卡片 ═══ */
+  .scene {
+    position: relative;
+    z-index: 10;
+    perspective: 1400px;
+    perspective-origin: 50% 50%;
+  }
+
+  .card {
+    position: relative;
+    width: min(90vw, 420px);
+    padding: 46px 32px 40px;
+    border-radius: 26px;
+    text-align: center;
+
+    background:
+      linear-gradient(135deg,
+        rgba(255,255,255,0.10) 0%,
+        rgba(255,255,255,0.04) 50%,
+        rgba(255,255,255,0.08) 100%);
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow:
+      0 30px 70px rgba(10, 5, 40, 0.65),
+      0 0 0 1px rgba(255,255,255,0.05) inset,
+      0 1px 0 rgba(255,255,255,0.2) inset;
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+
+    transform-style: preserve-3d;
+    transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateZ(0);
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+                box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+  }
+
+  /* 卡片周围的流光边框 */
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: -1.5px;
+    border-radius: 27px;
+    padding: 1.5px;
+    background: conic-gradient(
+      from var(--angle, 0deg),
+      transparent 0deg,
+      #6366f1 90deg,
+      #a855f7 180deg,
+      #3b82f6 270deg,
+      transparent 360deg
+    );
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    animation: angleRotate 6s linear infinite;
+    pointer-events: none;
+  }
+  @property --angle {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+  @keyframes angleRotate {
+    to { --angle: 360deg; }
+  }
+
+  /* 卡片内部光环（鼠标跟随） */
+  .card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 26px;
+    background: radial-gradient(
+      260px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(139, 92, 246, 0.18),
+      rgba(99, 102, 241, 0.05) 40%,
+      transparent 65%
+    );
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  .card:hover::after { opacity: 1; }
+
+  /* ═══ 标题：逐字飞入 ═══ */
+  .title {
+    display: flex;
+    justify-content: center;
+    gap: 4px;
+    margin-bottom: 10px;
+    transform: translateZ(30px);
+  }
+  .title span {
+    display: inline-block;
+    font-size: 1.65rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    background: linear-gradient(
+      120deg,
+      #c7d2fe 0%,
+      #e9d5ff 40%,
+      #bfdbfe 70%,
+      #c7d2fe 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+
+    opacity: 0;
+    filter: blur(8px);
+    animation:
+      charDrop 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) forwards,
+      titleShine 5s ease-in-out infinite 0.9s;
+  }
+  .title span:nth-child(1) { animation-delay: 0.10s, 0.10s; --tx: -40px; --ty: -30px; }
+  .title span:nth-child(2) { animation-delay: 0.22s, 0.22s; --tx:  20px; --ty: -50px; }
+  .title span:nth-child(3) { animation-delay: 0.34s, 0.34s; --tx: -25px; --ty: -45px; }
+  .title span:nth-child(4) { animation-delay: 0.46s, 0.46s; --tx:  35px; --ty: -35px; }
+
+  @keyframes charDrop {
+    0%   {
+      opacity: 0;
+      transform: translate(var(--tx), var(--ty)) rotate(20deg) scale(0.5);
+      filter: blur(8px);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(0, 0) rotate(0) scale(1);
+      filter: blur(0);
+    }
+  }
+  @keyframes titleShine {
+    0%, 100% { background-position: 0% 50%; }
+    50%      { background-position: 100% 50%; }
+  }
+
+  /* 副标题 */
+  .subtitle {
+    font-size: 0.78rem;
+    letter-spacing: 4px;
+    color: rgba(199, 210, 254, 0.7);
+    margin-bottom: 6px;
+    transform: translateZ(20px);
+
+    opacity: 0;
+    animation: subIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards;
+  }
+  @keyframes subIn {
+    from { opacity: 0; letter-spacing: 12px; filter: blur(4px); }
+    to   { opacity: 1; letter-spacing: 4px;  filter: blur(0); }
+  }
+
+  /* 分隔线 */
+  .divider {
+    width: 70px;
+    height: 2px;
+    margin: 22px auto 30px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, transparent, #818cf8, #a855f7, #818cf8, transparent);
+    background-size: 200% 100%;
+    transform: translateZ(15px) scaleX(0);
+    animation: divIn 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.7s forwards,
+               divShine 3s linear infinite 1.6s;
+  }
+  @keyframes divIn { to { transform: translateZ(15px) scaleX(1); } }
+  @keyframes divShine {
+    from { background-position: 200% 0; }
+    to   { background-position: 0% 0; }
+  }
+
+  /* ═══ 按钮 ═══ */
+  .btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    padding: 18px 22px;
+    margin-bottom: 16px;
+    border: none;
+    border-radius: 16px;
+    font-family: inherit;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+    overflow: hidden;
+    isolation: isolate;
+    transform: translateZ(35px) translateY(20px);
+    opacity: 0;
+    will-change: transform, opacity, box-shadow;
+    transition:
+      transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+      filter 0.4s ease;
+  }
+
+  .btn-1 {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%);
+    box-shadow: 0 12px 28px rgba(79, 70, 229, 0.5);
+    animation: btnIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.85s forwards;
+  }
+  .btn-2 {
+    background: linear-gradient(135deg, #7c3aed 0%, #a855f7 50%, #c084fc 100%);
+    box-shadow: 0 12px 28px rgba(124, 58, 237, 0.5);
+    animation: btnIn 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.15s forwards;
+  }
+  @keyframes btnIn {
+    to { opacity: 1; transform: translateZ(35px) translateY(0); }
+  }
+
+  /* 按钮下方光晕 */
+  .btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: inherit;
+    filter: blur(18px);
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.5s ease;
+  }
+
+  /* 按钮内扫光 */
+  .btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      rgba(255,255,255,0.45) 50%,
+      transparent 70%
+    );
+    transform: translateX(-120%);
+    transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+
+  /* 悬停：抬升 + 光晕 + 扫光 */
+  @media (hover: hover) {
+    .btn:hover {
+      transform: translateZ(50px) translateY(-4px) scale(1.02);
+      filter: brightness(1.1);
+    }
+    .btn-1:hover { box-shadow: 0 22px 44px rgba(99, 102, 241, 0.7); }
+    .btn-2:hover { box-shadow: 0 22px 44px rgba(168, 85, 247, 0.7); }
+    .btn:hover::before { opacity: 0.8; }
+    .btn:hover::after  { transform: translateX(120%); }
+    .btn:hover .icon   { transform: rotate(-12deg) scale(1.15); }
+    .btn:hover .arrow  { transform: translateX(6px); opacity: 1; }
+  }
+
+  /* 点击反馈 */
+  .btn:active {
+    transform: translateZ(35px) translateY(-1px) scale(0.97);
+    transition-duration: 0.12s;
+  }
+
+  .btn .icon {
+    display: inline-block;
+    font-size: 1.2rem;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .btn .arrow {
+    display: inline-block;
+    font-size: 0.95rem;
+    opacity: 0.7;
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+                opacity 0.3s ease;
+  }
+
+  /* 提示文字 */
+  .hint {
+    margin: 2px 0 16px;
+    font-size: 0.72rem;
+    letter-spacing: 0.5px;
+    color: rgba(199, 210, 254, 0.68);
+    line-height: 1.6;
+    transform: translateZ(10px);
+
+    opacity: 0;
+    animation: fadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.35s forwards;
+  }
+  .hint .spin {
+    display: inline-block;
+    margin-right: 4px;
+    animation: slowSpin 6s linear infinite;
+  }
+  @keyframes slowSpin {
+    from { transform: rotate(0); }
+    to   { transform: rotate(360deg); }
+  }
+
+  .footer {
+    margin-top: 26px;
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    color: rgba(165, 180, 252, 0.45);
+    transform: translateZ(8px);
+
+    opacity: 0;
+    animation: fadeUp 0.9s cubic-bezier(0.16, 1, 0.3, 1) 1.55s forwards;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ═══ 点击爆发粒子容器 ═══ */
+  .burst {
+    position: fixed;
+    pointer-events: none;
+    z-index: 100;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    will-change: transform, opacity;
+  }
+
+  /* ═══ 移动端适配 ═══ */
+  @media (max-width: 380px) {
+    .card { padding: 36px 22px 30px; }
+    .title span { font-size: 1.35rem; }
+    .btn { font-size: 0.95rem; padding: 16px; }
+  }
+
+  /* ═══ 尊重减少动画偏好 ═══ */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    .card { transform: none !important; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="bg"></div>
+  <div class="aurora"></div>
+  <canvas id="particles"></canvas>
+
+  <div class="scene">
+    <main class="card" id="card">
+      <h1 class="title">
+        <span>每</span><span>课</span><span>一</span><span>练</span>
+      </h1>
+      <p class="subtitle">参考答案</p>
+      <div class="divider"></div>
+
+      <a class="btn btn-1" href="https://25gd1.github.io/CN/CN.html" target="_blank" rel="noopener noreferrer">
+        <span class="icon">♪♯</span>
+        <span>语文每课一练</span>
+        <span class="arrow">→</span>
+      </a>
+
+      <p class="hint">
+        <span class="spin">♺</span>语文文件较大，加载需耐心
+      </p>
+
+      <a class="btn btn-2" href="https://25gd1.github.io/CK/ZZ.html" target="_blank" rel="noopener noreferrer">
+        <span class="icon">♭♮</span>
+        <span>政治每课一练</span>
+        <span class="arrow">→</span>
+      </a>
+
+      <p class="footer">新标签页打开</p>
+    </main>
+  </div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ═══════════════════════════════════════════════════════
+     1. 粒子星空（Canvas）
+     - 每个粒子有位置、速度、大小
+     - 鼠标移动会推开附近粒子（带来"气场"感）
+     - 相邻近的粒子之间连线
+     - 移动端降级：粒子数减少一半
+  ═══════════════════════════════════════════════════════ */
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+  let particles = [];
+  const isMobile = window.innerWidth < 640;
+  const PARTICLE_COUNT = reduceMotion ? 0 : (isMobile ? 45 : 90);
+  const LINK_DIST = 130;
+  const MOUSE_RADIUS = 140;
+
+  const mouse = { x: -9999, y: -9999, active: false };
+
+  function resize() {
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = W * DPR;
+    canvas.height = H * DPR;
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  }
+
+  function createParticles() {
+    particles = [];
+    for (let i = 0; i < PARTICLE_COUNT; i++) {
+      particles.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: (Math.random() - 0.5) * 0.35,
+        r: Math.random() * 1.6 + 0.6,
+        // 冷暖色交替
+        hue: Math.random() < 0.5 ? 240 + Math.random() * 30 : 280 + Math.random() * 40
+      });
+    }
+  }
+
+  function step() {
+    ctx.clearRect(0, 0, W, H);
+
+    // 更新 & 绘制
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+
+      // 鼠标推开
+      if (mouse.active) {
+        const dx = p.x - mouse.x;
+        const dy = p.y - mouse.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < MOUSE_RADIUS * MOUSE_RADIUS && d2 > 0.01) {
+          const d = Math.sqrt(d2);
+          const force = (1 - d / MOUSE_RADIUS) * 0.9;
+          p.vx += (dx / d) * force * 0.35;
+          p.vy += (dy / d) * force * 0.35;
+        }
+      }
+
+      // 速度阻尼
+      p.vx *= 0.97;
+      p.vy *= 0.97;
+
+      // 保证最小速度（不让粒子完全静止）
+      const sp = Math.hypot(p.vx, p.vy);
+      if (sp < 0.05) {
+        p.vx += (Math.random() - 0.5) * 0.08;
+        p.vy += (Math.random() - 0.5) * 0.08;
+      }
+      // 限速
+      if (sp > 1.8) {
+        p.vx = (p.vx / sp) * 1.8;
+        p.vy = (p.vy / sp) * 1.8;
+      }
+
+      p.x += p.vx;
+      p.y += p.vy;
+
+      // 边界回绕
+      if (p.x < -20) p.x = W + 20;
+      if (p.x > W + 20) p.x = -20;
+      if (p.y < -20) p.y = H + 20;
+      if (p.y > H + 20) p.y = -20;
+
+      // 绘制点
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${p.hue}, 90%, 75%, 0.85)`;
+      ctx.shadowBlur = 6;
+      ctx.shadowColor = `hsla(${p.hue}, 90%, 65%, 0.9)`;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+
+    // 绘制连线（O(n²)，粒子少时可接受）
+    ctx.lineWidth = 0.6;
+    for (let i = 0; i < particles.length; i++) {
+      const a = particles[i];
+      for (let j = i + 1; j < particles.length; j++) {
+        const b = particles[j];
+        const dx = a.x - b.x;
+        const dy = a.y - b.y;
+        const d2 = dx * dx + dy * dy;
+        if (d2 < LINK_DIST * LINK_DIST) {
+          const alpha = (1 - Math.sqrt(d2) / LINK_DIST) * 0.35;
+          ctx.strokeStyle = `rgba(165, 180, 252, ${alpha})`;
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(step);
+  }
+
+  if (PARTICLE_COUNT > 0) {
+    resize();
+    createParticles();
+    step();
+    window.addEventListener('resize', () => {
+      resize();
+      createParticles();
+    });
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     2. 卡片 3D 跟随鼠标
+     - PC：鼠标移动 → 卡片轻微绕 X/Y 轴旋转
+     - 内部元素已用 translateZ 分层，会产生立体感
+     - 移动端：用陀螺仪（如果支持），否则用触摸位置
+  ═══════════════════════════════════════════════════════ */
+  const card = document.getElementById('card');
+  const scene = document.querySelector('.scene');
+  const MAX_TILT = 12; // 最大倾斜角
+
+  function updateCardTilt(clientX, clientY) {
+    const rect = card.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const dx = (clientX - cx) / (rect.width / 2);
+    const dy = (clientY - cy) / (rect.height / 2);
+    const rx = (-dy * MAX_TILT).toFixed(2);
+    const ry = ( dx * MAX_TILT).toFixed(2);
+
+    card.style.setProperty('--rx', rx + 'deg');
+    card.style.setProperty('--ry', ry + 'deg');
+
+    // 鼠标跟随光晕坐标
+    const px = ((clientX - rect.left) / rect.width) * 100;
+    const py = ((clientY - rect.top) / rect.height) * 100;
+    card.style.setProperty('--mx', px + '%');
+    card.style.setProperty('--my', py + '%');
+  }
+
+  function resetCardTilt() {
+    card.style.setProperty('--rx', '0deg');
+    card.style.setProperty('--ry', '0deg');
+  }
+
+  // PC：鼠标移动
+  window.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    mouse.active = true;
+    if (!reduceMotion) updateCardTilt(e.clientX, e.clientY);
+  });
+
+  window.addEventListener('mouseleave', () => {
+    mouse.active = false;
+    resetCardTilt();
+  });
+
+  // 移动端：触摸移动（用指尖位置代替鼠标）
+  if (isMobile) {
+    window.addEventListener('touchmove', (e) => {
+      const t = e.touches[0];
+      if (!t) return;
+      mouse.x = t.clientX;
+      mouse.y = t.clientY;
+      mouse.active = true;
+      if (!reduceMotion) updateCardTilt(t.clientX, t.clientY);
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => {
+      mouse.active = false;
+      // 延迟复位，让视觉上有个"回弹"感
+      setTimeout(resetCardTilt, 300);
+    });
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     3. 点击按钮时粒子爆发
+     - 从点击位置向四周飞出 24 个彩色粒子
+     - 粒子颜色随机、速度随机、大小随机
+     - 纯 DOM + CSS 动画实现，不依赖 canvas
+  ═══════════════════════════════════════════════════════ */
+  const PALETTE = ['#818cf8', '#a855f7', '#60a5fa', '#c084fc', '#93c5fd', '#f0abfc'];
+
+  function burstAt(x, y) {
+    if (reduceMotion) return;
+    const COUNT = 24;
+    for (let i = 0; i < COUNT; i++) {
+      const el = document.createElement('div');
+      el.className = 'burst';
+      const angle = (Math.PI * 2 * i) / COUNT + Math.random() * 0.4;
+      const speed = 60 + Math.random() * 90;
+      const tx = Math.cos(angle) * speed;
+      const ty = Math.sin(angle) * speed;
+      const size = 4 + Math.random() * 6;
+      const color = PALETTE[Math.floor(Math.random() * PALETTE.length)];
+      const dur = 600 + Math.random() * 400;
+
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      el.style.width = size + 'px';
+      el.style.height = size + 'px';
+      el.style.background = color;
+      el.style.boxShadow = `0 0 ${size * 2}px ${color}`;
+      el.style.opacity = '1';
+      el.style.transition = `transform ${dur}ms cubic-bezier(0.16,1,0.3,1), opacity ${dur}ms ease-out`;
+      document.body.appendChild(el);
+
+      // 强制 reflow 后再设 transform（触发过渡）
+      void el.offsetWidth;
+      el.style.transform = `translate(${tx}px, ${ty}px) scale(0.3)`;
+      el.style.opacity = '0';
+
+      setTimeout(() => el.remove(), dur + 50);
+    }
+  }
+
+  document.querySelectorAll('.btn').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      // 用点击位置（兼容触屏）
+      let x = e.clientX, y = e.clientY;
+      if (!x && e.changedTouches && e.changedTouches[0]) {
+        x = e.changedTouches[0].clientX;
+        y = e.changedTouches[0].clientY;
+      }
+      // 保底：如果拿不到坐标，用按钮中心
+      if (!x || !y) {
+        const r = btn.getBoundingClientRect();
+        x = r.left + r.width / 2;
+        y = r.top + r.height / 2;
+      }
+      burstAt(x, y);
+      // 轻微震动（移动端支持时）
+      if (navigator.vibrate) navigator.vibrate(10);
+      // 因为按钮是 target=_blank，当前页不会跳转，粒子能完整播完
+    });
+  });
+
+  /* ═══════════════════════════════════════════════════════
+     4. 小彩蛋：双击卡片中央触发一次"超新星"爆发
+  ═══════════════════════════════════════════════════════ */
+  let lastTap = 0;
+  card.addEventListener('click', (e) => {
+    // 只在点到非按钮区域时触发
+    if (e.target.closest('.btn')) return;
+    const now = Date.now();
+    if (now - lastTap < 300) {
+      const r = card.getBoundingClientRect();
+      const cx = r.left + r.width / 2;
+      const cy = r.top + r.height / 2;
+      // 一圈 + 一圈双层爆发
+      burstAt(cx, cy);
+      setTimeout(() => burstAt(cx, cy), 100);
+      setTimeout(() => burstAt(cx, cy), 200);
+    }
+    lastTap = now;
+  });
+
+})();
+</script>
+
+</body>
+</html>
