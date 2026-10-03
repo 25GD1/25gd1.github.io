@@ -1133,26 +1133,6 @@ if (window.innerWidth <= 820) {
 syncFitBtn();
 loadDocument();
 
-/* ✅ 注册 Service Worker + 预取 PDF（第二次秒开）
-   注意：首次加载不受影响，SW 不干预流式加载。
-   等页面稳定后，后台静默下载一份完整 PDF 让 SW 缓存。 */
-if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  window.addEventListener('load', async () => {
-    try {
-      await navigator.serviceWorker.register('/CN/sw.js', { scope: '/CN/' });
-      await navigator.serviceWorker.ready;
-
-      /* 延迟 5 秒再预取，避免和 PDF.js 抢带宽 */
-      setTimeout(() => {
-        fetch(PDF_URL, { cache: 'no-store' })
-          .then(r => r.arrayBuffer())
-          .catch(() => {});
-      }, 5000);
-    } catch (err) {
-      console.warn('[SW] 注册失败:', err);
-    }
-  });
-}
 </script>
 </body>
 </html>
