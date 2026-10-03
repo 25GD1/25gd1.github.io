@@ -195,20 +195,7 @@ body{
   border-radius:50%;animation:spin .7s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
-.loading-overlay p{font-size:13px;color:var(--muted);margin:0;text-align:center;padding:0 20px}
-.loading-overlay .progress-bar{
-  width:min(260px,70vw);height:6px;border-radius:3px;background:#d5d9e4;overflow:hidden;
-  margin-top:4px;display:none;
-}
-.loading-overlay .progress-bar.show{display:block}
-.loading-overlay .progress-fill{
-  height:100%;width:0%;border-radius:3px;
-  background:linear-gradient(90deg,var(--accent),var(--accent-2));
-  transition:width .2s ease-out;
-}
-.loading-overlay .progress-text{
-  font-size:11.5px;color:var(--muted);font-variant-numeric:tabular-nums;
-}
+.loading-overlay p{font-size:13px;color:var(--muted);margin:0}
 
 .error-box{
   max-width:380px;margin:16vh auto;text-align:center;padding:30px 24px;
@@ -222,11 +209,6 @@ body{
   color:#c7254e;word-break:break-all;text-align:left;
   font-family:ui-monospace,Menlo,Consolas,monospace;margin-bottom:14px;
 }
-.error-box button{
-  padding:10px 24px;border-radius:10px;border:1px solid var(--border);
-  background:#fff;color:var(--accent);font-size:13px;font-family:inherit;cursor:pointer;
-}
-.error-box button:active{background:#f0f1f7}
 
 .fab{
   position:fixed;
@@ -338,11 +320,7 @@ body{
     <div class="viewer" id="viewer">
       <div class="loading-overlay" id="loadingOverlay">
         <div class="spinner"></div>
-        <p id="loadingText">正在加载 PDF…</p>
-        <div class="progress-bar" id="progressBar">
-          <div class="progress-fill" id="progressFill"></div>
-        </div>
-        <div class="progress-text" id="progressText"></div>
+        <p>正在加载 PDF…</p>
       </div>
     </div>
 
@@ -355,13 +333,12 @@ body{
 <button class="fab" id="fabTop" title="回到顶部">↑</button>
 <div class="copy-toast" id="copyToast">已复制选中文字</div>
 
-<!-- ✅ 换用 jsDelivr，国内访问稳定 -->
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 const PDF_URL = 'https://25gd1.github.io/CN/' + encodeURIComponent('语文.pdf');
 
 /* ============================================================
-   目录
+   目录固定搭配（页码已核对）
    ============================================================ */
 const TOC_DATA = [
   { title: '基础模块 上册', units: [
@@ -433,9 +410,8 @@ const TOC_DATA = [
   ]},
 ];
 
-/* ✅ 换用 jsDelivr CDN */
 pdfjsLib.GlobalWorkerOptions.workerSrc =
-  'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 const $ = id => document.getElementById(id);
 const els = {
@@ -446,8 +422,6 @@ const els = {
   docName: $('docName'), menuBtn: $('menuBtn'),
   fabTop: $('fabTop'), loadingOverlay: $('loadingOverlay'), copyToast: $('copyToast'),
   scrollbar: $('customScrollbar'), scrollThumb: $('customScrollThumb'),
-  loadingText: $('loadingText'), progressBar: $('progressBar'),
-  progressFill: $('progressFill'), progressText: $('progressText'),
 };
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -634,120 +608,23 @@ function highlightToc(anchorTitle) {
 }
 
 /* ============================================================
-   ✅ 加载 PDF（双保险方案）
+   加载 PDF（流式加载，保持原样）
    ============================================================ */
-
-/* 更新加载提示文字 */
-function updateLoadingText(text) {
-  if (els.loadingText) els.loadingText.textContent = text;
-}
-
-/* 更新进度条 */
-function updateProgress(loaded, total) {
-  if (!els.progressBar) return;
-  if (!total || total <= 0) {
-    /* 拿不到总大小时，显示"已下载 X MB" */
-    els.progressBar.classList.remove('show');
-    els.progressText.textContent = loaded
-      ? `已下载 ${(loaded / 1024 / 1024).toFixed(1)} MB`
-      : '';
-    return;
-  }
-  const pct = Math.min(100, Math.round((loaded / total) * 100));
-  els.progressBar.classList.add('show');
-  els.progressFill.style.width = pct + '%';
-  els.progressText.textContent = `${pct}% (${(loaded / 1024 / 1024).toFixed(1)} / ${(total / 1024 / 1024).toFixed(1)} MB)`;
-}
-
 async function loadDocument() {
   els.docName.textContent = '语文.pdf';
-  updateLoadingText('正在加载 PDF…');
-
-  /* —— 方案 A：流式加载（首屏快，边下边看）—— */
   try {
-    const pdf = await loadWithStreaming();
-    await initPdf(pdf);
-    return;
-  } catch (err) {
-    console.warn('[PDF] 流式加载失败，准备完整下载：', err);
-    updateLoadingText('流式加载失败，正在完整下载…');
-  }
-
-  /* —— 方案 B：完整下载（兜底，最稳）—— */
-  try {
-    const pdf = await loadWithFullFetch();
+    const pdf = await pdfjsLib.getDocument({
+      url: PDF_URL,
+      disableRange: false,
+      disableStream: false,
+      rangeChunkSize: 131072,
+      disableAutoFetch: true,
+    }).promise;
     await initPdf(pdf);
   } catch (err) {
-    console.error('[PDF] 加载彻底失败:', err);
+    console.error('加载失败:', err);
     showError(err);
   }
-}
-
-/* 流式加载（带进度和超时） */
-function loadWithStreaming() {
-  return new Promise((resolve, reject) => {
-    const task = pdfjsLib.getDocument({
-      url: PDF_URL,
-      rangeChunkSize: 262144,      /* 256KB 一块 */
-      disableAutoFetch: false,     /* 让 pdf.js 自动预取 */
-      disableStream: false,        /* 开启流式 */
-      disableRange: false,         /* 允许 range 请求 */
-      cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
-      cMapPacked: true,
-    });
-
-    /* 进度回调 */
-    if (task.onProgress) {
-      task.onProgress = ({ loaded, total }) => {
-        updateProgress(loaded, total);
-      };
-    }
-
-    /* 超时保护：30 秒还没首屏就切兜底方案 */
-    const timeout = setTimeout(() => {
-      try { task.destroy(); } catch (_) {}
-      reject(new Error('流式加载超时（30 秒）'));
-    }, 30000);
-
-    task.promise.then(pdf => {
-      clearTimeout(timeout);
-      resolve(pdf);
-    }).catch(err => {
-      clearTimeout(timeout);
-      reject(err);
-    });
-  });
-}
-
-/* 完整下载（fetch 到内存，最稳） */
-async function loadWithFullFetch() {
-  updateLoadingText('正在下载 PDF 文件…');
-  if (els.progressBar) els.progressBar.classList.remove('show');
-
-  const resp = await fetch(PDF_URL, { cache: 'force-cache' });
-  if (!resp.ok) throw new Error('HTTP ' + resp.status + ' ' + resp.statusText);
-
-  const total = parseInt(resp.headers.get('content-length') || '0', 10) || 0;
-  const reader = resp.body.getReader();
-  const chunks = [];
-  let loaded = 0;
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    chunks.push(value);
-    loaded += value.length;
-    updateProgress(loaded, total);
-  }
-
-  updateLoadingText('正在解析 PDF…');
-  const blob = new Blob(chunks, { type: 'application/pdf' });
-  const buffer = await blob.arrayBuffer();
-  return await pdfjsLib.getDocument({
-    data: buffer,
-    cMapUrl: 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/cmaps/',
-    cMapPacked: true,
-  }).promise;
 }
 
 async function initPdf(pdf) {
@@ -790,9 +667,8 @@ function showError(err) {
       <h3>PDF 加载失败</h3>
       <p>未能从以下地址读取文件：</p>
       <code>${PDF_URL}</code>
-      <p>错误信息：</p>
+      <p>请检查网络连接。错误信息：</p>
       <code>${msg}</code>
-      <button onclick="location.reload()">重新加载</button>
     </div>`;
 }
 
@@ -1256,15 +1132,27 @@ if (window.innerWidth <= 820) {
 
 syncFitBtn();
 loadDocument();
-  /* 注册 Service Worker，让 PDF 第二次打开走缓存 */
+
+/* ✅ 注册 Service Worker + 预取 PDF（第二次秒开）
+   注意：首次加载不受影响，SW 不干预流式加载。
+   等页面稳定后，后台静默下载一份完整 PDF 让 SW 缓存。 */
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/CN/sw.js', { scope: '/CN/' })
-      .catch(err => console.warn('[SW] 注册失败:', err));
+  window.addEventListener('load', async () => {
+    try {
+      await navigator.serviceWorker.register('/CN/sw.js', { scope: '/CN/' });
+      await navigator.serviceWorker.ready;
+
+      /* 延迟 5 秒再预取，避免和 PDF.js 抢带宽 */
+      setTimeout(() => {
+        fetch(PDF_URL, { cache: 'no-store' })
+          .then(r => r.arrayBuffer())
+          .catch(() => {});
+      }, 5000);
+    } catch (err) {
+      console.warn('[SW] 注册失败:', err);
+    }
   });
 }
-
 </script>
 </body>
 </html>
