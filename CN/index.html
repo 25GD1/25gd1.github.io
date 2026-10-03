@@ -617,8 +617,8 @@ async function loadDocument() {
       url: PDF_URL,
       disableRange: false,
       disableStream: false,
-      rangeChunkSize: 131072,
-      disableAutoFetch: true,
+      rangeChunkSize: 1048576,
+      disableAutoFetch: false,
     }).promise;
     await initPdf(pdf);
   } catch (err) {
