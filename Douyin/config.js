@@ -16,8 +16,8 @@
 // - 如果你有 API 子路径：const BACKEND_URL = 'https://your-domain.com/api';
 // ============================================================
 
-// ✅ 已部署到 Vercel 的后端地址
-const BACKEND_URL = 'https://express-ijdaxahpd-hajimi9.vercel.app';
+// ✅ 改为本地后端（使用本地测试）
+const BACKEND_URL = 'http://localhost:3000';
 
 // 加载配置到全局
 (function() {
@@ -30,5 +30,5 @@ const BACKEND_URL = 'https://express-ijdaxahpd-hajimi9.vercel.app';
     console.log('✅ 抖音解析器已加载');
     console.log('🔗 前端地址:', window.DOUYIN_CONFIG.frontendUrl);
     console.log('🔗 后端地址:', BACKEND_URL);
-    console.log('⚡ Vercel 后端已就绪！');
+    console.log('⚡ 本地后端已就绪！');
 })();
