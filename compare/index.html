@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ID 对比工具</title>
+<style>
+:root{
+  --bg:#f5f6f8; --card:#fff; --border:#e3e6eb; --text:#1f2329; --muted:#8a919b;
+  --green:#18a058; --green-bg:#e8f8ef;
+  --red:#d03050;   --red-bg:#fdecef;
+  --yellow:#c47f00;--yellow-bg:#fff7e6;
+  --blue:#2563eb;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--text); font-size:14px; line-height:1.6; padding:20px;
+}
+.wrap{max-width:1180px;margin:0 auto}
+h1{font-size:20px;margin:0 0 4px}
+.sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px}
+.cfg{
+  display:flex;flex-wrap:wrap;gap:16px;align-items:center;
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:14px 16px;margin-bottom:16px;
+}
+.cfg .field{display:flex;align-items:center;gap:8px}
+.cfg label{font-size:13px;color:var(--text);white-space:nowrap}
+.cfg input[type=text]{
+  font:inherit;font-size:13px;padding:6px 10px;width:110px;
+  border:1px solid var(--border);border-radius:8px;background:#fbfcfd;
+}
+.cfg input[type=text]:focus{outline:none;border-color:var(--blue);background:#fff}
+.cfg .hint{color:var(--muted);font-size:12px}
+.cfg .spacer{flex:1}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.label{display:flex;justify-content:space-between;align-items:center;font-weight:600;margin-bottom:8px;font-size:13px}
+.count{color:var(--muted);font-weight:400;font-size:12px}
+textarea{
+  width:100%;height:250px;resize:vertical;
+  font-family:ui-monospace,SFMono-Regular,Consolas,"Courier New",monospace;
+  font-size:13px;line-height:1.5;padding:10px 12px;
+  border:1px solid var(--border);border-radius:8px;background:#fbfcfd;color:var(--text);
+}
+textarea:focus{outline:none;border-color:var(--blue);background:#fff}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:16px 0}
+button{
+  font:inherit;font-size:13px;padding:8px 16px;border-radius:8px;
+  border:1px solid var(--border);background:#fff;color:var(--text);cursor:pointer;
+}
+button:hover{background:#f2f4f7}
+button.primary{background:var(--blue);border-color:var(--blue);color:#fff}
+button.primary:hover{background:#1d4ed8}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px}
+.stat .n{font-size:22px;font-weight:700;line-height:1.2}
+.stat .t{font-size:12px;color:var(--muted);margin-top:2px}
+.stat.red .n{color:var(--red)}
+.stat.green .n{color:var(--green)}
+.stat.yellow .n{color:var(--yellow)}
+.stat.gray .n{color:var(--muted)}
+.results{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.results{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600}
+.panel-head .right{display:flex;gap:8px;align-items:center}
+.panel-head .tag{font-weight:400;color:var(--muted);font-size:12px}
+.panel.red .panel-head{background:var(--red-bg);color:var(--red)}
+.panel.yellow .panel-head{background:var(--yellow-bg);color:var(--yellow)}
+.panel-body{max-height:340px;overflow:auto;padding:8px 0}
+.panel-body .empty{padding:16px;color:var(--muted);text-align:center;font-size:13px}
+.row{display:flex;gap:10px;align-items:baseline;padding:4px 14px;font-family:ui-monospace,Consolas,monospace;font-size:13px}
+.row:hover{background:#f7f9fb}
+.row .idx{color:#c0c6cf;min-width:34px;text-align:right;font-size:12px;user-select:none;flex-shrink:0}
+.row .id{color:var(--text);font-weight:600;flex-shrink:0}
+.row .orig{color:var(--muted);font-size:12px;word-break:break-all}
+.mini{padding:3px 10px;font-size:12px;border-radius:6px}
+.note{color:var(--muted);font-size:12px;margin-top:12px}
+.warn{color:var(--yellow)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ID 对比工具</h1>
+  <div class="sub">自动从每行提取 7 位数字 ID，ID 后面的时间编码 / 扩展名会自动忽略。</div>
+
+  <div class="cfg">
+    <div class="field">
+      <label for="prefix">ID 开头数字</label>
+      <input type="text" id="prefix" maxlength="6" placeholder="例如 1" autocomplete="off">
+      <span class="hint">留空 = 匹配任意 7 位数字；填 1 = 只匹配 1 开头的 7 位 ID</span>
+    </div>
+    <div class="spacer"></div>
+    <div class="field">
+      <label for="len">ID 位数</label>
+      <input type="text" id="len" value="7" maxlength="2" style="width:56px">
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="label"><span>已下载的文件名</span><span class="count" id="leftCount">0 项</span></div>
+      <textarea id="left" placeholder="每行一个，例如：&#10;1234567_120000.mp4&#10;1234568-20240101.mkv&#10;1234569.mp4"></textarea>
+    </div>
+    <div class="card">
+      <div class="label"><span>全部 ID</span><span class="count" id="rightCount">0 项</span></div>
+      <textarea id="right" placeholder="每行一个，例如：&#10;1234567&#10;1234568&#10;1234569&#10;1234570"></textarea>
+    </div>
+  </div>
+
+  <div class="bar">
+    <button class="primary" id="btnCompare">开始对比</button>
+    <button id="btnClear">清空</button>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="results">
+    <div class="panel red">
+      <div class="panel-head">
+        <span>❌ 缺失（右边有，左边没有）</span>
+        <span class="right">
+          <span class="tag" id="missTag">0 个</span>
+          <button class="mini" id="btnCopyMiss">复制</button>
+        </span>
+      </div>
+      <div class="panel-body" id="missBody"><div class="empty">—</div></div>
+    </div>
+    <div class="panel yellow">
+      <div class="panel-head">
+        <span>⚠️ 多余（左边有，右边没有）</span>
+        <span class="right">
+          <span class="tag" id="extraTag">0 个</span>
+          <button class="mini" id="btnCopyExtra">复制</button>
+        </span>
+      </div>
+      <div class="panel-body" id="extraBody"><div class="empty">—</div></div>
+    </div>
+  </div>
+
+  <div class="note" id="note"></div>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var missText = '', extraText = '';
+
+  function getLen(){
+    var n = parseInt($('len').value, 10);
+    if (!n || n < 1 || n > 20) n = 7;
+    return n;
+  }
+
+  // 从一行文本里提取 ID
+  function extractId(text, prefix, len){
+    var p = (prefix || '').replace(/\D/g, '');
+    if (p.length >= len) p = p.slice(0, len - 1);
+    var remain = len - p.length;
+    var re = new RegExp(p + '\\d{' + remain + '}');
+    var m = text.match(re);
+    return m ? m[0] : null;
+  }
+
+  function parse(text, prefix, len){
+    var lines = text.split(/\r?\n/);
+    var items = [], seen = {}, dups = 0, noId = [];
+    for (var i = 0; i < lines.length; i++){
+      var raw = lines[i].trim();
+      if (!raw) continue;
+      var id = extractId(raw, prefix, len);
+      if (!id){ noId.push(raw); continue; }
+      if (seen[id] !== undefined){ dups++; continue; }
+      seen[id] = true;
+      items.push({ id: id, raw: raw });
+    }
+    return { items: items, dups: dups, noId: noId };
+  }
+
+  function escapeHtml(s){
+    return s.replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  function renderList(el, items, showRaw){
+    if (!items.length){ el.innerHTML = '<div class="empty">—</div>'; return; }
+    var html = '';
+    for (var i = 0; i < items.length; i++){
+      var x = items[i];
+      html += '<div class="row">'
+            +   '<span class="idx">' + (i+1) + '</span>'
+            +   '<span class="id">' + escapeHtml(x.id) + '</span>'
+            +   (showRaw && x.raw !== x.id
+                  ? '<span class="orig">' + escapeHtml(x.raw) + '</span>'
+                  : '')
+            + '</div>';
+    }
+    el.innerHTML = html;
+  }
+
+  function compare(){
+    var prefix = $('prefix').value;
+    var len = getLen();
+
+    var L = parse($('left').value,  prefix, len);
+    var R = parse($('right').value, prefix, len);
+
+    $('leftCount').textContent  = L.items.length + ' 项';
+    $('rightCount').textContent = R.items.length + ' 项';
+
+    var Lset = {}, Rset = {};
+    L.items.forEach(function(x){ Lset[x.id] = true; });
+    R.items.forEach(function(x){ Rset[x.id] = true; });
+
+    var missing = R.items.filter(function(x){ return !Lset[x.id]; });
+    var extra   = L.items.filter(function(x){ return !Rset[x.id]; });
+    var both    = R.items.length - missing.length;
+    var invalid = L.noId.length + R.noId.length;
+
+    $('stats').innerHTML =
+      '<div class="stat"><div class="n">' + R.items.length + '</div><div class="t">全部 ID</div></div>' +
+      '<div class="stat green"><div class="n">' + both + '</div><div class="t">已匹配</div></div>' +
+      '<div class="stat red"><div class="n">' + missing.length + '</div><div class="t">缺失</div></div>' +
+      '<div class="stat yellow"><div class="n">' + extra.length + '</div><div class="t">多余</div></div>' +
+      '<div class="stat gray"><div class="n">' + invalid + '</div><div class="t">未识别出 ID</div></div>';
+
+    $('missTag').textContent  = missing.length + ' 个';
+    $('extraTag').textContent = extra.length + ' 个';
+
+    renderList($('missBody'), missing, true);
+    renderList($('extraBody'), extra, true);
+
+    missText  = missing.map(function(x){ return x.id; }).join('\n');
+    extraText = extra.map(function(x){ return x.id; }).join('\n');
+
+    var notes = [];
+    if (!R.items.length) notes.push('右边还没有内容。');
+    else if (missing.length === 0) notes.push('✅ 全部 ID 都有对应文件。');
+    if (L.dups || R.dups) notes.push('重复项已自动去重（左 ' + L.dups + '，右 ' + R.dups + '）。');
+    if (invalid) notes.push('有 ' + invalid + ' 行未识别出 ID，检查一下 ID 开头数字 / 位数设置。');
+    $('note').textContent = notes.join(' ');
+  }
+
+  function copyText(text, btn){
+    if (!text){
+      var old0 = btn.textContent;
+      btn.textContent = '无内容';
+      setTimeout(function(){ btn.textContent = old0; }, 1000);
+      return;
+    }
+    var done = function(){
+      var old = btn.textContent;
+      btn.textContent = '已复制 ✓';
+      setTimeout(function(){ btn.textContent = old; }, 1200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, function(){ fallbackCopy(text); done(); });
+    } else {
+      fallbackCopy(text); done();
+    }
+  }
+
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand('copy'); } catch(e){}
+    ta.remove();
+  }
+
+  var timer = null;
+  function scheduleCompare(){
+    clearTimeout(timer);
+    timer = setTimeout(compare, 150);
+  }
+
+  $('btnCompare').addEventListener('click', compare);
+  $('btnClear').addEventListener('click', function(){
+    $('left').value = '';
+    $('right').value = '';
+    compare();
+    $('left').focus();
+  });
+  $('btnCopyMiss').addEventListener('click', function(){ copyText(missText, this); });
+  $('btnCopyExtra').addEventListener('click', function(){ copyText(extraText, this); });
+  $('left').addEventListener('input', scheduleCompare);
+  $('right').addEventListener('input', scheduleCompare);
+  $('prefix').addEventListener('input', scheduleCompare);
+  $('len').addEventListener('input', scheduleCompare);
+
+  compare();
+})();
+</script>
+</body>
+</html>
