@@ -29,6 +29,7 @@
   }
   .app { max-width: 720px; margin: 0 auto; padding: 16px 16px 56px; min-height: 100vh; }
 
+  /* ── 顶栏 ── */
   .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .brand { font-size: 20px; font-weight: 700; margin: 0; letter-spacing: .3px; }
   .brand-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
@@ -42,6 +43,7 @@
   .refresh-btn.spinning svg { animation: spin .8s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  /* ── 主卡片 ── */
   .hero-card {
     background: linear-gradient(135deg, #2563eb 0%, #3b82f6 55%, #60a5fa 100%);
     border-radius: 20px; padding: 22px 22px 24px; color: #fff;
@@ -62,15 +64,40 @@
     display: flex; align-items: flex-start; justify-content: space-between;
     margin-bottom: 16px; position: relative; z-index: 1;
   }
+
+  /* 时钟 */
   .clock-time {
     font-size: 34px; font-weight: 700; letter-spacing: 1px; line-height: 1;
     font-variant-numeric: tabular-nums;
+    display: flex; align-items: baseline;
   }
+  .clock-hm { display: inline-block; }
+  .clock-sec {
+    display: inline-block;
+    font-size: .58em;
+    font-weight: 600;
+    opacity: .8;
+    margin-left: .06em;
+    min-width: 1.9em;
+    text-align: left;
+    transform-origin: 50% 100%;
+    will-change: transform, opacity;
+  }
+  .clock-sec.tick {
+    animation: secPop .34s cubic-bezier(.34,1.4,.5,1);
+  }
+  @keyframes secPop {
+    0%   { transform: translateY(7px) scale(.9); opacity: 0; }
+    55%  { transform: translateY(-1px) scale(1.03); opacity: 1; }
+    100% { transform: translateY(0) scale(1); opacity: .8; }
+  }
+
   .clock-date { font-size: 12.5px; opacity: .85; margin-top: 6px; }
   .status-badge {
     font-size: 12px; font-weight: 600; padding: 5px 12px;
     border-radius: 999px; background: rgba(255,255,255,.22);
     backdrop-filter: blur(4px); white-space: nowrap;
+    transition: background .25s, color .25s;
   }
   .status-badge.badge-current  { background: #fbbf24; color: #78350f; }
   .status-badge.badge-break    { background: #34d399; color: #064e3b; }
@@ -80,6 +107,7 @@
   .status-title {
     font-size: 26px; font-weight: 700; line-height: 1.25;
     position: relative; z-index: 1; word-break: break-all;
+    transition: opacity .25s;
   }
   .status-meta {
     font-size: 13px; opacity: .9; margin-top: 8px;
@@ -93,30 +121,59 @@
   }
   .progress-bar {
     height: 100%; width: 0; background: #fff;
-    border-radius: 99px; transition: width .6s ease;
+    border-radius: 99px;
+    transition: width .6s cubic-bezier(.22,1,.36,1);
   }
 
+  /* ── Tabs ── */
   .tabs {
     display: flex; gap: 8px; background: var(--card); padding: 5px;
     border-radius: 14px; border: 1px solid var(--border);
     box-shadow: var(--shadow); margin-bottom: 16px;
+    position: relative;
   }
   .tab {
     flex: 1; border: none; background: transparent; padding: 10px 6px;
     border-radius: 10px; font-size: 13.5px; font-weight: 500;
-    color: var(--muted); cursor: pointer; transition: .18s;
+    color: var(--muted); cursor: pointer;
+    transition: background .25s, color .2s, font-weight .2s, box-shadow .25s;
     font-family: inherit;
+    position: relative;
   }
+  .tab:active { transform: scale(.97); }
   .tab.active {
     background: var(--primary); color: #fff; font-weight: 600;
     box-shadow: 0 4px 10px -2px rgba(37,99,235,.45);
   }
 
+  /* ── 视图切换动画 ── */
+  .view { will-change: opacity, transform; }
+
+  .view.view-enter {
+    animation: viewIn .38s cubic-bezier(.22,1,.36,1);
+  }
+  @keyframes viewIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .view.view-enter .timeline-item,
+  .view.view-enter .week-day {
+    animation: itemIn .5s cubic-bezier(.22,1,.36,1) backwards;
+    will-change: transform, opacity;
+  }
+  @keyframes itemIn {
+    from { opacity: 0; transform: translateY(14px) scale(.985); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  /* ── 时间轴 ── */
   .timeline-item {
     display: flex; gap: 12px; background: var(--card);
     border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
     border: 1px solid var(--border); box-shadow: var(--shadow);
-    transition: .2s; position: relative; overflow: hidden;
+    transition: opacity .3s, box-shadow .3s, border-color .3s, background .3s;
+    position: relative; overflow: hidden;
   }
   .timeline-item.current {
     border-color: var(--primary-light);
@@ -126,6 +183,11 @@
   .timeline-item.current::before {
     content: ""; position: absolute; left: 0; top: 0; bottom: 0;
     width: 4px; background: var(--primary);
+    animation: currentBar 2.4s ease-in-out infinite;
+  }
+  @keyframes currentBar {
+    0%, 100% { opacity: 1; }
+    50%      { opacity: .55; }
   }
   .timeline-item.past { opacity: .55; }
   .timeline-item.break-item { background: #f8fafc; box-shadow: none; }
@@ -148,6 +210,11 @@
     font-size: 10.5px; background: var(--primary); color: #fff;
     padding: 1px 7px; border-radius: 99px; font-weight: 600;
     letter-spacing: .3px;
+    animation: livePulse 1.6s ease-in-out infinite;
+  }
+  @keyframes livePulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37,99,235,.45); }
+    50%      { transform: scale(1.05); box-shadow: 0 0 0 5px rgba(37,99,235,0); }
   }
   .timeline-subject {
     font-size: 17px; font-weight: 700; color: var(--text);
@@ -159,6 +226,7 @@
   }
   .timeline-detail span { white-space: nowrap; }
 
+  /* ── 完整周视图 ── */
   .week-day {
     background: var(--card); border-radius: 14px;
     border: 1px solid var(--border); box-shadow: var(--shadow);
@@ -195,6 +263,7 @@
   .week-course-meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
   .week-empty { padding: 12px 6px; font-size: 12.5px; color: var(--muted); text-align: center; }
 
+  /* ── 空状态 & 错误 ── */
   .empty-state {
     background: var(--card); border: 1px dashed var(--border);
     border-radius: 14px; padding: 40px 20px; text-align: center;
@@ -211,12 +280,15 @@
     font-size: 12px; word-break: break-all;
   }
 
+  /* ── Toast ── */
   .toast {
     position: fixed; bottom: 28px; left: 50%;
     transform: translateX(-50%) translateY(20px);
     background: #0f172a; color: #fff; padding: 10px 20px;
     border-radius: 10px; font-size: 13px; opacity: 0;
-    pointer-events: none; transition: .3s; z-index: 999;
+    pointer-events: none;
+    transition: opacity .3s, transform .3s cubic-bezier(.22,1,.36,1);
+    z-index: 999;
     max-width: 80vw; text-align: center;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -225,6 +297,15 @@
     .clock-time { font-size: 30px; }
     .status-title { font-size: 22px; }
     .timeline-time { flex: 0 0 54px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .view.view-enter,
+    .view.view-enter .timeline-item,
+    .view.view-enter .week-day,
+    .clock-sec.tick,
+    .badge-live,
+    .timeline-item.current::before { animation: none !important; }
   }
 </style>
 </head>
@@ -247,7 +328,9 @@
   <section class="hero-card">
     <div class="hero-top">
       <div>
-        <div class="clock-time" id="clockTime">--:--</div>
+        <div class="clock-time">
+          <span class="clock-hm" id="clockHm">--:--</span><span class="clock-sec" id="clockSec">:--</span>
+        </div>
         <div class="clock-date" id="clockDate">--</div>
       </div>
       <div class="status-badge" id="statusBadge">加载中</div>
@@ -290,7 +373,6 @@ const DAY_SHORT = ["", "周一", "周二", "周三", "周四", "周五", "周六
 const DAY_FULL  = ["", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"];
 const pad = n => String(n).padStart(2, "0");
 
-/* 时间工具：兼容 "8:20" 与 "08:20" */
 function toMin(t) {
   const m = String(t || "").trim().match(/^(\d{1,2}):(\d{2})/);
   if (!m) return 0;
@@ -367,7 +449,6 @@ async function loadData() {
   state.slots = parseCSV(slotsText)
     .sort((a, b) => Number(a.sort_order) - Number(b.sort_order));
 
-  // 找出所有 class 类型时段，按 sort_order 排序，作为第 1~N 节
   state.classSlots = state.slots
     .filter(s => String(s.slot_type).toLowerCase() === "class")
     .sort((a, b) => Number(a.sort_order) - Number(b.sort_order));
@@ -391,7 +472,7 @@ function slotDisplayName(slot) {
   return content || "休息";
 }
 
-/* ---------- 课程与时段匹配 ---------- */
+/* ---------- 匹配 ---------- */
 function getCourseForSlot(weekday, slot) {
   const type = String(slot.slot_type || "").toLowerCase();
   if (type !== "class") return null;
@@ -405,7 +486,6 @@ function getCourseForSlot(weekday, slot) {
   ) || null;
 }
 
-/* ---------- 构建某天时间轴（含所有时段） ---------- */
 function buildTimeline(weekday) {
   return state.slots.map(slot => ({
     slot,
@@ -418,7 +498,6 @@ function buildTimeline(weekday) {
 function computeStatus(now, timeline) {
   const nowMin = now.getHours() * 60 + now.getMinutes();
 
-  // 当前所处时段
   let current = null;
   for (const item of timeline) {
     const start = toMin(item.slot.start_time);
@@ -426,12 +505,10 @@ function computeStatus(now, timeline) {
     if (nowMin >= start && nowMin < end) { current = item; break; }
   }
 
-  // 下一个有课的时段
   const nextCourse = timeline.find(it =>
     it.course && nowMin < toMin(it.slot.start_time)
   );
 
-  // ① 正在上课
   if (current && current.course) {
     const start = toMin(current.slot.start_time);
     const end   = toMin(current.slot.end_time);
@@ -450,7 +527,6 @@ function computeStatus(now, timeline) {
     };
   }
 
-  // ② 处于休息/课间/午休等时段
   if (current) {
     const type = String(current.slot.slot_type || "").toLowerCase();
     const name = slotDisplayName(current.slot);
@@ -495,7 +571,6 @@ function computeStatus(now, timeline) {
     };
   }
 
-  // ③ 不在任何时段内（比如早晨/深夜），显示下一节
   if (nextCourse) {
     return {
       type: "upcoming",
@@ -511,7 +586,6 @@ function computeStatus(now, timeline) {
     };
   }
 
-  // ④ 今日结束
   return {
     type: "done",
     badge: "已结束",
@@ -611,7 +685,6 @@ function renderWeek(container) {
 
 /* ---------- 渲染：主状态卡片 ---------- */
 function renderHero(now, status) {
-  $("clockTime").textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
   $("clockDate").textContent = `${now.getMonth() + 1}月${now.getDate()}日 ${DAY_FULL[todayWeekday()]}`;
   $("headerDate").textContent = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${DAY_FULL[todayWeekday()]}`;
 
@@ -633,9 +706,10 @@ function renderHero(now, status) {
   }
 }
 
-/* ---------- 渲染入口 ---------- */
+/* ---------- 渲染入口（保留滚动位置） ---------- */
 function render() {
   if (!state.loaded) return;
+  const scrollY = window.scrollY;
   const now = new Date();
   const timeline = buildTimeline(todayWeekday());
   const status = computeStatus(now, timeline);
@@ -644,6 +718,69 @@ function render() {
   renderTimeline($("viewToday"),    todayWeekday());
   renderTimeline($("viewTomorrow"), tomorrowWeekday());
   renderWeek($("viewWeek"));
+
+  if (window.scrollY !== scrollY) {
+    requestAnimationFrame(() => window.scrollTo(0, scrollY));
+  }
+}
+
+/* ---------- 视图切换 + 错峰动画 ---------- */
+const VIEW_MAP = { today: "viewToday", tomorrow: "viewTomorrow", week: "viewWeek" };
+
+function switchView(view, animate = true) {
+  const targetId = VIEW_MAP[view];
+
+  Object.values(VIEW_MAP).forEach(id => {
+    const el = $(id);
+    if (id === targetId) {
+      el.style.display = "";
+      el.classList.remove("view-enter");
+      void el.offsetWidth;      // 强制重排，确保动画重放
+
+      if (animate) {
+        // 给子项设置错峰延迟
+        const items = el.querySelectorAll(".timeline-item, .week-day");
+        items.forEach((item, i) => {
+          item.style.animationDelay = Math.min(i * 28, 320) + "ms";
+        });
+        el.classList.add("view-enter");
+
+        // 动画播完后清理，避免 30 秒刷新时重播
+        clearTimeout(el._enterTimer);
+        el._enterTimer = setTimeout(() => {
+          el.classList.remove("view-enter");
+          items.forEach(item => { item.style.animationDelay = ""; });
+        }, 950);
+      }
+    } else {
+      el.style.display = "none";
+      el.classList.remove("view-enter");
+    }
+  });
+}
+
+/* ---------- 秒级时钟 ---------- */
+let clockTimer = null;
+function tickClock() {
+  const now = new Date();
+  const hmText = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const secText = `:${pad(now.getSeconds())}`;
+
+  const hmEl  = $("clockHm");
+  const secEl = $("clockSec");
+
+  if (hmEl.textContent !== hmText) hmEl.textContent = hmText;
+
+  if (secEl.textContent !== secText) {
+    secEl.textContent = secText;
+    secEl.classList.remove("tick");
+    void secEl.offsetWidth;
+    secEl.classList.add("tick");
+  }
+
+  // 对齐整秒，避免累积漂移
+  const delay = 1000 - (Date.now() % 1000);
+  clockTimer = setTimeout(tickClock, delay);
 }
 
 /* ---------- 交互 ---------- */
@@ -651,12 +788,9 @@ function bindEvents() {
   $("tabs").addEventListener("click", e => {
     const tab = e.target.closest(".tab");
     if (!tab) return;
-    const view = tab.dataset.view;
+
     document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t === tab));
-    const map = { today: "viewToday", tomorrow: "viewTomorrow", week: "viewWeek" };
-    ["viewToday", "viewTomorrow", "viewWeek"].forEach(id => {
-      $(id).style.display = (id === map[view]) ? "" : "none";
-    });
+    switchView(tab.dataset.view, true);
   });
 
   $("refreshBtn").addEventListener("click", async () => {
@@ -671,6 +805,14 @@ function bindEvents() {
       showToast("刷新失败：" + err.message);
     } finally {
       setTimeout(() => btn.classList.remove("spinning"), 500);
+    }
+  });
+
+  // 页面重新可见时立即刷新时钟与状态
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      tickClock();
+      render();
     }
   });
 }
@@ -704,9 +846,16 @@ function showRuntimeError(err) {
 /* ---------- 启动 ---------- */
 async function init() {
   bindEvents();
+
+  // 时钟立即运行，不等待数据
+  tickClock();
+
   try {
     await loadData();
     render();
+    // 首次进入播放一次入场动画
+    switchView("today", true);
+    // 每 30 秒刷新状态（时间轴高亮等）
     setInterval(render, 30 * 1000);
   } catch (err) {
     console.error("[课程表] 加载失败：", err);
