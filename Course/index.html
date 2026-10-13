@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>课程表</title>
+<style>
+  :root {
+    --bg: #f0f6ff;
+    --card: #ffffff;
+    --primary: #2563eb;
+    --primary-light: #3b82f6;
+    --primary-soft: #dbeafe;
+    --primary-ultra: #eff6ff;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --shadow: 0 1px 3px rgba(37,99,235,.08), 0 1px 2px rgba(37,99,235,.06);
+    --shadow-lg: 0 10px 25px -5px rgba(37,99,235,.15), 0 8px 10px -6px rgba(37,99,235,.1);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+  .app { max-width: 720px; margin: 0 auto; padding: 16px 16px 56px; min-height: 100vh; }
+
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .brand { font-size: 20px; font-weight: 700; margin: 0; letter-spacing: .3px; }
+  .brand-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .refresh-btn {
+    width: 38px; height: 38px; border-radius: 50%;
+    border: 1px solid var(--border); background: var(--card); color: var(--primary);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: .2s; box-shadow: var(--shadow);
+  }
+  .refresh-btn:active { transform: scale(.92); }
+  .refresh-btn.spinning svg { animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hero-card {
+    background: linear-gradient(135deg, #2563eb 0%, #3b82f6 55%, #60a5fa 100%);
+    border-radius: 20px; padding: 22px 22px 24px; color: #fff;
+    box-shadow: var(--shadow-lg); position: relative; overflow: hidden;
+    margin-bottom: 16px;
+  }
+  .hero-card::after {
+    content: ""; position: absolute; width: 220px; height: 220px;
+    border-radius: 50%; background: rgba(255,255,255,.08);
+    top: -90px; right: -70px; pointer-events: none;
+  }
+  .hero-card::before {
+    content: ""; position: absolute; width: 140px; height: 140px;
+    border-radius: 50%; background: rgba(255,255,255,.06);
+    bottom: -70px; left: -50px; pointer-events: none;
+  }
+  .hero-top {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 16px; position: relative; z-index: 1;
+  }
+  .clock-time {
+    font-size: 34px; font-weight: 700; letter-spacing: 1px; line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .clock-date { font-size: 12.5px; opacity: .85; margin-top: 6px; }
+  .status-badge {
+    font-size: 12px; font-weight: 600; padding: 5px 12px;
+    border-radius: 999px; background: rgba(255,255,255,.22);
+    backdrop-filter: blur(4px); white-space: nowrap;
+  }
+  .status-badge.badge-current  { background: #fbbf24; color: #78350f; }
+  .status-badge.badge-break    { background: #34d399; color: #064e3b; }
+  .status-badge.badge-upcoming { background: rgba(255,255,255,.28); }
+  .status-badge.badge-done     { background: rgba(255,255,255,.28); }
+
+  .status-title {
+    font-size: 26px; font-weight: 700; line-height: 1.25;
+    position: relative; z-index: 1; word-break: break-all;
+  }
+  .status-meta {
+    font-size: 13px; opacity: .9; margin-top: 8px;
+    position: relative; z-index: 1; min-height: 20px;
+  }
+  .progress-wrap {
+    margin-top: 14px; height: 6px;
+    background: rgba(255,255,255,.25);
+    border-radius: 99px; overflow: hidden;
+    position: relative; z-index: 1;
+  }
+  .progress-bar {
+    height: 100%; width: 0; background: #fff;
+    border-radius: 99px; transition: width .6s ease;
+  }
+
+  .tabs {
+    display: flex; gap: 8px; background: var(--card); padding: 5px;
+    border-radius: 14px; border: 1px solid var(--border);
+    box-shadow: var(--shadow); margin-bottom: 16px;
+  }
+  .tab {
+    flex: 1; border: none; background: transparent; padding: 10px 6px;
+    border-radius: 10px; font-size: 13.5px; font-weight: 500;
+    color: var(--muted); cursor: pointer; transition: .18s;
+    font-family: inherit;
+  }
+  .tab.active {
+    background: var(--primary); color: #fff; font-weight: 600;
+    box-shadow: 0 4px 10px -2px rgba(37,99,235,.45);
+  }
+
+  .timeline-item {
+    display: flex; gap: 12px; background: var(--card);
+    border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+    transition: .2s; position: relative; overflow: hidden;
+  }
+  .timeline-item.current {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px var(--primary-soft), var(--shadow-lg);
+    background: linear-gradient(180deg, #fff 0%, #f5f9ff 100%);
+  }
+  .timeline-item.current::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0;
+    width: 4px; background: var(--primary);
+  }
+  .timeline-item.past { opacity: .55; }
+  .timeline-item.break-item { background: #f8fafc; box-shadow: none; }
+  .timeline-item.break-item .timeline-subject {
+    color: var(--muted); font-size: 14px; font-weight: 500;
+  }
+
+  .timeline-time {
+    flex: 0 0 60px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center;
+    border-right: 1px dashed var(--border); padding-right: 10px;
+  }
+  .time-start { font-size: 15px; font-weight: 700; color: var(--primary); font-variant-numeric: tabular-nums; }
+  .time-end   { font-size: 11px; color: var(--muted); margin-top: 2px; font-variant-numeric: tabular-nums; }
+
+  .timeline-body { flex: 1; min-width: 0; }
+  .timeline-header { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+  .slot-name { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+  .badge-live {
+    font-size: 10.5px; background: var(--primary); color: #fff;
+    padding: 1px 7px; border-radius: 99px; font-weight: 600;
+    letter-spacing: .3px;
+  }
+  .timeline-subject {
+    font-size: 17px; font-weight: 700; color: var(--text);
+    margin-bottom: 4px; word-break: break-all;
+  }
+  .timeline-detail {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    font-size: 12px; color: var(--muted);
+  }
+  .timeline-detail span { white-space: nowrap; }
+
+  .week-day {
+    background: var(--card); border-radius: 14px;
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+    margin-bottom: 12px; overflow: hidden;
+  }
+  .week-day.today {
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px var(--primary-soft), var(--shadow);
+  }
+  .week-day-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; background: var(--primary-ultra);
+    border-bottom: 1px solid var(--border);
+  }
+  .week-day.today .week-day-header { background: var(--primary-soft); }
+  .week-day-name { font-size: 14.5px; font-weight: 700; color: var(--primary); }
+  .today-dot {
+    font-size: 11px; background: var(--primary); color: #fff;
+    padding: 2px 9px; border-radius: 99px; font-weight: 600;
+  }
+  .week-day-body { padding: 6px 10px 10px; }
+  .week-course {
+    display: flex; gap: 12px; padding: 9px 6px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .week-course:last-child { border-bottom: none; }
+  .week-course-time {
+    flex: 0 0 48px; font-size: 12.5px; font-weight: 600;
+    color: var(--primary); font-variant-numeric: tabular-nums;
+    padding-top: 1px;
+  }
+  .week-course-info { flex: 1; min-width: 0; }
+  .week-course-subject { font-size: 14px; font-weight: 600; color: var(--text); }
+  .week-course-meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .week-empty { padding: 12px 6px; font-size: 12.5px; color: var(--muted); text-align: center; }
+
+  .empty-state {
+    background: var(--card); border: 1px dashed var(--border);
+    border-radius: 14px; padding: 40px 20px; text-align: center;
+  }
+  .empty-icon { font-size: 36px; margin-bottom: 8px; }
+  .empty-text { font-size: 13.5px; color: var(--muted); }
+
+  .error-card {
+    background: #fff; border: 1px solid #fecaca; border-radius: 14px;
+    padding: 18px; color: #b91c1c; font-size: 13.5px; line-height: 1.7;
+  }
+  .error-card code {
+    background: #fef2f2; padding: 2px 6px; border-radius: 4px;
+    font-size: 12px; word-break: break-all;
+  }
+
+  .toast {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #0f172a; color: #fff; padding: 10px 20px;
+    border-radius: 10px; font-size: 13px; opacity: 0;
+    pointer-events: none; transition: .3s; z-index: 999;
+    max-width: 80vw; text-align: center;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 400px) {
+    .clock-time { font-size: 30px; }
+    .status-title { font-size: 22px; }
+    .timeline-time { flex: 0 0 54px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="header">
+    <div>
+      <h1 class="brand">课程表</h1>
+      <div class="brand-sub" id="headerDate">加载中…</div>
+    </div>
+    <button class="refresh-btn" id="refreshBtn" aria-label="刷新">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 1 1-3-6.7L21 8"/>
+        <path d="M21 3v5h-5"/>
+      </svg>
+    </button>
+  </header>
+
+  <section class="hero-card">
+    <div class="hero-top">
+      <div>
+        <div class="clock-time" id="clockTime">--:--</div>
+        <div class="clock-date" id="clockDate">--</div>
+      </div>
+      <div class="status-badge" id="statusBadge">加载中</div>
+    </div>
+    <div class="status-title" id="statusTitle">正在获取课程…</div>
+    <div class="status-meta" id="statusMeta"></div>
+    <div class="progress-wrap" id="progressWrap" style="display:none">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </section>
+
+  <nav class="tabs" id="tabs">
+    <button class="tab active" data-view="today">今日课程</button>
+    <button class="tab" data-view="tomorrow">明日课程</button>
+    <button class="tab" data-view="week">完整课表</button>
+  </nav>
+
+  <main class="content">
+    <div class="view" id="viewToday"></div>
+    <div class="view" id="viewTomorrow" style="display:none"></div>
+    <div class="view" id="viewWeek" style="display:none"></div>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ==========================================================
+   数据文件（与 HTML 同目录）：
+   - time_slots_rows.csv
+   - timetable_rows.csv
+   ========================================================== */
+const FILES = {
+  slots:     "time_slots_rows.csv",
+  timetable: "timetable_rows.csv"
+};
+
+const $ = id => document.getElementById(id);
+const DAY_SHORT = ["", "周一", "周二", "周三", "周四", "周五", "周六", "周日"];
+const DAY_FULL  = ["", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"];
+const pad = n => String(n).padStart(2, "0");
+
+/* 时间工具：兼容 "8:20" 与 "08:20" */
+function toMin(t) {
+  const m = String(t || "").trim().match(/^(\d{1,2}):(\d{2})/);
+  if (!m) return 0;
+  return Number(m[1]) * 60 + Number(m[2]);
+}
+function hm(t) {
+  const m = String(t || "").trim().match(/^(\d{1,2}):(\d{2})/);
+  if (!m) return String(t || "");
+  return pad(Number(m[1])) + ":" + m[2];
+}
+function todayWeekday() {
+  const d = new Date().getDay();
+  return d === 0 ? 7 : d;
+}
+function tomorrowWeekday() {
+  const w = todayWeekday();
+  return w === 7 ? 1 : w + 1;
+}
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g,
+    m => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
+}
+
+/* ---------- CSV 解析 ---------- */
+function parseCSV(text) {
+  const lines = text.replace(/^\uFEFF/, "").trim().split(/\r?\n/);
+  if (!lines.length) return [];
+  const headers = splitCSVLine(lines[0]).map(h => h.trim());
+  const rows = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    if (!line.trim()) continue;
+    const values = splitCSVLine(line);
+    const obj = {};
+    headers.forEach((h, idx) => { obj[h] = (values[idx] ?? "").trim(); });
+    rows.push(obj);
+  }
+  return rows;
+}
+function splitCSVLine(line) {
+  const out = [];
+  let cur = "", inQuotes = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '"') {
+      if (inQuotes && line[i + 1] === '"') { cur += '"'; i++; }
+      else inQuotes = !inQuotes;
+    } else if (ch === ',' && !inQuotes) {
+      out.push(cur); cur = "";
+    } else {
+      cur += ch;
+    }
+  }
+  out.push(cur);
+  return out;
+}
+
+/* ---------- 状态 ---------- */
+const state = { slots: [], courses: [], loaded: false, classSlots: [] };
+
+/* ---------- 加载 ---------- */
+async function fetchText(path) {
+  const res = await fetch(path, { cache: "no-store" });
+  if (!res.ok) throw new Error(`读取 ${path} 失败：HTTP ${res.status}`);
+  return res.text();
+}
+
+async function loadData() {
+  const [slotsText, coursesText] = await Promise.all([
+    fetchText(FILES.slots),
+    fetchText(FILES.timetable)
+  ]);
+
+  state.slots = parseCSV(slotsText)
+    .sort((a, b) => Number(a.sort_order) - Number(b.sort_order));
+
+  // 找出所有 class 类型时段，按 sort_order 排序，作为第 1~N 节
+  state.classSlots = state.slots
+    .filter(s => String(s.slot_type).toLowerCase() === "class")
+    .sort((a, b) => Number(a.sort_order) - Number(b.sort_order));
+
+  state.courses = parseCSV(coursesText);
+  state.loaded = true;
+}
+
+/* ---------- 时段显示名 ---------- */
+function slotDisplayName(slot) {
+  const type = String(slot.slot_type || "").toLowerCase();
+  const content = String(slot.course_content || "").trim();
+
+  if (type === "class") {
+    if (!content || content === "无") {
+      const idx = state.classSlots.findIndex(s => s.id === slot.id);
+      return idx >= 0 ? `第${idx + 1}节` : "课程";
+    }
+    return content;
+  }
+  return content || "休息";
+}
+
+/* ---------- 课程与时段匹配 ---------- */
+function getCourseForSlot(weekday, slot) {
+  const type = String(slot.slot_type || "").toLowerCase();
+  if (type !== "class") return null;
+
+  const classIdx = state.classSlots.findIndex(s => s.id === slot.id);
+  if (classIdx < 0) return null;
+
+  const period = classIdx + 1;
+  return state.courses.find(c =>
+    Number(c.weekday) === Number(weekday) && Number(c.period) === period
+  ) || null;
+}
+
+/* ---------- 构建某天时间轴（含所有时段） ---------- */
+function buildTimeline(weekday) {
+  return state.slots.map(slot => ({
+    slot,
+    course: getCourseForSlot(weekday, slot),
+    isClass: String(slot.slot_type || "").toLowerCase() === "class"
+  }));
+}
+
+/* ---------- 状态判断 ---------- */
+function computeStatus(now, timeline) {
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+  // 当前所处时段
+  let current = null;
+  for (const item of timeline) {
+    const start = toMin(item.slot.start_time);
+    const end   = toMin(item.slot.end_time);
+    if (nowMin >= start && nowMin < end) { current = item; break; }
+  }
+
+  // 下一个有课的时段
+  const nextCourse = timeline.find(it =>
+    it.course && nowMin < toMin(it.slot.start_time)
+  );
+
+  // ① 正在上课
+  if (current && current.course) {
+    const start = toMin(current.slot.start_time);
+    const end   = toMin(current.slot.end_time);
+    const progress = (nowMin - start) / Math.max(1, end - start);
+    return {
+      type: "current",
+      badge: "正在上课",
+      title: current.course.subject_name || "未知课程",
+      meta: [
+        slotDisplayName(current.slot),
+        `${hm(current.slot.start_time)} - ${hm(current.slot.end_time)}`,
+        current.course.classroom,
+        current.course.teacher
+      ].filter(Boolean).join(" · "),
+      progress: Math.max(0, Math.min(1, progress))
+    };
+  }
+
+  // ② 处于休息/课间/午休等时段
+  if (current) {
+    const type = String(current.slot.slot_type || "").toLowerCase();
+    const name = slotDisplayName(current.slot);
+    let badge, title;
+
+    if (type === "lunch") {
+      badge = "午休中";
+      title = nextCourse
+        ? `下午第一节：${nextCourse.course.subject_name}`
+        : "下午没有课程安排";
+    } else if (type === "break") {
+      badge = "课间休息";
+      title = nextCourse
+        ? `下节课：${nextCourse.course.subject_name}`
+        : "今天没有后续课程";
+    } else if (type === "morning_reading") {
+      badge = "早读时间";
+      title = nextCourse
+        ? `第一节：${nextCourse.course.subject_name}`
+        : "今天没有课程安排";
+    } else if (type === "evening_study") {
+      badge = "晚自习";
+      title = "自习时间";
+    } else {
+      badge = name;
+      title = nextCourse
+        ? `下节课：${nextCourse.course.subject_name}`
+        : "今日课程已结束";
+    }
+
+    return {
+      type: "break",
+      badge,
+      title,
+      meta: [
+        name,
+        `${hm(current.slot.start_time)} - ${hm(current.slot.end_time)}`,
+        nextCourse && nextCourse.course.classroom,
+        nextCourse && nextCourse.course.teacher
+      ].filter(Boolean).join(" · "),
+      progress: null
+    };
+  }
+
+  // ③ 不在任何时段内（比如早晨/深夜），显示下一节
+  if (nextCourse) {
+    return {
+      type: "upcoming",
+      badge: "下节课",
+      title: nextCourse.course.subject_name || "未知课程",
+      meta: [
+        slotDisplayName(nextCourse.slot),
+        `${hm(nextCourse.slot.start_time)} - ${hm(nextCourse.slot.end_time)}`,
+        nextCourse.course.classroom,
+        nextCourse.course.teacher
+      ].filter(Boolean).join(" · "),
+      progress: null
+    };
+  }
+
+  // ④ 今日结束
+  return {
+    type: "done",
+    badge: "已结束",
+    title: "今日课程已全部结束",
+    meta: "好好休息，明天见～",
+    progress: null
+  };
+}
+
+/* ---------- 渲染：时间轴 ---------- */
+function renderTimeline(container, weekday) {
+  const timeline = buildTimeline(weekday);
+
+  if (!timeline.length) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><div class="empty-text">这一天没有课程安排</div></div>`;
+    return;
+  }
+
+  const now = new Date();
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  const isToday = Number(weekday) === todayWeekday();
+
+  container.innerHTML = timeline.map(({ slot, course, isClass }) => {
+    const start = toMin(slot.start_time);
+    const end   = toMin(slot.end_time);
+    const isCurrent = isToday && nowMin >= start && nowMin < end;
+    const isPast    = isToday && nowMin >= end;
+
+    let cls = "timeline-item";
+    if (isCurrent) cls += " current";
+    if (isPast && !isCurrent) cls += " past";
+    if (!course && !isCurrent) cls += " break-item";
+
+    const slotName = slotDisplayName(slot);
+    const subject = course
+      ? (course.subject_name || "未知课程")
+      : slotName;
+
+    return `
+      <div class="${cls}">
+        <div class="timeline-time">
+          <div class="time-start">${hm(slot.start_time)}</div>
+          <div class="time-end">${hm(slot.end_time)}</div>
+        </div>
+        <div class="timeline-body">
+          <div class="timeline-header">
+            <span class="slot-name">${esc(slotName)}</span>
+            ${isCurrent ? '<span class="badge-live">进行中</span>' : ''}
+          </div>
+          <div class="timeline-subject">${esc(subject)}</div>
+          <div class="timeline-detail">
+            ${course && course.classroom ? `<span>📍 ${esc(course.classroom)}</span>` : ''}
+            ${course && course.teacher   ? `<span>👤 ${esc(course.teacher)}</span>`   : ''}
+            ${!course && isClass ? `<span style="color:#94a3b8">暂无课程安排</span>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+/* ---------- 渲染：完整周视图 ---------- */
+function renderWeek(container) {
+  const today = todayWeekday();
+  let html = "";
+
+  for (let day = 1; day <= 7; day++) {
+    const timeline = buildTimeline(day);
+    const courseItems = timeline.filter(it => it.course);
+    const isToday = day === today;
+
+    html += `
+      <div class="week-day ${isToday ? "today" : ""}">
+        <div class="week-day-header">
+          <span class="week-day-name">${DAY_SHORT[day]}</span>
+          ${isToday ? '<span class="today-dot">今天</span>' : ""}
+        </div>
+        <div class="week-day-body">
+          ${courseItems.length
+            ? courseItems.map(({ slot, course }) => `
+                <div class="week-course">
+                  <div class="week-course-time">${hm(slot.start_time)}</div>
+                  <div class="week-course-info">
+                    <div class="week-course-subject">${esc(course.subject_name || "未知")}</div>
+                    <div class="week-course-meta">
+                      ${esc(slotDisplayName(slot))}
+                      ${course.classroom ? " · " + esc(course.classroom) : ""}
+                      ${course.teacher   ? " · " + esc(course.teacher)   : ""}
+                    </div>
+                  </div>
+                </div>`).join("")
+            : '<div class="week-empty">无课程</div>'}
+        </div>
+      </div>`;
+  }
+  container.innerHTML = html;
+}
+
+/* ---------- 渲染：主状态卡片 ---------- */
+function renderHero(now, status) {
+  $("clockTime").textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  $("clockDate").textContent = `${now.getMonth() + 1}月${now.getDate()}日 ${DAY_FULL[todayWeekday()]}`;
+  $("headerDate").textContent = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${DAY_FULL[todayWeekday()]}`;
+
+  const badge = $("statusBadge");
+  badge.textContent = status.badge;
+  badge.className = `status-badge badge-${status.type}`;
+
+  $("statusTitle").textContent = status.title;
+  $("statusMeta").textContent  = status.meta || "";
+
+  const wrap = $("progressWrap");
+  const bar  = $("progressBar");
+  if (status.progress !== null && status.progress !== undefined) {
+    wrap.style.display = "";
+    bar.style.width = (status.progress * 100).toFixed(1) + "%";
+  } else {
+    wrap.style.display = "none";
+    bar.style.width = "0%";
+  }
+}
+
+/* ---------- 渲染入口 ---------- */
+function render() {
+  if (!state.loaded) return;
+  const now = new Date();
+  const timeline = buildTimeline(todayWeekday());
+  const status = computeStatus(now, timeline);
+
+  renderHero(now, status);
+  renderTimeline($("viewToday"),    todayWeekday());
+  renderTimeline($("viewTomorrow"), tomorrowWeekday());
+  renderWeek($("viewWeek"));
+}
+
+/* ---------- 交互 ---------- */
+function bindEvents() {
+  $("tabs").addEventListener("click", e => {
+    const tab = e.target.closest(".tab");
+    if (!tab) return;
+    const view = tab.dataset.view;
+    document.querySelectorAll(".tab").forEach(t => t.classList.toggle("active", t === tab));
+    const map = { today: "viewToday", tomorrow: "viewTomorrow", week: "viewWeek" };
+    ["viewToday", "viewTomorrow", "viewWeek"].forEach(id => {
+      $(id).style.display = (id === map[view]) ? "" : "none";
+    });
+  });
+
+  $("refreshBtn").addEventListener("click", async () => {
+    const btn = $("refreshBtn");
+    btn.classList.add("spinning");
+    try {
+      await loadData();
+      render();
+      showToast("已刷新");
+    } catch (err) {
+      console.error(err);
+      showToast("刷新失败：" + err.message);
+    } finally {
+      setTimeout(() => btn.classList.remove("spinning"), 500);
+    }
+  });
+}
+
+let toastTimer = null;
+function showToast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+/* ---------- 错误提示 ---------- */
+function showRuntimeError(err) {
+  $("statusBadge").textContent = "加载失败";
+  $("statusBadge").className = "status-badge";
+  $("statusTitle").textContent = "数据加载失败";
+  $("statusMeta").textContent  = err.message || String(err);
+  $("viewToday").innerHTML = `
+    <div class="error-card">
+      <strong>❌ 无法读取 CSV 数据</strong><br><br>
+      错误信息：<code>${esc(err.message || err)}</code><br><br>
+      请检查：<br>
+      1. 同目录下是否有 <code>time_slots_rows.csv</code> 和 <code>timetable_rows.csv</code>；<br>
+      2. 是否通过 <code>https://</code> 访问（GitHub Pages 或本地 http 服务器）；<br>
+      3. 打开浏览器控制台查看详细报错。
+    </div>`;
+}
+
+/* ---------- 启动 ---------- */
+async function init() {
+  bindEvents();
+  try {
+    await loadData();
+    render();
+    setInterval(render, 30 * 1000);
+  } catch (err) {
+    console.error("[课程表] 加载失败：", err);
+    showRuntimeError(err);
+  }
+}
+init();
+</script>
+</body>
+</html>
