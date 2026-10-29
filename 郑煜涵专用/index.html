@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>郑煜涵的游戏世界</title>
+<style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  :root {
+    --ink: #e8e6ff;
+    --ink-dim: #9a94c9;
+    --line: rgba(140, 130, 255, 0.30);
+    --c1: #5b6bff;
+    --c2: #a855f7;
+    --c3: #22d3ee;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    font-family: "PingFang SC", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    background: #070516;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 56px 22px 44px;
+    overflow-x: hidden;
+  }
+
+  /* ===== 背景渐变光晕 ===== */
+  .bg-glow {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background:
+      radial-gradient(circle at 15% 18%, rgba(88, 101, 242, 0.45), transparent 46%),
+      radial-gradient(circle at 86% 12%, rgba(155, 89, 255, 0.40), transparent 46%),
+      radial-gradient(circle at 50% 96%, rgba(56, 189, 248, 0.28), transparent 52%),
+      linear-gradient(160deg, #0a0820 0%, #120a2e 45%, #0b0722 100%);
+    animation: glowShift 16s ease-in-out infinite alternate;
+  }
+
+  @keyframes glowShift {
+    0%   { filter: hue-rotate(0deg) saturate(1); }
+    100% { filter: hue-rotate(26deg) saturate(1.22); }
+  }
+
+  /* ===== 漂浮光点 ===== */
+  .particles {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(180, 170, 255, 0.9), rgba(120, 90, 255, 0));
+    animation: floatUp linear infinite;
+    opacity: 0;
+  }
+
+  @keyframes floatUp {
+    0%   { transform: translateY(0) scale(0.6); opacity: 0; }
+    15%  { opacity: 0.8; }
+    85%  { opacity: 0.45; }
+    100% { transform: translateY(-115vh) scale(1.1); opacity: 0; }
+  }
+
+  /* ===== 内容容器（用 auto margin 居中，溢出时自动不裁剪） ===== */
+  .wrapper {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 900px;
+    margin: auto 0;          /* 垂直居中，内容过高时安全回落 */
+    text-align: center;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 8px 20px;
+    font-size: 12px;
+    letter-spacing: 3px;
+    border-radius: 999px;
+    color: #b9b2ff;
+    border: 1px solid rgba(140, 130, 255, 0.45);
+    background: rgba(90, 80, 220, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    margin-bottom: 22px;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  h1 {
+    margin: 0;
+    font-size: clamp(26px, 6vw, 52px);
+    font-weight: 800;
+    line-height: 1.3;
+    letter-spacing: 2px;
+    background: linear-gradient(100deg, #a9d4ff 0%, #8b7bff 40%, #c88bff 70%, #7ee0ff 100%);
+    background-size: 220% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: fadeUp 0.9s ease 0.05s both, shine 7s linear infinite;
+  }
+
+  @keyframes shine {
+    0%   { background-position: 0% center; }
+    100% { background-position: 220% center; }
+  }
+
+  .subtitle {
+    margin: 16px 0 0;
+    font-size: clamp(12.5px, 2.2vw, 16px);
+    color: var(--ink-dim);
+    letter-spacing: 1.5px;
+    line-height: 1.7;
+    animation: fadeUp 1s ease 0.12s both;
+  }
+
+  .divider {
+    width: 140px;
+    height: 2px;
+    margin: 30px auto 38px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, transparent, var(--c1), var(--c3), transparent);
+    animation: fadeUp 1s ease 0.18s both;
+  }
+
+  /* ===== 卡片区 ===== */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+    max-width: 720px;
+    margin: 0 auto;
+    animation: fadeUp 1.1s ease 0.24s both;
+  }
+
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    padding: 34px 24px 30px;
+    border-radius: 22px;
+    background: linear-gradient(155deg, rgba(70, 62, 170, 0.34), rgba(28, 22, 66, 0.62));
+    border: 1px solid var(--line);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    overflow: hidden;
+    isolation: isolate;
+    box-shadow: 0 12px 34px rgba(8, 4, 30, 0.6);
+    transition: transform 0.38s cubic-bezier(0.2, 0.9, 0.3, 1.25),
+                box-shadow 0.38s ease,
+                border-color 0.38s ease;
+  }
+
+  /* 悬停渐变描边 */
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    z-index: -1;
+    border-radius: 24px;
+    background: linear-gradient(135deg, var(--c1), var(--c2), var(--c3), var(--c1));
+    background-size: 300% 300%;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    animation: borderFlow 6s linear infinite;
+  }
+
+  @keyframes borderFlow {
+    0%   { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
+  }
+
+  .card::after {
+    content: "";
+    position: absolute;
+    top: -60%;
+    left: -60%;
+    width: 220%;
+    height: 220%;
+    z-index: -1;
+    background: radial-gradient(circle, rgba(140, 125, 255, 0.30), transparent 55%);
+    opacity: 0;
+    transition: opacity 0.45s ease;
+    pointer-events: none;
+  }
+
+  .card:hover,
+  .card:focus-visible {
+    transform: translateY(-10px) scale(1.03);
+    border-color: rgba(170, 160, 255, 0.85);
+    box-shadow: 0 22px 52px rgba(92, 72, 255, 0.5);
+    outline: none;
+  }
+
+  .card:hover::before,
+  .card:focus-visible::before,
+  .card:hover::after,
+  .card:focus-visible::after {
+    opacity: 1;
+  }
+
+  .card:active {
+    transform: translateY(-3px) scale(0.995);
+  }
+
+  /* ===== SVG 图标 ===== */
+  .icon {
+    width: 74px;
+    height: 74px;
+    margin-bottom: 20px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(140deg, rgba(91, 107, 255, 0.5), rgba(168, 85, 247, 0.4));
+    border: 1px solid rgba(160, 150, 255, 0.45);
+    box-shadow: 0 10px 24px rgba(90, 70, 240, 0.4),
+                0 0 20px rgba(140, 120, 255, 0.3) inset;
+    transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.35);
+    flex: none;
+  }
+
+  .icon svg {
+    width: 44px;
+    height: 44px;
+    display: block;
+  }
+
+  .card:hover .icon,
+  .card:focus-visible .icon {
+    transform: rotate(-8deg) scale(1.1);
+  }
+
+  .card h2 {
+    margin: 0 0 10px;
+    font-size: 21px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    line-height: 1.4;
+    background: linear-gradient(95deg, #cfd8ff, #b79bff, #8fe3ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .card p {
+    margin: 0;
+    font-size: 13.5px;
+    line-height: 1.75;
+    color: var(--ink-dim);
+    letter-spacing: 0.5px;
+  }
+
+  .play-tag {
+    margin-top: 22px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 20px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    border-radius: 999px;
+    color: #dfe4ff;
+    background: rgba(110, 95, 240, 0.20);
+    border: 1px solid rgba(150, 140, 255, 0.42);
+    transition: background 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease;
+  }
+
+  .play-tag .arrow {
+    transition: transform 0.35s ease;
+  }
+
+  .card:hover .play-tag,
+  .card:focus-visible .play-tag {
+    background: linear-gradient(95deg, rgba(91, 107, 255, 0.75), rgba(168, 85, 247, 0.75));
+    box-shadow: 0 0 22px rgba(130, 110, 255, 0.6);
+    transform: translateY(-2px);
+  }
+
+  .card:hover .play-tag .arrow,
+  .card:focus-visible .play-tag .arrow {
+    transform: translateX(5px);
+  }
+
+  /* ===== 页脚 ===== */
+  footer {
+    position: relative;
+    z-index: 2;
+    margin-top: 48px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: #6f6a99;
+    text-align: center;
+    animation: fadeUp 1.2s ease 0.35s both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.001s !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001s !important;
+    }
+  }
+
+  @media (max-width: 420px) {
+    body { padding: 36px 16px 32px; }
+    .card { padding: 28px 18px 26px; border-radius: 18px; }
+    .icon { width: 64px; height: 64px; border-radius: 17px; }
+    .icon svg { width: 38px; height: 38px; }
+    .card h2 { font-size: 19px; }
+    .cards { gap: 18px; }
+    .divider { margin: 24px auto 30px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+<div class="particles" id="particles" aria-hidden="true"></div>
+
+<main class="wrapper">
+  <div class="badge">ZHENG YUHAN</div>
+  <h1>郑煜涵的游戏世界</h1>
+  <p class="subtitle">专属游戏选择导航页 · 挑一个开始吧</p>
+  <div class="divider"></div>
+
+  <div class="cards">
+
+    <!-- 2048 小游戏 -->
+    <a class="card" href="2048.html">
+      <div class="icon" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="sqA" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#8b9bff"/>
+              <stop offset="1" stop-color="#4f46e5"/>
+            </linearGradient>
+            <linearGradient id="sqB" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#c084fc"/>
+              <stop offset="1" stop-color="#7c3aed"/>
+            </linearGradient>
+          </defs>
+          <rect x="3" y="3" width="19" height="19" rx="5.5" fill="url(#sqA)"/>
+          <rect x="26" y="3" width="19" height="19" rx="5.5" fill="url(#sqB)"/>
+          <rect x="3" y="26" width="19" height="19" rx="5.5" fill="url(#sqB)"/>
+          <rect x="26" y="26" width="19" height="19" rx="5.5" fill="url(#sqA)"/>
+        </svg>
+      </div>
+      <h2>2048小游戏</h2>
+      <p>滑动合并相同的数字<br>挑战合成 2048 的极限</p>
+      <span class="play-tag">立即游玩 <span class="arrow">→</span></span>
+    </a>
+
+    <!-- 果冻跳跃 -->
+    <a class="card" href="果冻跳跃.html">
+      <div class="icon" aria-hidden="true">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="jellyBody" x1="0.2" y1="0" x2="0.8" y2="1">
+              <stop offset="0" stop-color="#a5b4fc"/>
+              <stop offset="0.5" stop-color="#8b5cf6"/>
+              <stop offset="1" stop-color="#6366f1"/>
+            </linearGradient>
+            <linearGradient id="jellyArrow" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0" stop-color="#67e8f9"/>
+              <stop offset="1" stop-color="#a78bfa"/>
+            </linearGradient>
+          </defs>
+          <!-- 向上跳跃箭头 -->
+          <path d="M24 12V4.5" stroke="url(#jellyArrow)" stroke-width="3" stroke-linecap="round"/>
+          <path d="M18.6 9.2 24 3.6l5.4 5.6" stroke="url(#jellyArrow)" stroke-width="3"
+                stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- 果冻主体 -->
+          <path d="M11 32.5c0-9.4 5.8-15.8 13-15.8s13 6.4 13 15.8c0 4-3 6.5-7 6.5H18c-4 0-7-2.5-7-6.5Z"
+                fill="url(#jellyBody)" fill-opacity="0.94"/>
+          <!-- 高光 -->
+          <ellipse cx="18.6" cy="25.8" rx="3.6" ry="2.4" fill="#ffffff" fill-opacity="0.42"
+                   transform="rotate(-18 18.6 25.8)"/>
+          <!-- 眼睛 -->
+          <circle cx="20.6" cy="31.8" r="1.7" fill="#1b1038" fill-opacity="0.78"/>
+          <circle cx="28.4" cy="31.8" r="1.7" fill="#1b1038" fill-opacity="0.78"/>
+        </svg>
+      </div>
+      <h2>果冻跳跃</h2>
+      <p>Q 弹果冻向上跳跃<br>看看你能跳多高</p>
+      <span class="play-tag">立即游玩 <span class="arrow">→</span></span>
+    </a>
+
+  </div>
+
+  <footer>© 郑煜涵 · 专属游戏导航</footer>
+</main>
+
+<script>
+  (function () {
+    var box = document.getElementById('particles');
+    if (!box) return;
+    var count = 32;
+    for (var i = 0; i < count; i++) {
+      var p = document.createElement('span');
+      p.className = 'particle';
+      var size = Math.random() * 4 + 2;
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.left = Math.random() * 100 + '%';
+      p.style.bottom = '-10vh';
+      p.style.animationDuration = (Math.random() * 16 + 12) + 's';
+      p.style.animationDelay = (Math.random() * 18) + 's';
+      box.appendChild(p);
+    }
+  })();
+</script>
+
+</body>
+</html>
