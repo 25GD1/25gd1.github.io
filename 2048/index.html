@@ -85,20 +85,36 @@
   /* ---------- 工具栏 ---------- */
   .toolbar{
     display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 12px; gap: 12px;
+    margin-bottom: 12px; gap: 10px;
   }
-  .hint{ margin: 0; font-size: 12px; color: #a3add4; letter-spacing: .2px; }
+  .hint{ margin: 0; font-size: 12px; color: #a3add4; letter-spacing: .2px; min-width: 0; }
+
+  .tool-actions{ display: flex; gap: 8px; flex-shrink: 0; }
 
   button{
     font: inherit; border: none; cursor: pointer;
-    border-radius: 12px; padding: 9px 18px;
+    border-radius: 12px; padding: 9px 16px;
     font-size: 13.5px; font-weight: 600; color: #fff;
     background: linear-gradient(135deg, #8fa2ff, #ab8cff);
     box-shadow: 0 5px 14px -2px rgba(140,150,255,.5), inset 0 1px 0 rgba(255,255,255,.45);
-    transition: transform .13s cubic-bezier(.3,1.5,.5,1), box-shadow .13s ease;
+    transition: transform .13s cubic-bezier(.3,1.5,.5,1), box-shadow .13s ease,
+                opacity .22s ease, background .22s ease;
+    white-space: nowrap;
   }
   button:hover{ transform: translateY(-1px); box-shadow: 0 8px 18px -2px rgba(140,150,255,.55), inset 0 1px 0 rgba(255,255,255,.45); }
   button:active{ transform: scale(.95); }
+
+  /* 次要按钮（撤回） */
+  button.btn-ghost{
+    color: #7b88c0;
+    background: rgba(255,255,255,.82);
+    border: 1px solid rgba(255,255,255,.95);
+    box-shadow: 0 3px 10px rgba(130,148,220,.16), inset 0 1px 0 #fff;
+  }
+  button.btn-ghost:hover{
+    box-shadow: 0 6px 14px -2px rgba(130,148,220,.3), inset 0 1px 0 #fff;
+  }
+  button.btn-ghost.is-dim{ opacity: .42; }
 
   /* ---------- 棋盘 ---------- */
   .board{
@@ -221,6 +237,7 @@
 
   .overlay-card{
     text-align: center;
+    padding: 0 16px;
     transform: translateY(10px);
     transition: transform .32s cubic-bezier(.3,1.3,.5,1);
   }
@@ -231,6 +248,40 @@
     letter-spacing: -.6px; color: #5b6796;
   }
   .overlay-card p{ margin: 0 0 18px; font-size: 13px; color: #9aa5cf; }
+
+  .overlay-actions{
+    display: flex; gap: 10px; justify-content: center; align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* ---------- 轻提示 ---------- */
+  .toast{
+    position: fixed;
+    left: 50%;
+    bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    transform: translate(-50%, 14px) scale(.96);
+    padding: 9px 20px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .2px;
+    color: #7b88c0;
+    background: rgba(255,255,255,.94);
+    border: 1px solid rgba(255,255,255,.98);
+    box-shadow: 0 12px 30px -10px rgba(120,140,220,.6);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 50;
+    transition: opacity .22s ease, transform .32s cubic-bezier(.3,1.4,.5,1);
+  }
+  .toast.show{ opacity: 1; transform: translate(-50%, 0) scale(1); }
+
+  @media (max-width: 380px){
+    .hint{ font-size: 11px; }
+    button{ padding: 8px 13px; font-size: 13px; }
+  }
 </style>
 </head>
 <body>
@@ -245,8 +296,11 @@
   </header>
 
   <div class="toolbar">
-    <p class="hint">方向键 / 滑动 合并数字</p>
-    <button id="newGame" type="button">新游戏</button>
+    <p class="hint">方向键 / 滑动合并 </p>
+    <div class="tool-actions">
+      <button id="undoBtn" class="btn-ghost" type="button">↺ 撤回</button>
+      <button id="newGame" type="button">新游戏</button>
+    </div>
   </div>
 
   <div class="board" id="board">
@@ -257,11 +311,16 @@
       <div class="overlay-card">
         <h2 id="overlayTitle">游戏结束</h2>
         <p id="overlaySub">没有可以移动的方块了</p>
-        <button id="overlayBtn" type="button">再来一局</button>
+        <div class="overlay-actions">
+          <button id="overlayUndo" class="btn-ghost" type="button">↺ 撤回一步</button>
+          <button id="overlayBtn" type="button">再来一局</button>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+<div class="toast" id="toast">不能再撤回啦</div>
 
 <script>
 (function () {
@@ -285,7 +344,10 @@
   const overlayTitle = document.getElementById('overlayTitle');
   const overlaySub   = document.getElementById('overlaySub');
   const overlayBtn   = document.getElementById('overlayBtn');
+  const overlayUndo  = document.getElementById('overlayUndo');
   const newGameBtn   = document.getElementById('newGame');
+  const undoBtn      = document.getElementById('undoBtn');
+  const toastEl      = document.getElementById('toast');
 
   let cell = 80, pad = 10, gap = 10;
   let tiles = [];
@@ -295,7 +357,14 @@
   let gameOver = false;
   let wonShown = false;
   let overlayAction = 'restart';
+  let overlayType = null;            // 'win' | 'over' | null
   let uid = 0;
+
+  // 撤回相关状态
+  let lastUndo = null;               // 上一手之前的快照
+  let undoUsed = false;              // 本次撤回机会是否已用掉
+
+  let toastTimer = null;
 
   try { best = Number(localStorage.getItem('jelly2048.best')) || 0; } catch (e) { best = 0; }
 
@@ -332,6 +401,16 @@
     if (e.animationName === 'tile-pop')    e.target.classList.remove('pop');
     if (e.animationName === 'tile-appear') e.target.classList.remove('appear');
   });
+
+  /* ---------- 轻提示 ---------- */
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      toastEl.classList.remove('show');
+    }, 1300);
+  }
 
   /* ---------- 方块 ---------- */
   function paintTile(tile) {
@@ -404,6 +483,58 @@
     bestEl.textContent = best;
   }
 
+  /* ---------- 快照 / 还原 ---------- */
+  function snapshot() {
+    const g = [];
+    for (let r = 0; r < SIZE; r++) g.push(new Array(SIZE).fill(0));
+    for (let i = 0; i < tiles.length; i++) {
+      g[tiles[i].r][tiles[i].c] = tiles[i].value;
+    }
+    return { grid: g, score: score, wonShown: wonShown };
+  }
+
+  function restore(state) {
+    for (let i = 0; i < tiles.length; i++) tiles[i].el.remove();
+    tiles = [];
+
+    score = state.score;
+    wonShown = state.wonShown;
+    gameOver = false;
+    busy = false;
+
+    hideOverlay();
+
+    for (let r = 0; r < SIZE; r++) {
+      for (let c = 0; c < SIZE; c++) {
+        const v = state.grid[r][c];
+        if (v) addTile(r, c, v);
+      }
+    }
+    renderScore(false);
+  }
+
+  /* ---------- 撤回 ---------- */
+  function canUndo() {
+    return !!lastUndo && !undoUsed;
+  }
+
+  function updateUndoUI() {
+    const ok = canUndo();
+    undoBtn.classList.toggle('is-dim', !ok);
+    overlayUndo.style.display = (ok && overlayType === 'over') ? '' : 'none';
+  }
+
+  function undo() {
+    if (busy) return;
+    if (!canUndo()) {
+      showToast('不能再撤回啦');
+      return;
+    }
+    restore(lastUndo);
+    undoUsed = true;               // 本次机会用掉，直到下一次移动
+    updateUndoUI();
+  }
+
   /* ---------- 是否可以继续移动 ---------- */
   function canMove() {
     if (tiles.length < SIZE * SIZE) return true;
@@ -423,6 +554,7 @@
 
   /* ---------- 遮罩 ---------- */
   function showOverlay(type) {
+    overlayType = type;
     if (type === 'win') {
       overlayTitle.textContent = '🎉 你赢了！';
       overlaySub.textContent = '成功合成 2048';
@@ -435,10 +567,13 @@
       overlayAction = 'restart';
     }
     overlayEl.classList.add('show');
+    updateUndoUI();
   }
 
   function hideOverlay() {
     overlayEl.classList.remove('show');
+    overlayType = null;
+    overlayUndo.style.display = 'none';
   }
 
   overlayBtn.addEventListener('click', function () {
@@ -446,10 +581,16 @@
     else reset();
   });
 
+  overlayUndo.addEventListener('click', undo);
+  undoBtn.addEventListener('click', undo);
+
   /* ---------- 核心：移动 ---------- */
   function move(dir) {
     if (busy || gameOver) return;
     if (overlayEl.classList.contains('show')) return;
+
+    // 移动前的快照（撤回时回到这里）
+    const pre = snapshot();
 
     const dr = DIRS[dir].dr;
     const dc = DIRS[dir].dc;
@@ -548,6 +689,11 @@
 
       renderScore(merges.length > 0);
       spawnTile();
+
+      // 棋盘已发生变动 → 又可以撤回一次
+      lastUndo = pre;
+      undoUsed = false;
+
       busy = false;
 
       if (got2048 && !wonShown) {
@@ -559,6 +705,7 @@
         gameOver = true;
         showOverlay('over');
       }
+      updateUndoUI();
     }, MOVE_MS);
   }
 
@@ -570,10 +717,14 @@
     busy = false;
     gameOver = false;
     wonShown = false;
+    lastUndo = null;
+    undoUsed = false;
+
     hideOverlay();
     renderScore(false);
     spawnTile();
     spawnTile();
+    updateUndoUI();
   }
 
   /* ---------- 输入 ---------- */
@@ -585,6 +736,23 @@
 
   window.addEventListener('keydown', function (e) {
     if (e.repeat) return;
+
+    //
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'z' || e.key === 'Z') {
+        e.preventDefault();
+        undo();
+      }
+      return;
+    }
+
+    // Z / Backspace 撤回
+    if (e.key === 'z' || e.key === 'Z' || e.key === 'Backspace') {
+      e.preventDefault();
+      undo();
+      return;
+    }
+
     const dir = KEYMAP[e.key];
     if (dir) {
       e.preventDefault();
