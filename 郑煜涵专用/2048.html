@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>2048 · 巴巴博一</title>
+<style>
+  :root{
+    --app-w: min(92vw, 460px, 62vh);
+    --cell: 80px;
+    --pad: 10px;
+    --gap: 10px;
+  }
+
+  *{ box-sizing: border-box; }
+  html, body{ height: 100%; }
+
+  body{
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: radial-gradient(120% 100% at 15% 0%, #eef3ff 0%, #f5f2ff 45%, #e9f0ff 100%);
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; min-height: 100dvh;
+    color: #5b6589;
+    overflow: hidden;
+    -webkit-user-select: none; user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* 背景柔光 */
+  body::before,
+  body::after{
+    content: ""; position: fixed; border-radius: 50%;
+    pointer-events: none; z-index: 0;
+  }
+  body::before{
+    width: 70vmax; height: 70vmax; top: -34vmax; left: -26vmax;
+    background: radial-gradient(circle at 50% 50%, rgba(150,175,255,.28), transparent 65%);
+  }
+  body::after{
+    width: 60vmax; height: 60vmax; bottom: -30vmax; right: -22vmax;
+    background: radial-gradient(circle at 50% 50%, rgba(180,150,255,.26), transparent 65%);
+  }
+
+  .app{ width: var(--app-w); position: relative; z-index: 1; }
+
+  /* ---------- 顶部 ---------- */
+  header{
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  h1{
+    margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -1.2px;
+    background: linear-gradient(135deg, #7f8dff 0%, #a87dff 100%);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent; -webkit-text-fill-color: transparent;
+  }
+
+  .scores{ display: flex; gap: 8px; }
+  .score-box{
+    min-width: 74px;
+    padding: 6px 12px 7px;
+    border-radius: 13px;
+    text-align: center;
+    background: rgba(255,255,255,.72);
+    border: 1px solid rgba(255,255,255,.95);
+    box-shadow: 0 3px 10px rgba(130,148,220,.14), inset 0 1px 0 #fff;
+  }
+  .score-box span{
+    display: block; font-size: 10.5px; letter-spacing: .6px;
+    color: #9aa5cf; margin-bottom: 1px;
+  }
+  .score-val{
+    display: block; font-size: 17px; font-weight: 700; color: #5b6796;
+    line-height: 1.15; font-variant-numeric: tabular-nums;
+  }
+  .score-val.bump{ animation: score-bump .3s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes score-bump{
+    0%{ transform: scale(1); }
+    45%{ transform: scale(1.22); color: #8b7dff; }
+    100%{ transform: scale(1); }
+  }
+
+  /* ---------- 工具栏 ---------- */
+  .toolbar{
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px; gap: 10px;
+  }
+  .hint{ margin: 0; font-size: 12px; color: #a3add4; letter-spacing: .2px; min-width: 0; }
+
+  .tool-actions{ display: flex; gap: 8px; flex-shrink: 0; }
+
+  button{
+    font: inherit; border: none; cursor: pointer;
+    border-radius: 12px; padding: 9px 16px;
+    font-size: 13.5px; font-weight: 600; color: #fff;
+    background: linear-gradient(135deg, #8fa2ff, #ab8cff);
+    box-shadow: 0 5px 14px -2px rgba(140,150,255,.5), inset 0 1px 0 rgba(255,255,255,.45);
+    transition: transform .13s cubic-bezier(.3,1.5,.5,1), box-shadow .13s ease,
+                opacity .22s ease, background .22s ease;
+    white-space: nowrap;
+  }
+  button:hover{ transform: translateY(-1px); box-shadow: 0 8px 18px -2px rgba(140,150,255,.55), inset 0 1px 0 rgba(255,255,255,.45); }
+  button:active{ transform: scale(.95); }
+
+  /* 次要按钮（撤回） */
+  button.btn-ghost{
+    color: #7b88c0;
+    background: rgba(255,255,255,.82);
+    border: 1px solid rgba(255,255,255,.95);
+    box-shadow: 0 3px 10px rgba(130,148,220,.16), inset 0 1px 0 #fff;
+  }
+  button.btn-ghost:hover{
+    box-shadow: 0 6px 14px -2px rgba(130,148,220,.3), inset 0 1px 0 #fff;
+  }
+  button.btn-ghost.is-dim{ opacity: .42; }
+
+  /* ---------- 棋盘 ---------- */
+  .board{
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(255,255,255,.75), rgba(236,241,255,.62));
+    border: 1px solid rgba(255,255,255,.95);
+    box-shadow:
+      0 20px 50px -20px rgba(110,130,220,.5),
+      0 4px 14px -4px rgba(120,140,220,.18),
+      inset 0 1px 0 rgba(255,255,255,.95);
+    touch-action: none;
+    overflow: hidden;
+  }
+  .board.bump{ animation: board-bump .22s ease; }
+  @keyframes board-bump{
+    0%,100%{ transform: translateX(0); }
+    25%{ transform: translateX(-4px); }
+    75%{ transform: translateX(4px); }
+  }
+
+  .grid-bg{
+    position: absolute; inset: 0;
+    padding: var(--pad);
+    display: grid;
+    grid-template-columns: repeat(4, var(--cell));
+    grid-template-rows: repeat(4, var(--cell));
+    gap: var(--gap);
+  }
+  .cell{
+    border-radius: calc(var(--cell) * .16);
+    background: rgba(156,172,232,.11);
+    box-shadow: inset 0 1px 2px rgba(140,158,220,.10);
+  }
+
+  /* ---------- 方块 ---------- */
+  .tiles{ position: absolute; inset: 0; }
+
+  .tile{
+    position: absolute; top: 0; left: 0;
+    width: var(--cell); height: var(--cell);
+    transition: transform .13s cubic-bezier(.25,.85,.35,1);
+    will-change: transform;
+  }
+
+  .tile-inner{
+    width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: calc(var(--cell) * .16);
+    font-weight: 700;
+    font-size: calc(var(--cell) * .44);
+    line-height: 1;
+    letter-spacing: -.5px;
+    font-variant-numeric: tabular-nums;
+    color: #93a0d4;
+    background: #eef3ff;
+    box-shadow:
+      inset 0 2px 0 rgba(255,255,255,.78),
+      inset 0 -3px 8px rgba(120,140,210,.10),
+      0 4px 12px -2px rgba(120,140,215,.22);
+    will-change: transform;
+  }
+
+  /* 数字配色：淡蓝 → 紫 果冻渐变 */
+  .tile-inner.v2     { background: #eef3ff; color: #93a0d4; }
+  .tile-inner.v4     { background: #e2e9ff; color: #8291ce; }
+  .tile-inner.v8     { background: #d1dbff; color: #7283c8; }
+  .tile-inner.v16    { background: #bdccff; color: #ffffff; }
+  .tile-inner.v32    { background: #a9bcff; color: #ffffff; }
+  .tile-inner.v64    { background: #96acff; color: #ffffff; }
+  .tile-inner.v128   { background: #a394ff; color: #ffffff; }
+  .tile-inner.v256   { background: #a482ff; color: #ffffff; }
+  .tile-inner.v512   { background: #a370ff; color: #ffffff; }
+  .tile-inner.v1024  { background: #a25dff; color: #ffffff; }
+  .tile-inner.v2048  {
+    background: linear-gradient(135deg, #a44aff, #7f8dff);
+    color: #fff;
+    box-shadow:
+      inset 0 2px 0 rgba(255,255,255,.38),
+      0 0 26px rgba(150,110,255,.55),
+      0 4px 14px -2px rgba(120,100,255,.45);
+  }
+  .tile-inner.vsuper {
+    background: linear-gradient(135deg, #7f8dff, #a44aff);
+    color: #fff;
+    box-shadow: inset 0 2px 0 rgba(255,255,255,.35), 0 0 26px rgba(130,120,255,.55);
+  }
+
+  .tile-inner[data-len="3"]{ font-size: calc(var(--cell) * .36); }
+  .tile-inner[data-len="4"]{ font-size: calc(var(--cell) * .29); }
+  .tile-inner[data-len="5"]{ font-size: calc(var(--cell) * .24); }
+  .tile-inner[data-len="6"]{ font-size: calc(var(--cell) * .20); }
+
+  @keyframes tile-appear{
+    from{ transform: scale(.3); opacity: 0; }
+    to  { transform: scale(1);  opacity: 1; }
+  }
+  .tile-inner.appear{ animation: tile-appear .19s cubic-bezier(.3,1.5,.5,1) both; }
+
+  @keyframes tile-pop{
+    0%  { transform: scale(1); }
+    45% { transform: scale(1.18); }
+    100%{ transform: scale(1); }
+  }
+  .tile-inner.pop{ animation: tile-pop .22s cubic-bezier(.3,1.4,.5,1); }
+
+  /* ---------- 遮罩层 ---------- */
+  .overlay{
+    position: absolute; inset: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(246,248,255,.82);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    opacity: 0; pointer-events: none;
+    transition: opacity .28s ease;
+  }
+  .overlay.show{ opacity: 1; pointer-events: auto; }
+
+  .overlay-card{
+    text-align: center;
+    padding: 0 16px;
+    transform: translateY(10px);
+    transition: transform .32s cubic-bezier(.3,1.3,.5,1);
+  }
+  .overlay.show .overlay-card{ transform: translateY(0); }
+
+  .overlay-card h2{
+    margin: 0 0 6px; font-size: 26px; font-weight: 800;
+    letter-spacing: -.6px; color: #5b6796;
+  }
+  .overlay-card p{ margin: 0 0 18px; font-size: 13px; color: #9aa5cf; }
+
+  .overlay-actions{
+    display: flex; gap: 10px; justify-content: center; align-items: center;
+    flex-wrap: wrap;
+  }
+
+  /* ---------- 轻提示 ---------- */
+  .toast{
+    position: fixed;
+    left: 50%;
+    bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    transform: translate(-50%, 14px) scale(.96);
+    padding: 9px 20px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: .2px;
+    color: #7b88c0;
+    background: rgba(255,255,255,.94);
+    border: 1px solid rgba(255,255,255,.98);
+    box-shadow: 0 12px 30px -10px rgba(120,140,220,.6);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 50;
+    transition: opacity .22s ease, transform .32s cubic-bezier(.3,1.4,.5,1);
+  }
+  .toast.show{ opacity: 1; transform: translate(-50%, 0) scale(1); }
+
+  @media (max-width: 380px){
+    .hint{ font-size: 11px; }
+    button{ padding: 8px 13px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <h1>2048</h1>
+    <div class="scores">
+      <div class="score-box"><span>分数</span><strong class="score-val" id="score">0</strong></div>
+      <div class="score-box"><span>最高</span><strong class="score-val" id="best">0</strong></div>
+    </div>
+  </header>
+
+  <div class="toolbar">
+    <p class="hint">方向键 / 滑动合并 </p>
+    <div class="tool-actions">
+      <button id="undoBtn" class="btn-ghost" type="button">↺ 撤回</button>
+      <button id="newGame" type="button">新游戏</button>
+    </div>
+  </div>
+
+  <div class="board" id="board">
+    <div class="grid-bg" id="gridBg"></div>
+    <div class="tiles" id="tiles"></div>
+
+    <div class="overlay" id="overlay">
+      <div class="overlay-card">
+        <h2 id="overlayTitle">游戏结束</h2>
+        <p id="overlaySub">没有可以移动的方块了</p>
+        <div class="overlay-actions">
+          <button id="overlayUndo" class="btn-ghost" type="button">↺ 撤回一步</button>
+          <button id="overlayBtn" type="button">再来一局</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">不能再撤回啦</div>
+
+<script>
+(function () {
+  'use strict';
+
+  const SIZE = 4;
+  const MOVE_MS = 130;               // 与 CSS transition 保持一致
+  const DIRS = {
+    left:  { dr: 0,  dc: -1 },
+    right: { dr: 0,  dc: 1  },
+    up:    { dr: -1, dc: 0  },
+    down:  { dr: 1,  dc: 0  }
+  };
+
+  const boardEl      = document.getElementById('board');
+  const tilesEl      = document.getElementById('tiles');
+  const gridBgEl     = document.getElementById('gridBg');
+  const scoreEl      = document.getElementById('score');
+  const bestEl       = document.getElementById('best');
+  const overlayEl    = document.getElementById('overlay');
+  const overlayTitle = document.getElementById('overlayTitle');
+  const overlaySub   = document.getElementById('overlaySub');
+  const overlayBtn   = document.getElementById('overlayBtn');
+  const overlayUndo  = document.getElementById('overlayUndo');
+  const newGameBtn   = document.getElementById('newGame');
+  const undoBtn      = document.getElementById('undoBtn');
+  const toastEl      = document.getElementById('toast');
+
+  let cell = 80, pad = 10, gap = 10;
+  let tiles = [];
+  let score = 0;
+  let best = 0;
+  let busy = false;
+  let gameOver = false;
+  let wonShown = false;
+  let overlayAction = 'restart';
+  let overlayType = null;            // 'win' | 'over' | null
+  let uid = 0;
+
+  // 撤回相关状态
+  let lastUndo = null;               // 上一手之前的快照
+  let undoUsed = false;              // 本次撤回机会是否已用掉
+
+  let toastTimer = null;
+
+  try { best = Number(localStorage.getItem('jelly2048.best')) || 0; } catch (e) { best = 0; }
+
+  /* ---------- 背景格子 ---------- */
+  for (let i = 0; i < SIZE * SIZE; i++) {
+    const d = document.createElement('div');
+    d.className = 'cell';
+    gridBgEl.appendChild(d);
+  }
+
+  /* ---------- 尺寸测量 ---------- */
+  function measure() {
+    const w = boardEl.clientWidth || 320;
+    pad  = w * 0.028;
+    gap  = w * 0.028;
+    cell = (w - pad * 2 - gap * (SIZE - 1)) / SIZE;
+    boardEl.style.setProperty('--pad',  pad + 'px');
+    boardEl.style.setProperty('--gap',  gap + 'px');
+    boardEl.style.setProperty('--cell', cell + 'px');
+  }
+
+  function xy(r, c) {
+    return [pad + c * (cell + gap), pad + r * (cell + gap)];
+  }
+
+  /* ---------- 动画重放工具 ---------- */
+  function replayAnim(el, cls) {
+    el.classList.remove(cls);
+    void el.offsetWidth;
+    el.classList.add(cls);
+  }
+
+  tilesEl.addEventListener('animationend', function (e) {
+    if (e.animationName === 'tile-pop')    e.target.classList.remove('pop');
+    if (e.animationName === 'tile-appear') e.target.classList.remove('appear');
+  });
+
+  /* ---------- 轻提示 ---------- */
+  function showToast(msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () {
+      toastEl.classList.remove('show');
+    }, 1300);
+  }
+
+  /* ---------- 方块 ---------- */
+  function paintTile(tile) {
+    const v = tile.value;
+    tile.inner.className = 'tile-inner ' + (v <= 2048 ? 'v' + v : 'vsuper');
+    tile.inner.textContent = v;
+    tile.inner.dataset.len = String(v).length;
+  }
+
+  function placeTile(tile, animate) {
+    const p = xy(tile.r, tile.c);
+    const t = 'translate3d(' + p[0] + 'px,' + p[1] + 'px,0)';
+    const el = tile.el;
+    if (animate === false) {
+      el.style.transition = 'none';
+      el.style.transform = t;
+      void el.offsetWidth;
+      el.style.transition = '';
+    } else {
+      el.style.transform = t;
+    }
+  }
+
+  function addTile(r, c, value) {
+    const tile = { id: ++uid, r: r, c: c, value: value, el: null, inner: null, willMerge: false };
+
+    const el = document.createElement('div');
+    el.className = 'tile';
+    const inner = document.createElement('div');
+    el.appendChild(inner);
+    tilesEl.appendChild(el);
+
+    tile.el = el;
+    tile.inner = inner;
+
+    paintTile(tile);
+    placeTile(tile, false);
+    tiles.push(tile);
+    return tile;
+  }
+
+  function spawnTile() {
+    const occupied = new Set();
+    for (let i = 0; i < tiles.length; i++) occupied.add(tiles[i].r * SIZE + tiles[i].c);
+
+    const empties = [];
+    for (let r = 0; r < SIZE; r++) {
+      for (let c = 0; c < SIZE; c++) {
+        if (!occupied.has(r * SIZE + c)) empties.push([r, c]);
+      }
+    }
+    if (!empties.length) return null;
+
+    const pick = empties[(Math.random() * empties.length) | 0];
+    const value = Math.random() < 0.9 ? 2 : 4;
+    const tile = addTile(pick[0], pick[1], value);
+    replayAnim(tile.inner, 'appear');
+    return tile;
+  }
+
+  /* ---------- 计分 ---------- */
+  function renderScore(bump) {
+    scoreEl.textContent = score;
+    if (bump) replayAnim(scoreEl, 'bump');
+
+    if (score > best) {
+      best = score;
+      try { localStorage.setItem('jelly2048.best', String(best)); } catch (e) {}
+    }
+    bestEl.textContent = best;
+  }
+
+  /* ---------- 快照 / 还原 ---------- */
+  function snapshot() {
+    const g = [];
+    for (let r = 0; r < SIZE; r++) g.push(new Array(SIZE).fill(0));
+    for (let i = 0; i < tiles.length; i++) {
+      g[tiles[i].r][tiles[i].c] = tiles[i].value;
+    }
+    return { grid: g, score: score, wonShown: wonShown };
+  }
+
+  function restore(state) {
+    for (let i = 0; i < tiles.length; i++) tiles[i].el.remove();
+    tiles = [];
+
+    score = state.score;
+    wonShown = state.wonShown;
+    gameOver = false;
+    busy = false;
+
+    hideOverlay();
+
+    for (let r = 0; r < SIZE; r++) {
+      for (let c = 0; c < SIZE; c++) {
+        const v = state.grid[r][c];
+        if (v) addTile(r, c, v);
+      }
+    }
+    renderScore(false);
+  }
+
+  /* ---------- 撤回 ---------- */
+  function canUndo() {
+    return !!lastUndo && !undoUsed;
+  }
+
+  function updateUndoUI() {
+    const ok = canUndo();
+    undoBtn.classList.toggle('is-dim', !ok);
+    overlayUndo.style.display = (ok && overlayType === 'over') ? '' : 'none';
+  }
+
+  function undo() {
+    if (busy) return;
+    if (!canUndo()) {
+      showToast('不能再撤回啦');
+      return;
+    }
+    restore(lastUndo);
+    undoUsed = true;               // 本次机会用掉，直到下一次移动
+    updateUndoUI();
+  }
+
+  /* ---------- 是否可以继续移动 ---------- */
+  function canMove() {
+    if (tiles.length < SIZE * SIZE) return true;
+    const g = [];
+    for (let r = 0; r < SIZE; r++) g.push(new Array(SIZE).fill(0));
+    for (let i = 0; i < tiles.length; i++) g[tiles[i].r][tiles[i].c] = tiles[i].value;
+
+    for (let r = 0; r < SIZE; r++) {
+      for (let c = 0; c < SIZE; c++) {
+        const v = g[r][c];
+        if (r < SIZE - 1 && g[r + 1][c] === v) return true;
+        if (c < SIZE - 1 && g[r][c + 1] === v) return true;
+      }
+    }
+    return false;
+  }
+
+  /* ---------- 遮罩 ---------- */
+  function showOverlay(type) {
+    overlayType = type;
+    if (type === 'win') {
+      overlayTitle.textContent = '🎉 你赢了！';
+      overlaySub.textContent = '成功合成 2048';
+      overlayBtn.textContent = '继续挑战';
+      overlayAction = 'continue';
+    } else {
+      overlayTitle.textContent = '游戏结束';
+      overlaySub.textContent = '没有可以移动的方块了';
+      overlayBtn.textContent = '再来一局';
+      overlayAction = 'restart';
+    }
+    overlayEl.classList.add('show');
+    updateUndoUI();
+  }
+
+  function hideOverlay() {
+    overlayEl.classList.remove('show');
+    overlayType = null;
+    overlayUndo.style.display = 'none';
+  }
+
+  overlayBtn.addEventListener('click', function () {
+    if (overlayAction === 'continue') hideOverlay();
+    else reset();
+  });
+
+  overlayUndo.addEventListener('click', undo);
+  undoBtn.addEventListener('click', undo);
+
+  /* ---------- 核心：移动 ---------- */
+  function move(dir) {
+    if (busy || gameOver) return;
+    if (overlayEl.classList.contains('show')) return;
+
+    // 移动前的快照（撤回时回到这里）
+    const pre = snapshot();
+
+    const dr = DIRS[dir].dr;
+    const dc = DIRS[dir].dc;
+
+    // 当前棋盘快照
+    const grid = [];
+    for (let r = 0; r < SIZE; r++) grid.push(new Array(SIZE).fill(null));
+    for (let i = 0; i < tiles.length; i++) {
+      const t = tiles[i];
+      grid[t.r][t.c] = t;
+      t.willMerge = false;
+    }
+
+    // 遍历顺序：从移动方向的最远端开始
+    const rows = [0, 1, 2, 3];
+    const cols = [0, 1, 2, 3];
+    if (dr === 1) rows.reverse();
+    if (dc === 1) cols.reverse();
+
+    let moved = false;
+    const merges = [];
+
+    for (let ri = 0; ri < SIZE; ri++) {
+      for (let ci = 0; ci < SIZE; ci++) {
+        const r = rows[ri];
+        const c = cols[ci];
+        const tile = grid[r][c];
+        if (!tile) continue;
+
+        // 1) 一直滑到最远空位
+        let nr = r, nc = c;
+        while (true) {
+          const tr = nr + dr, tc = nc + dc;
+          if (tr < 0 || tr >= SIZE || tc < 0 || tc >= SIZE) break;
+          if (grid[tr][tc]) break;
+          nr = tr; nc = tc;
+        }
+
+        // 2) 能否与前方方块合并
+        const tr = nr + dr, tc = nc + dc;
+        let didMerge = false;
+
+        if (tr >= 0 && tr < SIZE && tc >= 0 && tc < SIZE) {
+          const target = grid[tr][tc];
+          if (target && target !== tile && target.value === tile.value && !target.willMerge) {
+            didMerge = true;
+            grid[r][c] = null;
+            grid[tr][tc] = tile;
+            tile.r = tr; tile.c = tc;
+            target.r = tr; target.c = tc;
+            tile.willMerge = true;
+            target.willMerge = true;
+            merges.push({ survivor: tile, removed: target });
+            moved = true;
+          }
+        }
+
+        // 3) 普通位移
+        if (!didMerge && (nr !== r || nc !== c)) {
+          grid[r][c] = null;
+          grid[nr][nc] = tile;
+          tile.r = nr; tile.c = nc;
+          moved = true;
+        }
+      }
+    }
+
+    if (!moved) {
+      replayAnim(boardEl, 'bump');
+      return;
+    }
+
+    // 播放位移动画
+    busy = true;
+    for (let i = 0; i < tiles.length; i++) placeTile(tiles[i], true);
+
+    // 动画结束后结算合并
+    window.setTimeout(function () {
+      let got2048 = false;
+
+      for (let i = 0; i < merges.length; i++) {
+        const survivor = merges[i].survivor;
+        const removed  = merges[i].removed;
+
+        removed.el.remove();
+        const idx = tiles.indexOf(removed);
+        if (idx >= 0) tiles.splice(idx, 1);
+
+        survivor.value *= 2;
+        paintTile(survivor);
+        replayAnim(survivor.inner, 'pop');
+
+        score += survivor.value;
+        if (survivor.value === 2048) got2048 = true;
+      }
+
+      renderScore(merges.length > 0);
+      spawnTile();
+
+      // 棋盘已发生变动 → 又可以撤回一次
+      lastUndo = pre;
+      undoUsed = false;
+
+      busy = false;
+
+      if (got2048 && !wonShown) {
+        wonShown = true;
+        showOverlay('win');
+        return;
+      }
+      if (!canMove()) {
+        gameOver = true;
+        showOverlay('over');
+      }
+      updateUndoUI();
+    }, MOVE_MS);
+  }
+
+  /* ---------- 重置 ---------- */
+  function reset() {
+    for (let i = 0; i < tiles.length; i++) tiles[i].el.remove();
+    tiles = [];
+    score = 0;
+    busy = false;
+    gameOver = false;
+    wonShown = false;
+    lastUndo = null;
+    undoUsed = false;
+
+    hideOverlay();
+    renderScore(false);
+    spawnTile();
+    spawnTile();
+    updateUndoUI();
+  }
+
+  /* ---------- 输入 ---------- */
+  const KEYMAP = {
+    ArrowLeft: 'left',  ArrowRight: 'right', ArrowUp: 'up',   ArrowDown: 'down',
+    a: 'left', d: 'right', w: 'up', s: 'down',
+    A: 'left', D: 'right', W: 'up', S: 'down'
+  };
+
+  window.addEventListener('keydown', function (e) {
+    if (e.repeat) return;
+
+    //
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'z' || e.key === 'Z') {
+        e.preventDefault();
+        undo();
+      }
+      return;
+    }
+
+    // Z / Backspace 撤回
+    if (e.key === 'z' || e.key === 'Z' || e.key === 'Backspace') {
+      e.preventDefault();
+      undo();
+      return;
+    }
+
+    const dir = KEYMAP[e.key];
+    if (dir) {
+      e.preventDefault();
+      move(dir);
+    }
+  }, { passive: false });
+
+  // 触摸滑动
+  let touchX = 0, touchY = 0, touching = false;
+
+  boardEl.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) return;
+    touching = true;
+    touchX = e.touches[0].clientX;
+    touchY = e.touches[0].clientY;
+  }, { passive: true });
+
+  boardEl.addEventListener('touchend', function (e) {
+    if (!touching) return;
+    touching = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchX;
+    const dy = t.clientY - touchY;
+
+    if (Math.max(Math.abs(dx), Math.abs(dy)) < 24) return;
+
+    if (Math.abs(dx) > Math.abs(dy)) move(dx > 0 ? 'right' : 'left');
+    else move(dy > 0 ? 'down' : 'up');
+  }, { passive: true });
+
+  boardEl.addEventListener('touchcancel', function () { touching = false; }, { passive: true });
+
+  newGameBtn.addEventListener('click', reset);
+
+  /* ---------- 响应式 ---------- */
+  let rafId = null;
+  function relayout() {
+    measure();
+    for (let i = 0; i < tiles.length; i++) placeTile(tiles[i], false);
+  }
+
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(function () {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(relayout);
+    });
+    ro.observe(boardEl);
+  } else {
+    window.addEventListener('resize', relayout);
+  }
+
+  /* ---------- 启动 ---------- */
+  measure();
+  bestEl.textContent = best;
+  reset();
+
+})();
+</script>
+</body>
+</html>
