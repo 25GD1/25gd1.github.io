@@ -1,0 +1,1516 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>WiFi 服务升级 · 11月1日</title>
+<script>document.documentElement.classList.add('js');</script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  :root{
+    --ink:#eef0fa;
+    --muted:rgba(238,240,250,.55);
+    --blue:#7ba8dd;
+    --violet:#9b8ce0;
+    --indigo:#6878d6;
+    --cyan:#6bc0d8;
+    --warn:#e8785f;
+    --ease:cubic-bezier(.22,1,.36,1);
+  }
+
+  body{
+    font-family:"PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,-apple-system,"Segoe UI",sans-serif;
+    background:#07070e;
+    color:var(--ink);
+    min-height:100vh;
+    overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+
+  /* ───────── 背景光斑 ───────── */
+  .scene{
+    position:fixed; inset:0; z-index:0;
+    overflow:hidden; pointer-events:none;
+  }
+  .blob{
+    position:absolute;
+    border-radius:50%;
+    transform:translate3d(0,0,0);
+    backface-visibility:hidden;
+  }
+  .b1{
+    width:76vmax; height:76vmax;
+    top:-30vmax; left:-26vmax;
+    background:radial-gradient(circle at center,
+      rgba(104,120,214,.30) 0%, rgba(104,120,214,.10) 38%, transparent 68%);
+    animation:drift1 26s ease-in-out infinite;
+  }
+  .b2{
+    width:68vmax; height:68vmax;
+    top:-18vmax; right:-28vmax;
+    background:radial-gradient(circle at center,
+      rgba(107,192,216,.20) 0%, rgba(107,192,216,.06) 40%, transparent 68%);
+    animation:drift2 30s ease-in-out infinite;
+  }
+  .b3{
+    width:64vmax; height:64vmax;
+    bottom:-32vmax; left:8vmax;
+    background:radial-gradient(circle at center,
+      rgba(155,140,224,.24) 0%, rgba(155,140,224,.08) 40%, transparent 68%);
+    animation:drift3 34s ease-in-out infinite;
+  }
+
+  @keyframes drift1{ 0%,100%{transform:translate3d(0,0,0);} 40%{transform:translate3d(5vmax,4vmax,0);} 75%{transform:translate3d(-3vmax,6vmax,0);} }
+  @keyframes drift2{ 0%,100%{transform:translate3d(0,0,0);} 45%{transform:translate3d(-6vmax,5vmax,0);} 80%{transform:translate3d(-2vmax,-4vmax,0);} }
+  @keyframes drift3{ 0%,100%{transform:translate3d(0,0,0);} 50%{transform:translate3d(4vmax,-5vmax,0);} 85%{transform:translate3d(-5vmax,-2vmax,0);} }
+
+  /* ───────── 滚动进度条 ───────── */
+  .progress{
+    position:fixed; top:0; left:0; right:0;
+    height:2px; z-index:30;
+    pointer-events:none;
+  }
+  .progress i{
+    display:block;
+    height:100%; width:100%;
+    transform:scaleX(0);
+    transform-origin:0 50%;
+    background:linear-gradient(90deg,var(--indigo),var(--violet),var(--cyan));
+    opacity:.85;
+    will-change:transform;
+  }
+
+  /* ───────── 页面容器 ───────── */
+  .page{
+    position:relative; z-index:1;
+    max-width:880px;
+    margin:0 auto;
+    padding:clamp(20px,4vw,52px) clamp(14px,3vw,28px) clamp(60px,9vw,120px);
+    display:grid;
+    gap:clamp(16px,2.4vw,24px);
+  }
+
+  /* ───────── 液态玻璃卡片 ───────── */
+  .glass{
+    position:relative;
+    padding:clamp(22px,3.8vw,42px);
+    border-radius:clamp(24px,3.4vw,32px);
+    overflow:hidden;
+    isolation:isolate;
+    background:
+      radial-gradient(130% 100% at 100% 0%, rgba(123,168,221,.10), transparent 60%),
+      radial-gradient(110% 90% at 0% 100%, rgba(155,140,224,.08), transparent 62%),
+      linear-gradient(160deg, rgba(255,255,255,.065), rgba(255,255,255,.018));
+    border:1px solid rgba(255,255,255,.085);
+    box-shadow:
+      0 30px 70px -46px rgba(0,0,0,.9),
+      inset 0 1px 0 rgba(255,255,255,.12);
+  }
+  .glass::after{
+    content:"";
+    position:absolute; top:0; left:8%; right:8%; height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);
+    pointer-events:none;
+  }
+
+  /* ───────── 分层入场 ───────── */
+  .js .reveal{
+    opacity:0;
+    transform:translateY(18px);
+    transition:opacity .7s var(--ease), transform .7s var(--ease);
+  }
+  .js .reveal.in{ opacity:1; transform:none; }
+
+  .js .reveal > *{
+    opacity:0;
+    transform:translateY(22px);
+    transition:opacity .85s var(--ease), transform .85s var(--ease);
+  }
+  .js .reveal.in > *{ opacity:1; transform:none; }
+  .js .reveal.in > *:nth-child(1){ transition-delay:.06s; }
+  .js .reveal.in > *:nth-child(2){ transition-delay:.15s; }
+  .js .reveal.in > *:nth-child(3){ transition-delay:.24s; }
+  .js .reveal.in > *:nth-child(4){ transition-delay:.33s; }
+  .js .reveal.in > *:nth-child(5){ transition-delay:.42s; }
+  .js .reveal.in > *:nth-child(6){ transition-delay:.51s; }
+
+  /* ───────── 区块标题 ───────── */
+  .sec-head{
+    display:flex; align-items:baseline; justify-content:space-between;
+    gap:8px 14px; flex-wrap:wrap;
+    margin-bottom:clamp(16px,2.8vw,26px);
+  }
+  .sec-tag{
+    display:flex; align-items:center; gap:10px;
+    font-size:clamp(15px,2.2vw,18px);
+    font-weight:650;
+    letter-spacing:.02em;
+    color:#e8ecf8;
+  }
+  .sec-tag::before{
+    content:"";
+    width:3px; height:16px; border-radius:2px;
+    background:linear-gradient(180deg,var(--indigo),var(--violet),var(--cyan));
+  }
+  .sec-sub{
+    font-size:11.5px;
+    letter-spacing:.08em;
+    color:var(--muted);
+  }
+
+  /* ───────── Hero ───────── */
+  .hero{ padding:clamp(26px,4.6vw,52px); }
+
+  .badge{
+    display:inline-flex; align-items:center; gap:9px;
+    padding:8px 18px 8px 14px;
+    border-radius:999px;
+    font-size:12.5px;
+    letter-spacing:.05em;
+    color:rgba(238,240,250,.88);
+    background:linear-gradient(100deg,
+      rgba(104,120,214,.22),
+      rgba(155,140,224,.20) 55%,
+      rgba(107,192,216,.18));
+    border:1px solid rgba(255,255,255,.13);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.18);
+  }
+
+  .pulse{
+    width:6px; height:6px; border-radius:50%;
+    background:#8fc9d9;
+    box-shadow:0 0 10px rgba(143,201,217,.9);
+    animation:ping 2.4s ease-out infinite;
+  }
+  @keyframes ping{
+    0%{ box-shadow:0 0 0 0 rgba(143,201,217,.55), 0 0 10px rgba(143,201,217,.9); }
+    70%{ box-shadow:0 0 0 9px rgba(143,201,217,0), 0 0 10px rgba(143,201,217,.9); }
+    100%{ box-shadow:0 0 0 0 rgba(143,201,217,0), 0 0 10px rgba(143,201,217,.9); }
+  }
+
+  h1{
+    margin:clamp(16px,2.6vw,22px) 0 clamp(12px,2vw,16px);
+    font-size:clamp(24px,4.8vw,40px);
+    line-height:1.26;
+    font-weight:700;
+    letter-spacing:-.02em;
+    text-shadow:0 4px 34px rgba(104,120,214,.30);
+  }
+  h1 .grad{
+    display:inline-block;
+    background:linear-gradient(100deg,
+      #9fb8e8 0%, #b3a6e6 38%, #8fd0e0 72%, #9fb8e8 100%);
+    background-size:220% 100%;
+    -webkit-background-clip:text; background-clip:text;
+    color:transparent;
+    text-shadow:none;
+    animation:gradShift 10s linear infinite;
+  }
+  @keyframes gradShift{ to{ background-position:220% 0; } }
+
+  .desc{
+    font-size:clamp(13.5px,1.8vw,15px);
+    line-height:1.8;
+    color:var(--muted);
+    max-width:56ch;
+  }
+
+  .hero-nums{
+    display:flex; align-items:center;
+    gap:clamp(10px,2.6vw,26px);
+    margin-top:clamp(20px,3.2vw,32px);
+  }
+  .hn{ display:grid; gap:7px; }
+  .hn-val{ display:flex; align-items:baseline; gap:3px; }
+  .hn .n{
+    display:inline-block;
+    min-width:1.2em;
+    font-size:clamp(34px,8.6vw,64px);
+    font-weight:800;
+    letter-spacing:-.045em;
+    line-height:.88;
+    font-variant-numeric:tabular-nums;
+    color:rgba(238,240,250,.38);
+  }
+  .hn .u{
+    font-size:clamp(12px,2.1vw,16px);
+    font-weight:700;
+    letter-spacing:.01em;
+    color:rgba(238,240,250,.38);
+  }
+  .hn em{
+    font-style:normal;
+    font-size:11.5px;
+    letter-spacing:.1em;
+    color:rgba(238,240,250,.38);
+  }
+
+  .hn-new .n{
+    background:linear-gradient(150deg,#a8c0ec 0%,#c0b2ee 45%,#8fd0e0 100%);
+    -webkit-background-clip:text; background-clip:text;
+    color:transparent;
+    filter:drop-shadow(0 0 20px rgba(140,155,225,.40));
+  }
+  .hn-new .u{ color:rgba(238,240,250,.84); }
+  .hn-new em{ color:rgba(238,240,250,.66); }
+
+  .hn-arrow{
+    font-size:clamp(16px,3vw,26px);
+    color:rgba(238,240,250,.24);
+    animation:arrowSlide 2.8s ease-in-out infinite;
+  }
+  @keyframes arrowSlide{
+    0%,100%{ transform:translateX(0); opacity:.24; }
+    50%    { transform:translateX(5px); opacity:.62; }
+  }
+
+  .scroll-hint{
+    display:flex; align-items:center; gap:9px;
+    margin-top:clamp(22px,3.4vw,34px);
+    font-size:11.5px;
+    letter-spacing:.1em;
+    color:rgba(238,240,250,.40);
+    transition:opacity .6s var(--ease), transform .6s var(--ease);
+    animation:hintFloat 2.8s ease-in-out infinite;
+  }
+  @keyframes hintFloat{
+    0%,100%{ transform:translateY(0); }
+    50%    { transform:translateY(4px); }
+  }
+  .scroll-hint i{
+    width:7px; height:7px;
+    border-right:1.5px solid rgba(238,240,250,.45);
+    border-bottom:1.5px solid rgba(238,240,250,.45);
+    transform:rotate(45deg);
+  }
+  body.scrolled .scroll-hint{
+    opacity:0;
+    transform:translateY(8px);
+    animation:none;
+  }
+
+  /* ───────── 延迟对比 ───────── */
+  .lat-list{ display:grid; }
+
+  .lat-row{
+    display:grid;
+    grid-template-columns:clamp(88px,17vw,150px) 1fr auto;
+    align-items:center;
+    gap:clamp(10px,2vw,18px);
+    padding:clamp(12px,1.8vw,16px) 0;
+  }
+  .lat-row + .lat-row{ border-top:1px solid rgba(255,255,255,.05); }
+
+  .lat-meta{ display:grid; gap:4px; min-width:0; }
+  .lat-name{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-size:clamp(12.5px,1.8vw,14px);
+    font-weight:600;
+    color:rgba(238,240,250,.86);
+    white-space:nowrap;
+  }
+  .lat-note{
+    font-size:10.5px;
+    letter-spacing:.02em;
+    color:rgba(238,240,250,.38);
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+
+  .nosignal{
+    display:none;
+    align-items:center;
+    gap:4px;
+    padding:2px 8px;
+    border-radius:999px;
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.06em;
+    color:#ff8a7a;
+    background:rgba(255,80,60,.14);
+    border:1px solid rgba(255,90,70,.30);
+  }
+  .nosignal.show{
+    display:inline-flex;
+    animation:noSignalPulse 1.1s ease-in-out infinite;
+  }
+  .nosignal::before{
+    content:"";
+    width:4px; height:4px;
+    border-radius:50%;
+    background:#ff6a55;
+    box-shadow:0 0 6px #ff6a55;
+  }
+  @keyframes noSignalPulse{
+    0%,100%{ opacity:1; }
+    50%    { opacity:.28; }
+  }
+
+  .is-telecom .lat-name{ color:rgba(255,210,200,.96); }
+  .is-telecom .lat-note{ color:rgba(232,110,90,.78); }
+
+  .is-mobile .lat-name{ color:rgba(248,238,220,.92); }
+  .is-mobile .lat-note{ color:rgba(232,200,110,.62); }
+
+  .is-legacy .lat-name{ color:rgba(220,225,240,.90); }
+  .is-legacy .lat-note{ color:rgba(180,190,210,.52); }
+
+  .is-best .lat-name{ color:rgba(235,242,255,.95); }
+  .is-best .lat-note{ color:rgba(160,200,230,.72); }
+
+  .lat-track{
+    height:clamp(9px,1.4vw,12px);
+    border-radius:999px;
+    background:rgba(255,255,255,.05);
+    overflow:hidden;
+  }
+
+  .lat-fill{
+    display:block;
+    height:100%;
+    width:100%;
+    border-radius:999px;
+    transform:scaleX(0);
+    transform-origin:0 50%;
+    transition:none;
+  }
+
+  .lat-val{
+    font-size:clamp(14px,2.2vw,18px);
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+    color:rgba(238,240,250,.50);
+    white-space:nowrap;
+    min-width:3.9em;
+    text-align:right;
+  }
+  .lat-val small{
+    font-size:.62em;
+    font-weight:600;
+    margin-left:1px;
+    opacity:.78;
+  }
+
+  .is-telecom .lat-val{
+    color:hsl(4,90%,62%);
+    text-shadow:0 0 16px rgba(255,70,50,.55);
+  }
+  .is-telecom .lat-val small{ color:hsl(4,82%,56%); }
+
+  .is-mobile .lat-val{
+    color:hsl(var(--ch,44), 90%, 64%);
+    transition:color .18s linear;
+  }
+  .is-mobile .lat-val small{ color:hsl(var(--ch,44), 82%, 58%); }
+
+  .is-legacy .lat-val{
+    color:hsl(220, 12%, 68%);
+  }
+  .is-legacy .lat-val small{ color:hsl(220, 12%, 58%); }
+
+  .is-best .lat-val{
+    color:#f4f6fc;
+    text-shadow:0 0 16px rgba(150,165,230,.75);
+  }
+
+  /* ───────── 代际对比 ───────── */
+  .gen-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:clamp(12px,2vw,18px);
+  }
+
+  .gen-col{
+    display:grid;
+    gap:clamp(12px,2vw,16px);
+    padding:clamp(16px,2.6vw,22px);
+    border-radius:clamp(16px,2.4vw,20px);
+    background:linear-gradient(160deg, rgba(255,255,255,.04), rgba(255,255,255,.008));
+    border:1px solid rgba(255,255,255,.06);
+  }
+  .gen-col.gen-new{
+    background:linear-gradient(160deg, rgba(123,168,221,.10), rgba(155,140,224,.05));
+    border-color:rgba(255,255,255,.12);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+  }
+
+  .gen-title{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:8px;
+    font-size:clamp(13px,1.8vw,14.5px);
+    font-weight:650;
+    letter-spacing:.03em;
+  }
+  .gen-title span:last-child{
+    font-size:9.5px;
+    font-weight:700;
+    letter-spacing:.08em;
+    padding:3px 9px;
+    border-radius:999px;
+    color:rgba(238,240,250,.45);
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.07);
+  }
+  .gen-new .gen-title span:last-child{
+    color:rgba(235,242,255,.90);
+    background:rgba(123,168,221,.18);
+    border-color:rgba(123,168,221,.30);
+  }
+
+  .gen-list{
+    list-style:none;
+    display:grid;
+    gap:9px;
+  }
+  .gen-list li{
+    display:flex;
+    align-items:flex-start;
+    gap:9px;
+    font-size:clamp(11.5px,1.5vw,12.5px);
+    line-height:1.6;
+    color:rgba(238,240,250,.58);
+  }
+  .gen-list li::before{
+    content:"";
+    flex:0 0 auto;
+    width:5px; height:5px;
+    margin-top:6px;
+    border-radius:50%;
+    background:rgba(255,255,255,.22);
+  }
+  .gen-new .gen-list li{
+    color:rgba(238,240,250,.74);
+  }
+  .gen-new .gen-list li::before{
+    background:var(--cyan);
+    box-shadow:0 0 8px var(--cyan);
+    opacity:.8;
+  }
+  .gen-list b{ color:rgba(238,240,250,.90); font-weight:600; }
+
+  .gen-key{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:9px 12px;
+    border-radius:12px;
+    font-size:11.5px;
+    line-height:1.5;
+    color:rgba(238,240,250,.56);
+    background:rgba(255,255,255,.035);
+    border:1px solid rgba(255,255,255,.05);
+  }
+  .gen-new .gen-key{
+    color:rgba(235,242,255,.86);
+    background:linear-gradient(100deg, rgba(104,120,214,.16), rgba(107,192,216,.12));
+    border-color:rgba(255,255,255,.10);
+  }
+  .gen-key .kicon{
+    flex:0 0 auto;
+    width:6px; height:6px;
+    border-radius:50%;
+  }
+  .gen-col:not(.gen-new) .gen-key .kicon{ background:rgba(255,255,255,.28); }
+  .gen-new .gen-key .kicon{
+    background:var(--cyan);
+    box-shadow:0 0 9px var(--cyan);
+  }
+
+  /* ───────── 硬件升级 ───────── */
+  .hw-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(170px,1fr));
+    gap:clamp(10px,1.8vw,16px);
+  }
+
+  .hw-item{
+    position:relative;
+    overflow:hidden;
+    display:grid;
+    gap:10px;
+    padding:clamp(16px,2.4vw,22px);
+    border-radius:clamp(16px,2.2vw,20px);
+    background:linear-gradient(160deg, rgba(255,255,255,.05), rgba(255,255,255,.01));
+    border:1px solid rgba(255,255,255,.07);
+    transition:transform .55s var(--ease), border-color .55s var(--ease);
+  }
+  .hw-item:hover{
+    transform:translateY(-3px);
+    border-color:rgba(255,255,255,.16);
+  }
+
+  .hw-icon{
+    display:grid; place-items:center;
+    width:36px; height:36px;
+    border-radius:12px;
+    color:var(--c, var(--blue));
+    background:rgba(255,255,255,.055);
+    border:1px solid rgba(255,255,255,.10);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.18);
+  }
+  .hw-icon svg{
+    width:17px; height:17px;
+  }
+
+  .hw-title{
+    font-size:clamp(12px,1.7vw,13.5px);
+    font-weight:650;
+    color:rgba(238,240,250,.90);
+    letter-spacing:.02em;
+  }
+
+  .hw-desc{
+    font-size:clamp(11px,1.5vw,12px);
+    line-height:1.65;
+    color:rgba(238,240,250,.52);
+  }
+  .hw-desc b{
+    color:rgba(238,240,250,.82);
+    font-weight:600;
+  }
+
+  .hw-delta{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    font-size:10.5px;
+    font-weight:600;
+    letter-spacing:.04em;
+    color:var(--c, var(--blue));
+    opacity:.85;
+  }
+  .hw-delta span:first-child{
+    padding:2px 7px;
+    border-radius:999px;
+    background:rgba(255,255,255,.05);
+    color:rgba(238,240,250,.40);
+    text-decoration:line-through;
+    font-weight:500;
+  }
+  .hw-delta span:last-child{
+    padding:2px 7px;
+    border-radius:999px;
+    background:rgba(123,168,221,.12);
+    border:1px solid rgba(123,168,221,.20);
+  }
+
+  /* ───────── 游戏稳定性 ───────── */
+  .game-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:clamp(14px,2.4vw,22px);
+  }
+
+  .game-col{
+    display:grid;
+    gap:clamp(12px,2vw,16px);
+    padding:clamp(16px,2.6vw,24px);
+    border-radius:clamp(18px,2.6vw,24px);
+    background:linear-gradient(160deg, rgba(255,255,255,.045), rgba(255,255,255,.01));
+    border:1px solid rgba(255,255,255,.06);
+  }
+  .game-col.after{
+    background:linear-gradient(160deg, rgba(123,168,221,.10), rgba(155,140,224,.05));
+    border-color:rgba(255,255,255,.12);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+  }
+
+  .g-top{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:10px;
+  }
+  .g-title{
+    font-size:clamp(12px,1.7vw,13.5px);
+    font-weight:600;
+    letter-spacing:.06em;
+    color:rgba(238,240,250,.58);
+  }
+  .after .g-title{ color:rgba(238,240,250,.90); }
+
+  .signal{
+    display:flex; align-items:flex-end;
+    gap:3px; height:18px;
+  }
+  .signal i{
+    width:4px;
+    border-radius:2px;
+    background:rgba(255,255,255,.12);
+  }
+  .signal i:nth-child(1){ height:30%; }
+  .signal i:nth-child(2){ height:52%; }
+  .signal i:nth-child(3){ height:74%; }
+  .signal i:nth-child(4){ height:100%; }
+
+  .signal.s2 i:nth-child(-n+2){
+    background:var(--warn);
+    opacity:.7;
+    animation:blink 2.6s ease-in-out infinite;
+  }
+  .signal.s2 i:nth-child(2){ animation-delay:-.7s; }
+  @keyframes blink{
+    0%,100%{ opacity:.75; }
+    42%    { opacity:.16; }
+    68%    { opacity:.55; }
+  }
+
+  .signal.s4 i{
+    background:var(--blue);
+    box-shadow:0 0 9px rgba(123,168,221,.55);
+  }
+
+  .wave{
+    display:flex;
+    align-items:flex-end;
+    gap:3px;
+    height:clamp(50px,9vw,74px);
+  }
+  .wave i{
+    flex:1 1 0;
+    border-radius:3px;
+    transform-origin:50% 100%;
+  }
+
+  .wave[data-wave="bad"] i{
+    background:rgba(232,130,105,.35);
+    transform:scaleY(.25);
+  }
+  .in .wave[data-wave="bad"] i{
+    animation:jitter .8s ease-in-out infinite alternate;
+  }
+  @keyframes jitter{
+    from{ transform:scaleY(.25); opacity:.40; }
+    to  { transform:scaleY(1);   opacity:1; }
+  }
+
+  .wave[data-wave="good"] i{
+    background:linear-gradient(180deg, var(--cyan), var(--violet));
+    transform:scaleY(.12);
+    transition:transform .9s var(--ease);
+  }
+  .in .wave[data-wave="good"] i{ transform:scaleY(1); }
+
+  .g-tags{
+    list-style:none;
+    display:flex; flex-wrap:wrap;
+    gap:7px;
+  }
+  .g-tags li{
+    font-size:11px;
+    letter-spacing:.04em;
+    padding:5px 11px;
+    border-radius:999px;
+    color:rgba(238,240,250,.55);
+    background:rgba(255,255,255,.045);
+    border:1px solid rgba(255,255,255,.07);
+  }
+  .g-tags.bad li{
+    color:rgba(240,170,150,.75);
+    background:rgba(232,120,95,.08);
+    border-color:rgba(232,120,95,.18);
+  }
+
+  .max-badge{
+    display:inline-flex; align-items:center; gap:8px;
+    justify-self:start;
+    padding:8px 16px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:.08em;
+    color:#eef2fc;
+    background:linear-gradient(100deg,
+      rgba(104,120,214,.24),
+      rgba(155,140,224,.22) 55%,
+      rgba(107,192,216,.20));
+    border:1px solid rgba(255,255,255,.16);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.20);
+  }
+  .max-badge .dot{
+    width:7px; height:7px;
+    border-radius:50%;
+    background:linear-gradient(135deg,var(--blue),var(--cyan));
+    box-shadow:0 0 10px rgba(130,180,220,.9);
+  }
+
+  /* ───────── 指标卡 ───────── */
+  .metrics{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(130px,1fr));
+    gap:clamp(10px,1.8vw,16px);
+  }
+
+  .metric{
+    position:relative;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    gap:clamp(10px,1.8vw,14px);
+    padding:clamp(20px,3.2vw,30px) 10px clamp(18px,2.6vw,24px);
+    border-radius:clamp(18px,2.6vw,22px);
+    background:linear-gradient(160deg, rgba(255,255,255,.055), rgba(255,255,255,.012));
+    border:1px solid rgba(255,255,255,.07);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.10);
+    transition:transform .6s var(--ease), border-color .6s var(--ease);
+    text-align:center;
+  }
+  .metric::before{
+    content:"";
+    position:absolute;
+    top:-52px; left:50%;
+    width:130px; height:130px;
+    border-radius:50%;
+    transform:translateX(-50%);
+    background:radial-gradient(circle, var(--c), transparent 70%);
+    opacity:.30;
+    pointer-events:none;
+  }
+  .metric:hover{
+    transform:translateY(-4px);
+    border-color:rgba(255,255,255,.18);
+  }
+
+  .m-icon{
+    position:relative;
+    display:grid; place-items:center;
+    width:clamp(36px,4.8vw,42px);
+    height:clamp(36px,4.8vw,42px);
+    border-radius:clamp(11px,1.6vw,14px);
+    color:var(--c);
+    background:rgba(255,255,255,.055);
+    border:1px solid rgba(255,255,255,.10);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.20);
+    flex:0 0 auto;
+  }
+  .m-icon svg{
+    width:clamp(17px,2.3vw,20px);
+    height:clamp(17px,2.3vw,20px);
+  }
+
+  .m-val{
+    position:relative;
+    display:flex;
+    align-items:baseline;
+    justify-content:center;
+    gap:3px;
+    width:100%;
+    line-height:1;
+  }
+  .m-val .n{
+    display:inline-block;
+    min-width:1.8em;
+    text-align:center;
+    font-size:clamp(21px,3.8vw,32px);
+    font-weight:800;
+    letter-spacing:-.035em;
+    font-variant-numeric:tabular-nums;
+    background:linear-gradient(180deg,#ffffff 20%, var(--c) 160%);
+    -webkit-background-clip:text; background-clip:text;
+    color:transparent;
+  }
+  .m-val small{
+    font-size:clamp(10px,1.6vw,12px);
+    font-weight:600;
+    color:rgba(238,240,250,.50);
+    line-height:1;
+  }
+
+  .m-label{
+    position:relative;
+    width:100%;
+    font-size:clamp(10.5px,1.6vw,12px);
+    letter-spacing:.08em;
+    color:rgba(238,240,250,.50);
+    text-align:center;
+  }
+
+  /* ───────── 要点列表 ───────── */
+  .points{
+    list-style:none;
+    display:grid;
+    gap:clamp(8px,1.4vw,12px);
+  }
+  .points li{
+    display:flex;
+    align-items:flex-start;
+    gap:13px;
+    padding:clamp(14px,2.2vw,18px) clamp(16px,2.6vw,22px);
+    border-radius:clamp(15px,2.2vw,18px);
+    font-size:clamp(12.5px,1.7vw,14px);
+    line-height:1.7;
+    color:rgba(238,240,250,.70);
+    background:linear-gradient(120deg, rgba(255,255,255,.05), rgba(255,255,255,.01));
+    border:1px solid rgba(255,255,255,.06);
+    transition:transform .55s var(--ease), background .45s ease, border-color .45s ease;
+  }
+  .points li:hover{
+    transform:translateX(5px);
+    background:linear-gradient(120deg, rgba(255,255,255,.09), rgba(255,255,255,.02));
+    border-color:rgba(255,255,255,.14);
+  }
+  .points li::before{
+    content:"";
+    flex:0 0 auto;
+    width:6px; height:6px;
+    margin-top:8px;
+    border-radius:50%;
+    background:var(--c);
+    box-shadow:0 0 10px var(--c);
+    opacity:.85;
+  }
+  .points b{ color:#f2f4fb; font-weight:600; }
+
+  .foot{
+    text-align:center;
+    font-size:11.5px;
+    letter-spacing:.06em;
+    color:rgba(238,240,250,.30);
+    padding-top:4px;
+  }
+
+  /* ───────── 移动端 ───────── */
+  @media (max-width:680px){
+    .game-grid,
+    .gen-grid{ grid-template-columns:1fr; }
+    .lat-row{ grid-template-columns:clamp(80px,26vw,110px) 1fr auto; }
+    .lat-note{ font-size:10px; }
+    .lat-name{ gap:5px; }
+    .nosignal{ font-size:9px; padding:1px 6px; }
+  }
+
+  @media (max-width:420px){
+    .hero-nums{ gap:8px; }
+    .hn .n{ font-size:clamp(30px,10vw,40px); }
+    .hn-arrow{ font-size:16px; }
+    .lat-val{ font-size:13px; min-width:3.4em; }
+    .wave{ height:46px; gap:2px; }
+    .lat-row{ grid-template-columns:clamp(74px,24vw,96px) 1fr auto; gap:8px; }
+    .metric{ padding:18px 8px 16px; border-radius:16px; }
+    .m-icon{ width:34px; height:34px; border-radius:11px; }
+    .m-icon svg{ width:16px; height:16px; }
+    .hw-grid{ grid-template-columns:1fr 1fr; }
+  }
+
+  /* ═══════════════════════════════════════════
+     PC 宽屏
+     ═══════════════════════════════════════════ */
+  @media (min-width:1024px){
+    .page{
+      max-width:1180px;
+      grid-template-columns:minmax(0,1.04fr) minmax(0,.96fr);
+      grid-template-areas:
+        "hero      hero"
+        "lat       gen"
+        "game      hw"
+        "metrics   points"
+        "foot      foot";
+      gap:24px;
+      align-items:stretch;
+      padding-top:clamp(28px,3.4vw,52px);
+      padding-bottom:clamp(50px,6vw,90px);
+    }
+
+    .hero{ grid-area:hero; }
+    .lat-sec{ grid-area:lat; }
+    .gen-sec{ grid-area:gen; }
+    .game-sec{ grid-area:game; }
+    .hw-sec{ grid-area:hw; }
+    .metrics-sec{ grid-area:metrics; }
+    .points-sec{ grid-area:points; }
+    .foot{ grid-area:foot; }
+
+    .hero{
+      display:grid;
+      grid-template-columns:minmax(0,1.18fr) minmax(0,.82fr);
+      grid-template-areas:
+        "badge  nums"
+        "title  nums"
+        "desc   nums"
+        "hint   nums";
+      column-gap:clamp(28px,3.6vw,56px);
+      row-gap:clamp(12px,1.5vw,18px);
+      align-items:center;
+      padding:clamp(32px,3.2vw,46px) clamp(32px,3.4vw,52px);
+    }
+    .hero .badge{ grid-area:badge; justify-self:start; align-self:end; }
+    .hero h1{ grid-area:title; margin:0; font-size:clamp(32px,3.1vw,42px); }
+    .hero .desc{ grid-area:desc; margin:0; max-width:none; }
+    .hero .hero-nums{
+      grid-area:nums;
+      margin-top:0;
+      align-self:center;
+      justify-self:center;
+      gap:clamp(12px,1.6vw,22px);
+      flex-wrap:nowrap;
+    }
+    .hero .hn .n{ font-size:clamp(48px,5.2vw,72px); }
+    .hero .hn .u{ font-size:clamp(14px,1.6vw,18px); }
+    .hero .hn-arrow{ font-size:clamp(20px,2.2vw,28px); }
+    .hero .scroll-hint{ grid-area:hint; margin-top:4px; align-self:start; }
+
+    /* PC 端一次性动画，避免闪烁 */
+    .js .reveal > *{
+      opacity:0;
+      transform:translateY(22px);
+      transition:none;
+    }
+    .js .reveal.in > *{
+      opacity:1;
+      transform:none;
+      animation:pcRise .85s var(--ease) both;
+    }
+    .js .reveal.in > *:nth-child(1){ animation-delay:.06s; }
+    .js .reveal.in > *:nth-child(2){ animation-delay:.15s; }
+    .js .reveal.in > *:nth-child(3){ animation-delay:.24s; }
+    .js .reveal.in > *:nth-child(4){ animation-delay:.33s; }
+    .js .reveal.in > *:nth-child(5){ animation-delay:.42s; }
+    .js .reveal.in > *:nth-child(6){ animation-delay:.51s; }
+
+    @keyframes pcRise{
+      from{ opacity:0; transform:translateY(22px); }
+      to  { opacity:1; transform:none; }
+    }
+
+    h1 .grad{ animation:none; background-position:0 0; }
+    .hn-new .n{ filter:drop-shadow(0 0 22px rgba(140,155,225,.45)); }
+
+    /* PC 端代际对比和硬件卡片更舒展 */
+    .gen-grid{ gap:16px; }
+    .hw-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+  }
+
+  @media (min-width:1400px){
+    .page{ max-width:1280px; }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    *, *::before, *::after{
+      animation-duration:.001ms !important;
+      animation-iteration-count:1 !important;
+      transition-duration:.001ms !important;
+    }
+    .js .reveal,
+    .js .reveal > *{ opacity:1; transform:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="scene" aria-hidden="true">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+</div>
+
+<div class="progress" aria-hidden="true"><i id="progressBar"></i></div>
+
+<main class="page">
+
+  <!-- Hero -->
+  <header class="glass hero reveal">
+    <div class="badge"><span class="pulse"></span><span id="badgeText">明天 · 11月1日 · WiFi 服务升级</span></div>
+
+    <h1>游戏延迟大降，<br><span class="grad">稳定性拉到 MAX</span></h1>
+
+    <p class="desc" id="heroDesc">
+      明天（11月1日）WiFi 服务将进行升级。旧网络 20–60ms 的游戏延迟，将直接压到 5–15ms；链路升级为真实 WiFi 7，硬件同步换代，卡顿和掉线一去不返。
+    </p>
+
+    <div class="hero-nums">
+      <div class="hn">
+        <div class="hn-val"><span class="n" data-count="40">0</span><span class="u">ms+</span></div>
+        <em>旧路由器</em>
+      </div>
+      <span class="hn-arrow">→</span>
+      <div class="hn hn-new">
+        <div class="hn-val"><span class="n" data-count="5">0</span><span class="u">ms+</span></div>
+        <em>升级后</em>
+      </div>
+    </div>
+
+    <div class="scroll-hint"><span>向下滑动查看对比</span><i></i></div>
+  </header>
+
+  <!-- 延迟对比 -->
+  <section class="glass reveal lat-sec" id="latSection">
+    <div class="sec-head">
+      <span class="sec-tag">延迟实测对比</span>
+      <span class="sec-sub">条越短，延迟越低</span>
+    </div>
+
+    <div class="lat-list">
+      <div class="lat-row is-telecom" id="rowTelecom">
+        <div class="lat-meta">
+          <span class="lat-name">电信 5G <i class="nosignal" id="telecomNs">无信号</i></span>
+          <span class="lat-note">信号覆盖差</span>
+        </div>
+        <div class="lat-track"><i class="lat-fill" id="fillTelecom"></i></div>
+        <span class="lat-val">
+          <span class="num" id="numTelecom">130</span><small>ms</small>
+        </span>
+      </div>
+
+      <div class="lat-row is-mobile" id="rowMobile">
+        <div class="lat-meta">
+          <span class="lat-name">移动 5G</span>
+          <span class="lat-note">卡顿</span>
+        </div>
+        <div class="lat-track"><i class="lat-fill" id="fillMobile"></i></div>
+        <span class="lat-val" id="valMobile">
+          <span class="num" id="numMobile">130</span><small>ms</small>
+        </span>
+      </div>
+
+      <div class="lat-row is-legacy" id="rowLegacy">
+        <div class="lat-meta">
+          <span class="lat-name">旧网络模式</span>
+          <span class="lat-note">偶发卡顿</span>
+        </div>
+        <div class="lat-track"><i class="lat-fill" id="fillLegacy"></i></div>
+        <span class="lat-val">
+          <span class="num" id="numLegacy">30</span><small>ms</small>
+        </span>
+      </div>
+
+      <div class="lat-row is-best" id="rowWifi7">
+        <div class="lat-meta">
+          <span class="lat-name">升级后 WiFi 7</span>
+          <span class="lat-note">稳定 MAX</span>
+        </div>
+        <div class="lat-track"><i class="lat-fill" id="fillWifi7"></i></div>
+        <span class="lat-val" id="valWifi7">
+          <span class="num" id="numWifi7">10</span><small>ms</small>
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- WiFi 6 → 7 代际对比 -->
+  <section class="glass reveal gen-sec">
+    <div class="sec-head">
+      <span class="sec-tag">WiFi 6 → 7 代际差异</span>
+      <span class="sec-sub">不只是更快</span>
+    </div>
+
+    <div class="gen-grid">
+      <div class="gen-col">
+        <div class="gen-title"><span>WiFi 6</span><span>旧链路</span></div>
+        <ul class="gen-list">
+          <li>单链路工作，同一时刻只能占用一个频段</li>
+          <li>网络拥塞时延迟容易堆积</li>
+          <li>局部干扰会导致整个信道降速</li>
+          <li>多设备并发时稳定性下降明显</li>
+        </ul>
+        <div class="gen-key"><span class="kicon"></span>“够快，但不够稳”</div>
+      </div>
+
+      <div class="gen-col gen-new">
+        <div class="gen-title"><span>WiFi 7</span><span>真实链路</span></div>
+        <ul class="gen-list">
+          <li><b>MLO 多链路聚合</b>：2.4GHz + 5GHz 同时连接，一条拥堵立刻切另一条</li>
+          <li><b>4096-QAM</b>：每个信号承载更多数据，近距离吞吐更高</li>
+          <li><b>Multi-RU + 前导码打孔</b>：局部干扰不再拖垮整条链路</li>
+          <li>应用层延迟可降低 <b>35–48%</b>，抖动同步收窄</li>
+        </ul>
+        <div class="gen-key"><span class="kicon"></span>“为低延迟和不断线而生”</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 游戏稳定性 -->
+  <section class="glass reveal game-sec">
+    <div class="sec-head">
+      <span class="sec-tag">游戏网络稳定性</span>
+      <span class="sec-sub">逐帧延迟波动</span>
+    </div>
+
+    <div class="game-grid">
+      <div class="game-col before">
+        <div class="g-top">
+          <span class="g-title">升级前</span>
+          <div class="signal s2"><i></i><i></i><i></i><i></i></div>
+        </div>
+        <div class="wave" data-wave="bad"></div>
+        <ul class="g-tags bad">
+          <li>偶发卡顿</li>
+          <li>有可能掉线</li>
+        </ul>
+      </div>
+
+      <div class="game-col after">
+        <div class="g-top">
+          <span class="g-title">升级后</span>
+          <div class="signal s4"><i></i><i></i><i></i><i></i></div>
+        </div>
+        <div class="wave" data-wave="good"></div>
+        <div class="max-badge"><span class="dot"></span>稳定性 MAX</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 硬件升级点 -->
+  <section class="glass reveal hw-sec">
+    <div class="sec-head">
+      <span class="sec-tag">硬件升级在哪</span>
+      <span class="sec-sub">不换型号，换底子</span>
+    </div>
+
+    <div class="hw-grid">
+      <div class="hw-item" style="--c:#7ba8dd">
+        <span class="hw-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="16" height="16" rx="3"/>
+            <path d="M9 9h6v6H9z"/>
+          </svg>
+        </span>
+        <span class="hw-title">独立信号放大器</span>
+        <p class="hw-desc">从 <b>2 颗</b> 增加到 <b>5 颗</b> 独立 FEM，每一路天线都有专属功放，穿墙和远距离覆盖不再“有信号没速度”。</p>
+        <div class="hw-delta"><span>2 颗</span><span>5 颗 FEM</span></div>
+      </div>
+
+      <div class="hw-item" style="--c:#6bc0d8">
+        <span class="hw-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 18V9"/><path d="M9 18V5"/><path d="M14 18v-7"/><path d="M19 18V8"/>
+          </svg>
+        </span>
+        <span class="hw-title">高增益天线阵列</span>
+        <p class="hw-desc"><b>5 根高增益全向天线</b>，2.4GHz 与 5GHz 独立配置，信号覆盖更均匀，减少房间之间的“死亡角落”。</p>
+        <div class="hw-delta"><span>基础天线</span><span>5 根高增益</span></div>
+      </div>
+
+      <div class="hw-item" style="--c:#9b8ce0">
+        <span class="hw-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+          </svg>
+        </span>
+        <span class="hw-title">处理器与内存</span>
+        <p class="hw-desc">主频从 <b>1.0GHz</b> 提升到 <b>1.2GHz</b>，配合 <b>256MB 内存</b>，多设备并发和高速转发时不再因调度瓶颈产生额外排队延迟。</p>
+        <div class="hw-delta"><span>双核 1.0GHz</span><span>双核 1.2GHz</span></div>
+      </div>
+
+      <div class="hw-item" style="--c:#e8785f">
+        <span class="hw-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 17L17 7"/><path d="M7 7h10v10"/>
+          </svg>
+        </span>
+        <span class="hw-title">双频聚合能力</span>
+        <p class="hw-desc">WiFi 7 的 <b>MLO</b> 让设备同时使用 2.4GHz 和 5GHz 两条链路，一条受干扰另一条无缝接管，游戏不再因单链路波动而卡顿。</p>
+        <div class="hw-delta"><span>单链路</span><span>MLO 双链路</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 指标 -->
+  <section class="glass reveal metrics-sec">
+    <div class="sec-head">
+      <span class="sec-tag">升级后规格</span>
+      <span class="sec-sub">真实 WiFi 7 链路</span>
+    </div>
+
+    <div class="metrics">
+      <div class="metric" style="--c:#7ba8dd">
+        <span class="m-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12h4l2.5-6.5 4 13L15 12h7"/>
+          </svg>
+        </span>
+        <div class="m-val"><span class="n" data-count="5">0</span><small>ms+</small></div>
+        <span class="m-label">游戏延迟</span>
+      </div>
+
+      <div class="metric" style="--c:#6bc0d8">
+        <span class="m-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 4v13"/><path d="M7 12.5l5 5 5-5"/>
+          </svg>
+        </span>
+        <div class="m-val"><span class="n" data-count="100">0</span><small>Mbps</small></div>
+        <span class="m-label">网络速率</span>
+      </div>
+
+      <div class="metric" style="--c:#9b8ce0">
+        <span class="m-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2.5 8.6a16.5 16.5 0 0 1 19 0"/>
+            <path d="M6 12.6a11.5 11.5 0 0 1 12 0"/>
+            <path d="M9.4 16.5a6.2 6.2 0 0 1 5.2 0"/>
+            <circle cx="12" cy="20" r="1.1" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+        <div class="m-val"><span class="n" data-count="7">0</span><small>代</small></div>
+        <span class="m-label">真实 WiFi 7</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 要点 -->
+  <section class="glass reveal points-sec">
+    <div class="sec-head">
+      <span class="sec-tag">这次升级，改变了什么</span>
+    </div>
+
+    <ul class="points">
+      <li style="--c:#e8785f"><span><b>游戏延迟 40ms+ → 5–15ms</b>，MLO 双链路让操作响应大幅提前，开镜、射击更跟手</span></li>
+      <li style="--c:#9b8ce0"><span><b>稳定性 MAX</b>，一条链路受干扰立刻切换另一条，告别偶发卡顿和不确定掉线</span></li>
+      <li style="--c:#7ba8dd"><span><b>硬件底子换代</b>，独立功放 2 颗 → 5 颗，天线 5 根高增益，处理器与内存同步升级</span></li>
+      <li style="--c:#e8b85f"><span><b>不再依赖移动网络</b>，告别 5G 信号忽强忽弱、延迟乱跳</span></li>
+      <li style="--c:#9b8ce0"><span><b>真实 WiFi 7 链路</b>，多设备并发更稳，套餐内容可能会进行变更</span></li>
+    </ul>
+  </section>
+
+  <p class="foot" id="footNote">升级期间可能出现短暂断连，完成后将自动恢复</p>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ── 日期检测 ── */
+  (function () {
+    var now = new Date();
+    var upgrade = new Date(2026, 10, 1);
+    if (now >= upgrade) {
+      var badgeText = document.getElementById('badgeText');
+      if (badgeText) badgeText.textContent = 'WiFi 服务升级';
+
+      var heroDesc = document.getElementById('heroDesc');
+      if (heroDesc) {
+        heroDesc.textContent = 'WiFi 服务已升级。旧网络 20–60ms 的游戏延迟，已压到 5–15ms；链路升级为真实 WiFi 7，硬件同步换代，掉线一去不返。';
+      }
+
+      var footNote = document.getElementById('footNote');
+      if (footNote) footNote.textContent = '升级已完成，网络服务正常运行';
+    }
+  })();
+
+  /* ── 波形条 ── */
+  document.querySelectorAll('[data-wave]').forEach(function (wave) {
+    var isBad = wave.dataset.wave === 'bad';
+    var N = 22;
+
+    for (var i = 0; i < N; i++) {
+      var bar = document.createElement('i');
+
+      if (isBad) {
+        bar.style.height = (16 + Math.random() * 84).toFixed(1) + '%';
+        bar.style.animationDuration = (0.5 + Math.random() * 0.9).toFixed(2) + 's';
+        bar.style.animationDelay = (Math.random() * 1.4).toFixed(2) + 's';
+      } else {
+        bar.style.height = (68 + Math.random() * 18).toFixed(1) + '%';
+        bar.style.transitionDelay = (i * 22) + 'ms';
+      }
+
+      wave.appendChild(bar);
+    }
+  });
+
+  /* ── 数字滚动 ── */
+  var counted = new WeakSet();
+
+  function countUp(el) {
+    if (counted.has(el)) return;
+    counted.add(el);
+
+    var target = parseFloat(el.dataset.count) || 0;
+    var duration = 1400;
+    var start = null;
+
+    function step(now) {
+      if (start === null) start = now;
+      var p = Math.min((now - start) / duration, 1);
+      var eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * eased);
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = target;
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ── 延迟动态数据 ── */
+  var telecomFill = document.getElementById('fillTelecom');
+  var telecomNum  = document.getElementById('numTelecom');
+  var telecomNs   = document.getElementById('telecomNs');
+
+  var mobileFill  = document.getElementById('fillMobile');
+  var mobileNum   = document.getElementById('numMobile');
+  var mobileVal   = document.getElementById('valMobile');
+
+  var legacyFill  = document.getElementById('fillLegacy');
+  var legacyNum   = document.getElementById('numLegacy');
+
+  var wifi7Fill   = document.getElementById('fillWifi7');
+  var wifi7Num    = document.getElementById('numWifi7');
+
+  var dynamicStarted = false;
+  var startTime = null;
+
+  var cfg = {
+    telecom: { minMs: 60, maxMs: 400, minW: .30, maxW: 1.00 },
+    mobile:  { minMs: 60, maxMs: 200, minW: .22, maxW: .62, hueMin: 48, hueMax: 0 },
+    legacy:  { minMs: 20, maxMs: 60,  minW: .08, maxW: .26 },
+    wifi7:   { minMs: 5,  maxMs: 15,  minW: .03, maxW: .10 }
+  };
+
+  function widthOf(ms, c) {
+    var t = (ms - c.minMs) / (c.maxMs - c.minMs);
+    t = Math.max(0, Math.min(1, t));
+    return c.minW + t * (c.maxW - c.minW);
+  }
+
+  function hueOf(ms, c) {
+    var t = (ms - c.minMs) / (c.maxMs - c.minMs);
+    t = Math.max(0, Math.min(1, t));
+    return c.hueMin + t * (c.hueMax - c.hueMin);
+  }
+
+  var last = { telecom: -1, mobile: -1, legacy: -1, wifi7: -1 };
+  var noSignalShown = false;
+
+  function updateDynamic(now) {
+    if (startTime === null) startTime = now;
+    var el = (now - startTime) / 1000;
+    var intro = Math.min(el / 0.9, 1);
+    var easeIntro = 1 - Math.pow(1 - intro, 3);
+
+    /* 电信 */
+    var telecomMs = 230 + 150 * Math.sin(el * 0.9 + 0.4) + 30 * Math.sin(el * 2.3 + 1.2);
+    telecomMs = Math.max(60, Math.min(400, telecomMs));
+    var telecomW = widthOf(telecomMs, cfg.telecom) * easeIntro;
+
+    telecomFill.style.transform = 'scaleX(' + telecomW.toFixed(4) + ')';
+    telecomFill.style.backgroundColor = 'hsl(4, 92%, 56%)';
+    telecomFill.style.boxShadow = '0 0 18px rgba(255,60,40,.65), 0 0 36px rgba(255,40,20,.35)';
+
+    var telecomInt = Math.round(telecomMs);
+    if (telecomInt !== last.telecom) {
+      last.telecom = telecomInt;
+      telecomNum.textContent = telecomInt;
+    }
+
+    var shouldShow = telecomMs > 380;
+    if (shouldShow !== noSignalShown) {
+      noSignalShown = shouldShow;
+      telecomNs.classList.toggle('show', shouldShow);
+    }
+
+    /* 移动 */
+    var mobileMs = 130 + 58 * Math.sin(el * 1.15) + 16 * Math.sin(el * 2.9 + 1.1);
+    mobileMs = Math.max(60, Math.min(200, mobileMs));
+    var mobileW = widthOf(mobileMs, cfg.mobile) * easeIntro;
+
+    mobileFill.style.transform = 'scaleX(' + mobileW.toFixed(4) + ')';
+    var mobileHue = hueOf(mobileMs, cfg.mobile);
+    mobileFill.style.backgroundColor = 'hsl(' + mobileHue.toFixed(1) + ', 88%, 58%)';
+    mobileFill.style.boxShadow = '0 0 14px hsla(' + mobileHue.toFixed(0) + ', 88%, 55%, .5)';
+
+    var mobileInt = Math.round(mobileMs);
+    if (mobileInt !== last.mobile) {
+      last.mobile = mobileInt;
+      mobileNum.textContent = mobileInt;
+      mobileVal.style.setProperty('--ch', mobileHue.toFixed(0));
+    }
+
+    /* 旧网络 */
+    var legacyBase = 30 + 8 * Math.sin(el * 1.2);
+    var legacySpike = Math.pow(Math.max(0, Math.sin(el * 0.42 + 1.8)), 20) * 22;
+    var legacyMs = legacyBase + legacySpike;
+    legacyMs = Math.max(20, Math.min(60, legacyMs));
+
+    var legacyW = widthOf(legacyMs, cfg.legacy) * easeIntro;
+    legacyFill.style.transform = 'scaleX(' + legacyW.toFixed(4) + ')';
+
+    var legacyNearHigh = legacyMs > 48;
+    legacyFill.style.backgroundColor = legacyNearHigh ? 'hsl(218, 14%, 72%)' : 'hsl(220, 12%, 64%)';
+    legacyFill.style.boxShadow = legacyNearHigh
+      ? '0 0 10px rgba(190,205,230,.30)'
+      : '0 0 8px rgba(180,200,230,.18)';
+
+    var legacyInt = Math.round(legacyMs);
+    if (legacyInt !== last.legacy) {
+      last.legacy = legacyInt;
+      legacyNum.textContent = legacyInt;
+    }
+
+    /* WiFi 7 */
+    var wifi7Ms = 10 + 4 * Math.sin(el * 0.95 + 0.6) + 1.2 * Math.sin(el * 2.4 + 2.1);
+    wifi7Ms = Math.max(5, Math.min(15, wifi7Ms));
+    var wifi7W = widthOf(wifi7Ms, cfg.wifi7) * easeIntro;
+
+    wifi7Fill.style.transform = 'scaleX(' + wifi7W.toFixed(4) + ')';
+    wifi7Fill.style.background = 'linear-gradient(90deg, #6878d6, #9b8ce0 52%, #6bc0d8)';
+    wifi7Fill.style.boxShadow = '0 0 14px rgba(155,140,224,.55), 0 0 26px rgba(107,192,216,.28)';
+
+    var wifi7Int = Math.round(wifi7Ms);
+    if (wifi7Int !== last.wifi7) {
+      last.wifi7 = wifi7Int;
+      wifi7Num.textContent = wifi7Int;
+    }
+
+    requestAnimationFrame(updateDynamic);
+  }
+
+  function startDynamic() {
+    if (dynamicStarted) return;
+    dynamicStarted = true;
+    requestAnimationFrame(updateDynamic);
+  }
+
+  /* ── 滚动入场 ── */
+  var reveals = document.querySelectorAll('.reveal');
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add('in');
+        entry.target.querySelectorAll('[data-count]').forEach(countUp);
+        if (entry.target.id === 'latSection') startDynamic();
+        io.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+
+    reveals.forEach(function (el) { io.observe(el); });
+  } else {
+    reveals.forEach(function (el) {
+      el.classList.add('in');
+      el.querySelectorAll('[data-count]').forEach(countUp);
+    });
+    startDynamic();
+  }
+
+  /* ── 滚动进度条 ── */
+  var bar = document.getElementById('progressBar');
+  var ticking = false;
+
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      var p = max > 0 ? window.scrollY / max : 0;
+      p = Math.min(Math.max(p, 0), 1);
+      bar.style.transform = 'scaleX(' + p + ')';
+      document.body.classList.toggle('scrolled', window.scrollY > 60);
+      ticking = false;
+    });
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  onScroll();
+})();
+</script>
+
+</body>
+</html>
