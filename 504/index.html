@@ -75,7 +75,6 @@ img{max-width:100%}
 .container{width:100%;max-width:1200px;margin-inline:auto;padding-inline:24px}
 section[id]{scroll-margin-top:88px}
 
-/* 时间切换保险：任何带 hidden 的元素强制隐藏 */
 [hidden]{display:none!important}
 
 :focus{outline:none}
@@ -139,7 +138,7 @@ section[id]{scroll-margin-top:88px}
 }
 
 /* ============================================================
-   ✅ 导航：白色液态玻璃
+   导航：白色液态玻璃
    ============================================================ */
 .nav{
   position:fixed;top:14px;left:0;right:0;z-index:100;
@@ -374,7 +373,7 @@ section[id]{scroll-margin-top:88px}
 .section-head h2{font-size:clamp(24px,3.4vw,40px);line-height:1.26;font-weight:800;letter-spacing:-.025em}
 .section-head p{margin-top:16px;font-size:16px;color:var(--muted)}
 
-/* ===================== 服务调整公告 ===================== */
+/* ===================== 服务公告 ===================== */
 .notice{
   display:flex;align-items:flex-start;gap:16px;
   max-width:880px;margin:0 auto 46px;
@@ -432,7 +431,6 @@ section[id]{scroll-margin-top:88px}
 .plan-price .cur{font-size:24px;font-weight:700;vertical-align:super;margin-right:2px}
 .plan-price small{font-size:15px;font-weight:500;color:var(--muted)}
 
-/* ✅ 划线原价 */
 .price-old{
   display:inline-block;
   margin-right:10px;
@@ -447,7 +445,24 @@ section[id]{scroll-margin-top:88px}
 }
 
 .plan-desc{margin-top:14px;font-size:14px;color:var(--muted);min-height:44px}
-.plan-features{flex:1;margin:26px 0 0;display:flex;flex-direction:column;gap:13px}
+
+/* ---------- 卡内 QoS 优先级条 ---------- */
+.qos-meter{margin-top:20px}
+.qos-meter-head{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  margin-bottom:8px;font-size:12.5px;font-weight:600;color:var(--muted);
+}
+.qos-meter-head b{font-weight:800;color:var(--blue);letter-spacing:.01em}
+.qos-bar{
+  display:block;height:7px;border-radius:999px;background:#e8eefb;overflow:hidden;
+}
+.qos-bar i{
+  display:block;height:100%;border-radius:999px;
+  background:var(--grad);
+  transition:width .9s var(--ease-out-expo);
+}
+
+.plan-features{flex:1;margin:24px 0 0;display:flex;flex-direction:column;gap:13px}
 .plan-features li{position:relative;padding-left:30px;font-size:14.5px;color:#475569;transition:color .4s var(--ease-smooth)}
 .plan-features li::before{
   content:"✓";position:absolute;left:0;top:3px;width:20px;height:20px;border-radius:50%;
@@ -455,10 +470,12 @@ section[id]{scroll-margin-top:88px}
   color:var(--blue);background:linear-gradient(135deg,#dbeafe,#ede9fe);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 2px 4px -1px rgba(37,99,235,.12);
 }
+/* 套餐内含权益（星标） */
 .plan-features li.gift{color:#7c3aed;font-weight:700}
 .plan-features li.gift::before{
-  content:"🎁";background:linear-gradient(135deg,#ede9fe,#fae8ff);font-size:10px;
+  content:"★";background:linear-gradient(135deg,#ede9fe,#fae8ff);font-size:11px;
 }
+
 .plan-badge{
   position:absolute;top:-14px;left:50%;transform:translateX(-50%);
   padding:7px 20px;border-radius:999px;font-size:12.5px;font-weight:700;white-space:nowrap;
@@ -496,9 +513,14 @@ section[id]{scroll-margin-top:88px}
 .plan-card.featured .plan-features li{color:rgba(255,255,255,.9)}
 .plan-card.featured .plan-features li::before{background:rgba(255,255,255,.18);color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.25)}
 .plan-card.featured .plan-features li.gift{color:#fde68a}
-.plan-card.featured .plan-features li.gift::before{background:rgba(253,230,138,.18)}
+.plan-card.featured .plan-features li.gift::before{background:rgba(253,230,138,.18);color:#fde68a}
 
-/* 至尊 / 升级套餐（金色卡） */
+.plan-card.featured .qos-meter-head{color:rgba(255,255,255,.75)}
+.plan-card.featured .qos-meter-head b{color:#fff}
+.plan-card.featured .qos-bar{background:rgba(255,255,255,.18)}
+.plan-card.featured .qos-bar i{background:linear-gradient(90deg,#93c5fd,#c4b5fd)}
+
+/* 升级套餐（金色卡） */
 .plan-card.ultimate{
   border:2px solid transparent;
   background:
@@ -555,52 +577,8 @@ section[id]{scroll-margin-top:88px}
 }
 .plan-card.ultimate .plan-features li.gift{color:#b45309}
 .plan-card.ultimate .plan-features li.gift::before{background:linear-gradient(135deg,#fef3c7,#fde68a)}
-.plan-card.ultimate .tech-chip{
-  background:linear-gradient(135deg,#f59e0b,#d97706);
-  box-shadow:0 4px 12px -2px rgba(245,158,11,.45),inset 0 1px 0 rgba(255,255,255,.35);
-}
-
-/* ✅ 停售状态（10.19 前） */
-.plan-card.ultimate.ending{
-  background:
-    linear-gradient(var(--card-bg),var(--card-bg)) padding-box,
-    linear-gradient(135deg,#e7cf9b 0%,#c98f36 45%,#8a5a1c 100%) border-box;
-}
-.plan-card.ultimate.ending .plan-badge{
-  background:linear-gradient(135deg,#f87171,#dc2626);
-  color:#fff;
-  box-shadow:0 10px 24px -6px rgba(220,38,38,.45),inset 0 1px 0 rgba(255,255,255,.4);
-}
-.plan-card.ultimate.ending .tech-chip{
-  background:linear-gradient(135deg,#94a3b8,#64748b);
-  box-shadow:0 4px 12px -2px rgba(100,116,139,.4),inset 0 1px 0 rgba(255,255,255,.3);
-}
-@media (hover:hover) and (pointer:fine){
-  .plan-card.ultimate.ending:hover{
-    transform:none;
-    box-shadow:
-      0 6px 14px -4px var(--gold-glow),
-      0 22px 44px -14px var(--gold-glow),
-      0 40px 72px -24px rgba(245,158,11,.16);
-  }
-}
-.plan-card.ultimate.ending:active{
-  transform:none;
-  box-shadow:
-    0 6px 14px -4px var(--gold-glow),
-    0 22px 44px -14px var(--gold-glow),
-    0 40px 72px -24px rgba(245,158,11,.16);
-  transition-duration:.12s;
-}
-
-.plan-ending-note{
-  display:flex;align-items:flex-start;gap:9px;
-  margin-top:20px;padding:12px 15px;border-radius:var(--r-sm);
-  background:#fffbeb;border:1px dashed #fcd34d;
-  font-size:12.8px;line-height:1.65;color:#92400e;text-align:left;
-}
-.plan-ending-note svg{width:15px;height:15px;flex:0 0 auto;margin-top:3px}
-.plan-ending-note b{color:#b45309;font-weight:800}
+.plan-card.ultimate .qos-meter-head b{color:var(--gold-ink)}
+.plan-card.ultimate .qos-bar i{background:linear-gradient(90deg,#fcd34d,#f59e0b)}
 
 .tech-chip{
   display:inline-flex;align-items:center;gap:5px;margin-left:6px;
@@ -610,7 +588,55 @@ section[id]{scroll-margin-top:88px}
   box-shadow:0 4px 12px -2px rgba(139,92,246,.4),inset 0 1px 0 rgba(255,255,255,.3);
 }
 
-/* 服务协议入口（独立于卡片） */
+/* ============================================================
+   QoS 流畅度对比表
+   ============================================================ */
+.qos-compare{
+  margin-top:44px;
+  padding:30px 32px 22px;
+  border-radius:var(--r-xl);
+  background:var(--card-bg);
+  border:1px solid rgba(226,232,240,.7);
+  box-shadow:var(--e0);
+  transition:background-color .5s var(--ease-smooth),border-color .5s var(--ease-smooth);
+}
+.qos-compare-head{max-width:640px}
+.qos-compare-head h3{font-size:18px;font-weight:800;letter-spacing:-.015em}
+.qos-compare-head p{margin-top:8px;font-size:14px;color:var(--muted);line-height:1.7}
+
+.qos-table{margin-top:20px;display:flex;flex-direction:column}
+.qos-row{
+  display:grid;
+  grid-template-columns:1.5fr 1fr 1fr 1fr;
+  gap:8px;align-items:center;
+  padding:13px 4px;
+  border-top:1px solid var(--line);
+  font-size:14px;color:#475569;
+}
+.qos-row-head{border-top:none;padding-bottom:10px;font-size:12.5px;font-weight:800;letter-spacing:.05em}
+.qos-row-head .qos-cell{color:var(--muted)}
+.qos-row-head .qos-cell.q1{color:#3b82f6}
+.qos-row-head .qos-cell.q2{color:#7c3aed}
+.qos-row-head .qos-cell.q3{color:var(--gold-ink)}
+
+.qos-cell{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  text-align:center;min-width:0;
+}
+.qos-row .qos-cell:first-child{
+  justify-content:flex-start;text-align:left;
+  font-weight:600;color:var(--ink);font-size:13.5px;
+}
+.qos-cell em{font-style:normal;font-size:12.5px;font-weight:600;color:var(--muted)}
+.qos-cell.muted{color:#cbd5e1}
+
+.lv{display:inline-flex;gap:3px;flex:0 0 auto}
+.lv i{width:7px;height:7px;border-radius:50%;background:#dbe4fb}
+.qos-cell.q1 .lv i.on{background:#60a5fa}
+.qos-cell.q2 .lv i.on{background:#8b5cf6}
+.qos-cell.q3 .lv i.on{background:#f59e0b}
+
+/* 服务协议入口 */
 .agreement-wrap{max-width:720px;margin:40px auto 0}
 
 .plan-agreement{
@@ -721,7 +747,7 @@ section[id]{scroll-margin-top:88px}
 .benefit-card.vip .benefit-tag{background:linear-gradient(135deg,#60a5fa,#3b82f6)}
 .benefit-card.svip .benefit-tag{background:linear-gradient(135deg,#a78bfa,#7c3aed);box-shadow:0 4px 10px -2px rgba(124,58,237,.30),inset 0 1px 0 rgba(255,255,255,.3)}
 .benefit-price{font-size:14px;color:var(--muted);margin-bottom:22px}
-.benefit-price strong{font-size:22px;color:var(--blue);font-weight:800}
+.benefit-price strong{font-size:20px;color:var(--blue);font-weight:800}
 .benefit-list{display:flex;flex-direction:column;gap:12px}
 .benefit-list li{position:relative;padding-left:28px;font-size:14.5px;color:#475569;transition:color .4s var(--ease-smooth)}
 .benefit-list li::before{
@@ -730,6 +756,11 @@ section[id]{scroll-margin-top:88px}
   color:var(--blue);background:linear-gradient(135deg,#dbeafe,#ede9fe);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 2px 4px -1px rgba(37,99,235,.12);
 }
+.benefit-foot{
+  margin-top:22px;padding-top:16px;border-top:1px dashed #dbe4fb;
+  font-size:12.8px;color:var(--muted);
+}
+.benefit-foot b{color:var(--purple);font-weight:800}
 
 .features{background:var(--section-alt-bg);transition:background-color .5s var(--ease-smooth)}
 .feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:26px}
@@ -1062,7 +1093,17 @@ footer{background:#0b1220;color:#94a3b8;padding-top:74px}
     box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 2px 4px -1px rgba(0,0,0,.3);
   }
   .plan-features li.gift{color:#a78bfa}
-  .plan-features li.gift::before{background:rgba(167,139,250,.18)}
+  .plan-features li.gift::before{background:rgba(167,139,250,.18);color:#a78bfa}
+
+  .qos-meter-head{color:#94a3b8}
+  .qos-bar{background:rgba(45,74,124,.45)}
+
+  .qos-compare{background:var(--card-bg);border-color:rgba(30,41,59,.9)}
+  .qos-row{color:#cbd5e1;border-top-color:var(--line)}
+  .qos-row .qos-cell:first-child{color:var(--ink)}
+  .qos-cell em{color:#94a3b8}
+  .qos-cell.muted{color:#475569}
+  .lv i{background:#2d4a7c}
 
   .plan-card.featured{
     background:linear-gradient(155deg,#1e3a8a 0%,#4c1d95 55%,#6d28d9 100%);
@@ -1074,11 +1115,6 @@ footer{background:#0b1220;color:#94a3b8;padding-top:74px}
       linear-gradient(var(--card-bg),var(--card-bg)) padding-box,
       linear-gradient(135deg,#fcd34d 0%,#f59e0b 45%,#b45309 100%) border-box;
   }
-  .plan-card.ultimate.ending{
-    background:
-      linear-gradient(var(--card-bg),var(--card-bg)) padding-box,
-      linear-gradient(135deg,#8a6a34 0%,#7a4f18 45%,#4d3310 100%) border-box;
-  }
   .plan-card.ultimate::before{
     background:radial-gradient(circle at 100% 0%, rgba(252,211,77,.20) 0%, transparent 62%);
   }
@@ -1089,16 +1125,9 @@ footer{background:#0b1220;color:#94a3b8;padding-top:74px}
     background:linear-gradient(135deg,rgba(245,158,11,.22),rgba(180,83,9,.22));
   }
   .plan-card.ultimate .plan-features li.gift{color:#fcd34d}
-  .plan-card.ultimate .plan-features li.gift::before{background:rgba(252,211,77,.20)}
+  .plan-card.ultimate .plan-features li.gift::before{background:rgba(252,211,77,.20);color:#fcd34d}
   .plan-card.ultimate .plan-price .cur{color:#fcd34d}
   .plan-card.ultimate .plan-price small{color:var(--muted)}
-
-  .plan-ending-note{
-    background:rgba(245,158,11,.12);
-    border-color:rgba(245,158,11,.42);
-    color:#fde68a;
-  }
-  .plan-ending-note b{color:#fcd34d}
 
   .plan-agreement{
     background:linear-gradient(135deg,#0f1830 0%,#14112e 100%);
@@ -1127,6 +1156,8 @@ footer{background:#0b1220;color:#94a3b8;padding-top:74px}
   }
   .benefit-price{color:#94a3b8}
   .benefit-price strong{color:#60a5fa}
+  .benefit-foot{border-top-color:#2d4a7c;color:#94a3b8}
+  .benefit-foot b{color:#a78bfa}
 
   .feature-card{background:var(--card-bg);border-color:rgba(30,41,59,.9)}
   @media (hover:hover) and (pointer:fine){
@@ -1237,6 +1268,16 @@ footer{background:#0b1220;color:#94a3b8;padding-top:74px}
   .modal-body{padding:22px 22px 26px;font-size:14.5px}
   .modal-foot{padding:14px 20px 18px}
 }
+@media (max-width:640px){
+  .qos-compare{padding:22px 18px 16px;margin-top:32px}
+  .qos-compare-head h3{font-size:16px}
+  .qos-compare-head p{font-size:13px}
+  .qos-row{grid-template-columns:1.35fr 1fr 1fr 1fr;gap:4px;font-size:12.5px;padding:11px 2px}
+  .qos-row .qos-cell:first-child{font-size:12px}
+  .qos-row-head{font-size:11.5px}
+  .qos-cell em{font-size:11px}
+  .lv i{width:6px;height:6px}
+}
 @media (max-width:520px){
   .footer-grid{grid-template-columns:1fr}
   .btn{padding:14px 26px;font-size:14.5px}
@@ -1313,7 +1354,7 @@ footer{background:#0b1220;color:#94a3b8;padding-top:74px}
 
       <div class="hero-stats">
         <div><strong>100M</strong><span>稳定共享池</span></div>
-        <div><strong>9.9</strong><span>元/月起</span></div>
+        <div><strong>4.9</strong><span>元/月起</span></div>
         <div><strong>7×16</strong><span>稳定运行</span></div>
       </div>
     </div>
@@ -1324,11 +1365,10 @@ footer{background:#0b1220;color:#94a3b8;padding-top:74px}
       <div class="section-head reveal">
         <span class="eyebrow">会员方案</span>
         <h2>套餐方案，按需选择</h2>
-        <p>每位同学独立开通自己的会员，开通后连接宿舍 WiFi，即可使用对应等级的共享带宽池。</p>
+        <p>每位同学独立开通自己的会员，开通后连接宿舍 WiFi，即可使用对应等级的共享带宽池。会员权益已包含在套餐内，无需另外购买。</p>
       </div>
 
-      <!-- 10.19 00:00 后自动隐藏 -->
-      <div class="notice reveal" data-expire-hide role="status">
+      <div class="notice reveal" role="status">
         <span class="notice-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 9v4"/>
@@ -1337,80 +1377,136 @@ footer{background:#0b1220;color:#94a3b8;padding-top:74px}
           </svg>
         </span>
         <div class="notice-txt">
-          <strong>服务调整公告：至尊套餐（19.9 元/月）将于 10 月 19 日停止服务</strong>
-          <span>停止服务期间不支持续费。此后仅保留 100M 稳定套餐，多网聚合技术同步停用，我们将把全部精力投入网络稳定度的优化。</span>
+          <strong>服务调整已完成：至尊套餐（19.9 元/月）已停止服务</strong>
+          <span>多网聚合技术同步停用，现在全部为 100M 稳定线路。我们把全部资源投入到单线路调优与 QoS 调度上，日常使用更稳、波动更小。</span>
         </div>
       </div>
 
       <div class="plans-grid">
+        <!-- 轻享套餐 -->
         <article class="plan-card reveal">
           <div class="plan-name">轻享套餐</div>
-          <div class="plan-price"><span class="cur">¥</span>9.9<small>/月</small></div>
+          <div class="plan-price"><span class="cur">¥</span>4.9<small>/月</small></div>
           <p class="plan-desc">适合日常刷课、看网页、聊天的轻度使用</p>
+
+          <div class="qos-meter">
+            <div class="qos-meter-head"><span>网络优先级</span><b>标准</b></div>
+            <span class="qos-bar"><i style="width:33%"></i></span>
+          </div>
+
           <ul class="plan-features">
-            <li>共享带宽池 50–100 Mbps</li>
+            <li>共享带宽池 60 Mbps</li>
             <li>同时在线 1 台设备</li>
+            <li>标准 QoS 调度</li>
             <li>宿舍 WiFi 直接连接</li>
             <li>开通后即可使用</li>
           </ul>
         </article>
 
+        <!-- 豪华套餐 -->
         <article class="plan-card featured reveal">
-          <span class="plan-badge">🔥 最多人选择</span>
+          <span class="plan-badge">流畅的选择🔥</span>
           <div class="plan-name">豪华套餐</div>
-          <div class="plan-price"><span class="price-old">¥14.9</span><span class="cur">¥</span>12.9<small>/月</small></div>
-          <p class="plan-desc">100M 稳定共享池 + 赠送 VIP，追剧视频游戏都流畅</p>
+          <div class="plan-price"><span class="price-old">¥12.9</span><span class="cur">¥</span>9.9<small>/月</small></div>
+          <p class="plan-desc">100M 稳定共享池，套餐内含 VIP 权益，追剧视频游戏都流畅</p>
+
+          <div class="qos-meter">
+            <div class="qos-meter-head"><span>网络优先级</span><b>VIP 优先</b></div>
+            <span class="qos-bar"><i style="width:66%"></i></span>
+          </div>
+
           <ul class="plan-features">
             <li>共享带宽池 100 Mbps</li>
             <li>同时在线 1 台设备</li>
-            <li class="gift">赠送 VIP 会员（单独购买 4.9 元）（合约版不送）</li>
+            <li class="gift">内含 VIP 权益（游戏加速 / 优先级提升）</li>
             <li>宿舍 WiFi 直接连接</li>
             <li>开通后即可使用</li>
           </ul>
         </article>
 
-        <!-- 至尊套餐：10.19 前显示，之后自动切换为「升级套餐」 -->
-        <article class="plan-card ultimate ending reveal" id="planUltimate">
-          <!-- 10.19 前：停售中的至尊套餐 -->
-          <span class="plan-badge" data-expire-hide>⏳ 10 月 19 日 停止服务</span>
-          <!-- 10.19 后：升级套餐 -->
-          <span class="plan-badge" data-expire-show hidden>🚀 全新升级</span>
+        <!-- 升级套餐 -->
+        <article class="plan-card ultimate reveal" id="planUltimate">
+          <span class="plan-badge">🚀 全新升级</span>
 
-          <div class="plan-state" data-expire-hide>
-            <div class="plan-name">至尊套餐</div>
-            <div class="plan-price"><span class="cur">¥</span>19.9<small>/月</small></div>
-            <p class="plan-desc">200M 多网聚合共享池，即将停止服务，期间不支持续费</p>
-            <ul class="plan-features">
-              <li>共享带宽池 200 Mbps <span class="tech-chip">多网聚合 · 即将停用</span></li>
-              <li>同时在线 2 台设备</li>
-              <li class="gift">赠送 SVIP 会员（单独购买 9.9 元）（合约版不送）</li>
-              <li>宿舍 WiFi 直接连接</li>
-              <li>开通后即可使用</li>
-              <li>游戏加速，延迟更低</li>
-            </ul>
-
-            <p class="plan-ending-note">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="9"/>
-                <path d="M12 7v5l3 2"/>
-              </svg>
-              <span>本套餐将于 <b>10 月 19 日</b> 停止服务，期间不支持续费。到期后请选择 100M 稳定套餐。</span>
-            </p>
-          </div>
-
-          <div class="plan-state" data-expire-show hidden>
+          <div class="plan-state">
             <div class="plan-name">升级套餐</div>
             <div class="plan-price"><span class="cur">¥</span>14.9<small>/月</small></div>
-            <p class="plan-desc">100M 稳定共享池 + 赠送 SVIP，追剧视频游戏都流畅，更多设备在线</p>
+            <p class="plan-desc">100M 稳定共享池 + SVIP 权益，最高优先级调度，多设备在线</p>
+
+            <div class="qos-meter">
+              <div class="qos-meter-head"><span>网络优先级</span><b>SVIP 最高</b></div>
+              <span class="qos-bar"><i style="width:100%"></i></span>
+            </div>
+
             <ul class="plan-features">
               <li>共享带宽池 100 Mbps</li>
-              <li>同时在线 2 台设备</li>
-              <li class="gift">赠送 SVIP 会员（单独购买 9.9 元）（合约版不送）</li>
+              <li>同时在线 1 台设备</li>
+              <li class="gift">内含 SVIP 权益（含 VIP 全部权益）</li>
+              <li>最高优先级 QoS 调度</li>
+              <li>自定义 SSID（网络名称）</li>
               <li>宿舍 WiFi 直接连接</li>
-              <li>开通后即可使用</li>
             </ul>
           </div>
         </article>
+      </div>
+
+      <!-- ============ QoS 流畅度对比 ============ -->
+      <div class="qos-compare reveal">
+        <div class="qos-compare-head">
+          <h3>流畅度（QoS）对比</h3>
+          <p>同一条 100M 线路，套餐等级决定高峰时段你的数据包被优先调度的程度 —— 优先级越高，卡顿、转圈、高延迟出现的概率越低。</p>
+        </div>
+
+        <div class="qos-table">
+          <div class="qos-row qos-row-head">
+            <div class="qos-cell">对比项</div>
+            <div class="qos-cell q1">轻享</div>
+            <div class="qos-cell q2">豪华</div>
+            <div class="qos-cell q3">升级</div>
+          </div>
+
+          <div class="qos-row">
+            <div class="qos-cell">QoS 调度优先级</div>
+            <div class="qos-cell q1"><span class="lv"><i class="on"></i><i></i><i></i></span><em>标准</em></div>
+            <div class="qos-cell q2"><span class="lv"><i class="on"></i><i class="on"></i><i></i></span><em>优先</em></div>
+            <div class="qos-cell q3"><span class="lv"><i class="on"></i><i class="on"></i><i class="on"></i></span><em>最高</em></div>
+          </div>
+
+          <div class="qos-row">
+            <div class="qos-cell">高峰时段带宽保障</div>
+            <div class="qos-cell q1">基础</div>
+            <div class="qos-cell q2">增强</div>
+            <div class="qos-cell q3">最高</div>
+          </div>
+
+          <div class="qos-row">
+            <div class="qos-cell">游戏加速专线</div>
+            <div class="qos-cell q1 muted">—</div>
+            <div class="qos-cell q2">✓</div>
+            <div class="qos-cell q3">✓</div>
+          </div>
+
+          <div class="qos-row">
+            <div class="qos-cell">延迟与抖动</div>
+            <div class="qos-cell q1">一般</div>
+            <div class="qos-cell q2">低</div>
+            <div class="qos-cell q3">最低</div>
+          </div>
+
+          <div class="qos-row">
+            <div class="qos-cell">共享带宽池</div>
+            <div class="qos-cell q1">60 Mbps</div>
+            <div class="qos-cell q2">100 Mbps</div>
+            <div class="qos-cell q3">100 Mbps</div>
+          </div>
+
+          <div class="qos-row">
+            <div class="qos-cell">同时在线设备</div>
+            <div class="qos-cell q1">1 台</div>
+            <div class="qos-cell q2">1 台</div>
+            <div class="qos-cell q3">1 台</div>
+          </div>
+        </div>
       </div>
 
       <div class="agreement-wrap reveal">
@@ -1438,7 +1534,7 @@ footer{background:#0b1220;color:#94a3b8;padding-top:74px}
           <path d="M12 16v-4"/>
           <path d="M12 8h.01"/>
         </svg>
-        <span>会员制说明：<strong>每位同学需要开通套餐</strong>，开通后即可连接宿舍 WiFi，使用对应等级的共享带宽池，仅限本人使用。<span data-expire-hide>10 月 19 日起，我们将只保留 100M 稳定套餐。</span></span>
+        <span>会员制说明：<strong>每位同学需要开通套餐</strong>，开通后即可连接宿舍 WiFi，使用对应等级的共享带宽池，仅限本人使用。套餐内已包含对应等级的会员权益，无需额外购买。</span>
       </div>
     </div>
   </section>
@@ -1447,8 +1543,8 @@ footer{background:#0b1220;color:#94a3b8;padding-top:74px}
     <div class="container">
       <div class="section-head reveal">
         <span class="eyebrow">会员权益</span>
-        <h2>VIP / SVIP 会员权益</h2>
-        <p>可单独购买，开通豪华 / 至尊套餐直接赠送，更划算。</p>
+        <h2>套餐内包含的 VIP / SVIP 权益</h2>
+        <p>权益不再单独售卖，已整合进套餐：开通豪华套餐即享有 VIP 权益，开通升级套餐即享有 SVIP 权益。</p>
       </div>
 
       <div class="benefit-grid">
@@ -1458,16 +1554,18 @@ footer{background:#0b1220;color:#94a3b8;padding-top:74px}
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
-              VIP 会员
+              VIP 权益
             </span>
             <span class="benefit-tag">热门</span>
           </div>
-          <div class="benefit-price">单独购买 <strong>¥4.9</strong> /月</div>
+          <div class="benefit-price">豪华套餐 / 升级套餐 <strong>内含</strong></div>
           <ul class="benefit-list">
             <li>游戏加速专线，延迟更低</li>
             <li>网络优先级提升，高峰更稳</li>
             <li>卡顿优先处理</li>
+            <li>QoS 加权调度</li>
           </ul>
+          <div class="benefit-foot">开通「<b>豪华套餐</b>」即自动享有</div>
         </div>
 
         <div class="benefit-card svip reveal">
@@ -1478,18 +1576,18 @@ footer{background:#0b1220;color:#94a3b8;padding-top:74px}
                 <path d="M5 20V8l7-5 7 5v12"/>
                 <path d="M9 20v-6h6v6"/>
               </svg>
-              SVIP 会员
+              SVIP 权益
             </span>
             <span class="benefit-tag">旗舰</span>
           </div>
-          <div class="benefit-price">单独购买 <strong>¥9.9</strong> /月</div>
+          <div class="benefit-price">升级套餐 <strong>内含</strong></div>
           <ul class="benefit-list">
-            <li>包含 VIP 会员全部权益</li>
+            <li>包含 VIP 权益全部内容</li>
             <li>网络最高优先级调度</li>
             <li>高峰时段带宽保障</li>
-            <li>QoS 加权调度</li>
-            <li>自定义SSID（网络名称）</li>
+            <li>自定义 SSID（网络名称）</li>
           </ul>
+          <div class="benefit-foot">开通「<b>升级套餐</b>」即自动享有</div>
         </div>
       </div>
     </div>
@@ -1580,16 +1678,15 @@ footer{background:#0b1220;color:#94a3b8;padding-top:74px}
 
       <div class="footer-col">
         <h4>套餐速览</h4>
-        <a href="#plans">轻享套餐 9.9 元</a>
-        <a href="#plans">豪华套餐 12.9 元</a>
-        <a href="#plans" data-expire-hide>至尊套餐（即将停止服务）</a>
-        <a href="#plans" data-expire-show hidden>升级套餐 14.9 元</a>
+        <a href="#plans">轻享套餐 4.9 元</a>
+        <a href="#plans">豪华套餐 9.9 元</a>
+        <a href="#plans">升级套餐 14.9 元</a>
       </div>
 
       <div class="footer-col">
-        <h4>会员权益</h4>
-        <a href="#benefits">VIP 会员 4.9 元</a>
-        <a href="#benefits">SVIP 会员 9.9 元</a>
+        <h4>套餐内权益</h4>
+        <a href="#benefits">VIP 权益（豪华套餐内含）</a>
+        <a href="#benefits">SVIP 权益（升级套餐内含）</a>
       </div>
     </div>
 
@@ -1684,42 +1781,6 @@ footer{background:#0b1220;color:#94a3b8;padding-top:74px}
     if (links.contains(e.target) || toggle.contains(e.target)) return;
     setMenu(false);
   });
-
-  /* ============================================================
-     ✅ 时间切换：北京时间 2026-10-19 00:00:00
-     - 之前：[data-expire-hide] 显示，[data-expire-show] 隐藏
-     - 之后：反过来；至尊卡片去掉 .ending，变成「升级套餐」
-     ============================================================ */
-  var DEADLINE = new Date('2026-10-19T00:00:00+08:00').getTime();
-  var ultCard = document.getElementById('planUltimate');
-
-  function applyExpireState() {
-    var expired = Date.now() >= DEADLINE;
-
-    document.querySelectorAll('[data-expire-hide]').forEach(function (el) {
-      el.hidden = expired;
-    });
-    document.querySelectorAll('[data-expire-show]').forEach(function (el) {
-      el.hidden = !expired;
-    });
-
-    if (ultCard) {
-      ultCard.classList.toggle('ending', !expired);
-    }
-
-    document.documentElement.classList.toggle('is-expired', expired);
-  }
-
-  applyExpireState();
-
-  /* 页面一直开着时：每 30 秒兜底检查 */
-  window.setInterval(applyExpireState, 30000);
-
-  /* 尽量精确在 00:00 触发一次 */
-  var delay = DEADLINE - Date.now();
-  if (delay > 0 && delay < 2147483000) {
-    window.setTimeout(applyExpireState, delay + 200);
-  }
 
   /* ---------- 服务协议弹窗 ---------- */
   var AGREEMENT_URL = 'https://25gd1.github.io/504/1.txt';
