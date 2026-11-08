@@ -19,6 +19,7 @@
   --muted:#8e99b6;
   --card:rgba(255,255,255,.045);
   --card-hover:rgba(255,255,255,.07);
+  --card-border:rgba(255,255,255,.09);
   --line:rgba(255,255,255,.09);
   --blue:#60a5fa;
   --purple:#a78bfa;
@@ -156,6 +157,7 @@ section[id]{scroll-margin-top:96px}
     radial-gradient(ellipse 35% 35% at 20% 20%,rgba(37,99,235,.18) 0%,transparent 60%);
 }
 .hero-inner{position:relative;z-index:1;max-width:900px}
+.hero-copy{min-width:0}
 .hero-tag{
   display:inline-flex;align-items:center;gap:8px;margin-bottom:26px;
   padding:9px 20px;border-radius:999px;font-size:13.5px;font-weight:600;
@@ -637,6 +639,41 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
   .modal-title-wrap h3{font-size:16px}
   .modal-title-wrap p{font-size:12px}
 }
+
+/* ============================================================
+   桌面端：3D 在左，文案在右（双栏）
+   ============================================================ */
+@media (min-width:981px){
+  .hero{
+    padding:118px 0 96px;
+    text-align:left;
+    align-items:center;
+  }
+  .hero-inner{
+    display:grid;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    align-items:center;
+    gap:48px;
+    max-width:1200px;
+  }
+  /* 左列留白给 3D 球体 */
+  .hero-copy{grid-column:2;min-width:0}
+  .hero h1{font-size:clamp(32px,3.5vw,52px)}
+  .hero-sub{margin-top:20px;font-size:16.5px}
+  .hero-actions{justify-content:flex-start;margin-top:36px}
+  .hero-stats{
+    justify-content:flex-start;margin-top:46px;padding-top:28px;
+    gap:14px 40px;
+  }
+  .hero-stats div{align-items:flex-start;min-width:0}
+  .hero-stats strong{font-size:clamp(24px,2.2vw,32px)}
+  .scroll-cue{left:25%;bottom:22px}
+  .hero-bg-fallback{
+    background:
+      radial-gradient(ellipse 44% 52% at 25% 50%,rgba(99,102,241,.24) 0%,transparent 70%),
+      radial-gradient(ellipse 34% 34% at 10% 16%,rgba(37,99,235,.16) 0%,transparent 60%);
+  }
+}
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   html{scroll-behavior:auto}
@@ -688,20 +725,22 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
   <section class="hero" id="top">
     <div class="hero-bg-fallback"></div>
     <div class="container hero-inner">
-      <span class="hero-tag">⚡ 稳定优先 · 100M 宽带</span>
-      <h1>宿舍宽带<br><span class="grad">开通即可连 WiFi</span></h1>
-      <p class="hero-sub">
-        开通会员后，连接宿舍 WiFi 即可使用对应带宽的共享池。<br>
-        <strong>我们已全面转向 100M 稳定线路</strong>，不再叠加多网聚合，专注日常使用的稳定性与低波动。
-      </p>
-      <div class="hero-actions">
-        <a href="#plans" class="btn btn-light">查看会员方案</a>
-        <a href="#benefits" class="btn btn-ghost">会员权益</a>
-      </div>
-      <div class="hero-stats">
-        <div><strong><span data-count="100" data-suffix="M">0M</span></strong><span>稳定共享池</span></div>
-        <div><strong><span data-count="7.9" data-decimals="1" data-prefix="¥">¥0.9</span></strong><span>元/月起</span></div>
-        <div><strong><span data-count="7" data-suffix="×16">0×16</span></strong><span>稳定运行</span></div>
+      <div class="hero-copy">
+        <span class="hero-tag">⚡ 稳定优先 · 100M 宽带</span>
+        <h1>宿舍宽带<br><span class="grad">开通即可连 WiFi</span></h1>
+        <p class="hero-sub">
+          开通会员后，连接宿舍 WiFi 即可使用对应带宽的共享池。<br>
+          <strong>我们已全面转向 100M 稳定线路</strong>，不再叠加多网聚合，专注日常使用的稳定性与低波动。
+        </p>
+        <div class="hero-actions">
+          <a href="#plans" class="btn btn-light">查看会员方案</a>
+          <a href="#benefits" class="btn btn-ghost">会员权益</a>
+        </div>
+        <div class="hero-stats">
+          <div><strong><span data-count="100" data-suffix="M">0M</span></strong><span>稳定共享池</span></div>
+          <div><strong><span data-count="7.9" data-decimals="1" data-prefix="¥">¥0.9</span></strong><span>元/月起</span></div>
+          <div><strong><span data-count="7" data-suffix="×16">0×16</span></strong><span>稳定运行</span></div>
+        </div>
       </div>
     </div>
     <a class="scroll-cue" href="#plans" aria-label="向下滚动">
@@ -1154,7 +1193,6 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
   function show(el) {
     var delay = parseFloat(el.style.getPropertyValue('--reveal-delay')) || 0;
     el.classList.add('is-visible');
-    /* QoS 进度条填充 */
     var bar = el.querySelector ? el.querySelector('.qos-bar i') : null;
     if (bar && bar.dataset.fill) {
       setTimeout(function () { bar.style.width = bar.dataset.fill; }, 200 + delay);
@@ -1368,6 +1406,7 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
   /* ============================================================
      Three.js 3D 场景
      核心网络球 + 粒子壳 + 轨道数据包 + 星域 + 地面网格
+     桌面端：通过 setViewOffset 把画面整体推到左侧，右侧留给文案
      ============================================================ */
   function initThree() {
     if (!window.THREE) return;
@@ -1389,7 +1428,35 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
 
     var scene = new THREE.Scene();
     var camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 200);
-    camera.position.set(0, 0, 16);
+
+    /* ---------- 桌面端：相机视口偏移，让 3D 居中在左栏 ---------- */
+    var DESKTOP_MIN = 981;
+    var isDesktop = window.innerWidth >= DESKTOP_MIN;
+    var camBaseZ = isDesktop ? 15 : 11;
+    var camStartZ = 22;
+
+    function updateCameraProjection() {
+      var w = window.innerWidth;
+      var h = window.innerHeight;
+      isDesktop = w >= DESKTOP_MIN;
+      camBaseZ = isDesktop ? 15 : 11;
+
+      camera.aspect = w / h;
+
+      if (isDesktop) {
+        /* 算出 hero 左栏的中心点（与 CSS 的 1200px 容器 + 24px 内边距保持一致） */
+        var containerW = Math.min(1200, w);
+        var contentW = containerW - 48;
+        var leftCenter = (w - containerW) / 2 + 24 + contentW * 0.25;
+        var shift = w * 0.5 - leftCenter;
+        camera.setViewOffset(w, h, shift, 0, w, h);
+      } else {
+        camera.clearViewOffset();
+      }
+      camera.updateProjectionMatrix();
+    }
+    updateCameraProjection();
+    camera.position.set(0, 0, camStartZ);
 
     var world = new THREE.Group();
     scene.add(world);
@@ -1466,7 +1533,6 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
     var coreGlow = makeGlowSprite(glowTexBlue, 7.5, 0.5);
     coreGroup.add(coreGlow);
 
-    /* 点光源（照亮内核） */
     var pl1 = new THREE.PointLight(0x60a5fa, 2.2, 30);
     pl1.position.set(5, 4, 6);
     var pl2 = new THREE.PointLight(0xa855f7, 2.2, 30);
@@ -1544,7 +1610,7 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
     function addSegment(a, b) {
       linePos.push(a.x, a.y, a.z, b.x, b.y, b.z);
       var c = COL.purple.clone().lerp(COL.blue, Math.random());
-        lineCol.push(c.r, c.g, c.b);
+      lineCol.push(c.r, c.g, c.b);
     }
     for (i = 0; i < nodePts.length; i++) {
       var dists = [];
@@ -1613,9 +1679,7 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
     /* ---------- 交互状态 ---------- */
     var mouseX = 0, mouseY = 0;
     var targetX = 0, targetY = 0;
-    var camBaseZ = 11;
     var introStart = null;
-    var heroFade = 1;
 
     function onPointerMove(e) {
       if (e.touches && e.touches[0]) e = e.touches[0];
@@ -1651,7 +1715,7 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
       mouseY += (targetY - mouseY) * 0.045;
       camera.position.x = mouseX;
       camera.position.y = mouseY;
-      camera.position.z = 16 - introE * (16 - camBaseZ);
+      camera.position.z = camStartZ - introE * (camStartZ - camBaseZ);
       camera.lookAt(0, 0, 0);
 
       /* 核心 */
@@ -1673,8 +1737,8 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
       stars.rotation.y += 0.00018;
 
       /* 轨道环与数据包 */
-      for (var i = 0; i < rings.length; i++) {
-        var ring = rings[i];
+      for (var i2 = 0; i2 < rings.length; i2++) {
+        var ring = rings[i2];
         ring.group.rotation.z += ring.spin * 0.012;
         for (var k = 0; k < ring.packets.length; k++) {
           var pk = ring.packets[k];
@@ -1690,8 +1754,7 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
       var heroH = window.innerHeight || 800;
       var scroll = window.scrollY || window.pageYOffset || 0;
       var prog = Math.min(scroll / (heroH * 0.85), 1);
-      heroFade = 1 - prog;
-      var cssOpacity = Math.max(0.12, heroFade);
+      var cssOpacity = Math.max(0.12, 1 - prog);
       canvas.style.opacity = cssOpacity.toFixed(3);
       world.position.y = scroll * 0.0016;
       stars.position.y = scroll * 0.0004;
@@ -1700,7 +1763,6 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
     }
 
     if (reduceMotion) {
-      /* 降级：静态渲染一帧 */
       introStart = 99999;
       camera.position.z = camBaseZ;
       coreGroup.scale.setScalar(1);
@@ -1726,8 +1788,7 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
     window.addEventListener('resize', function () {
       window.clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(function () {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
+        updateCameraProjection();
         renderer.setSize(window.innerWidth, window.innerHeight);
       }, 120);
     });
