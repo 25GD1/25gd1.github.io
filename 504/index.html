@@ -494,6 +494,106 @@ section[id]{scroll-margin-top:96px}
 }
 .feature-card.highlight h3{color:var(--purple)}
 
+/* ===================== 游戏加速申请 ===================== */
+.boost-card{
+  position:relative;max-width:880px;margin:30px auto 0;padding:34px 32px 30px;
+  border-radius:var(--r-xl);overflow:hidden;
+  background:linear-gradient(155deg,rgba(37,99,235,.14) 0%,rgba(124,58,237,.12) 100%);
+  border:1px solid rgba(124,58,237,.34);
+  box-shadow:0 4px 12px -6px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06);
+}
+.boost-card::before{
+  content:"";position:absolute;top:-46%;right:-12%;width:320px;height:320px;border-radius:50%;
+  background:radial-gradient(circle,rgba(167,139,250,.22),transparent 70%);pointer-events:none;
+}
+.boost-head{position:relative;text-align:center;max-width:560px;margin:0 auto 26px}
+.boost-head h3{
+  display:flex;align-items:center;justify-content:center;gap:9px;
+  font-size:20px;font-weight:800;letter-spacing:-.015em;
+}
+.boost-head h3 svg{width:20px;height:20px;color:var(--purple)}
+.boost-head p{margin-top:10px;font-size:14px;color:var(--muted);line-height:1.75}
+.boost-grid{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.boost-item{
+  padding:22px 20px 20px;border-radius:var(--r-lg);text-align:center;
+  background:rgba(255,255,255,.05);border:1px solid var(--card-border);
+}
+.boost-item.vip{
+  border-color:rgba(96,165,250,.38);
+  background:linear-gradient(160deg,rgba(96,165,250,.15),rgba(96,165,250,.04));
+}
+.boost-item.svip{
+  border-color:rgba(245,158,11,.42);
+  background:linear-gradient(160deg,rgba(245,158,11,.16),rgba(245,158,11,.04));
+}
+.boost-tier{
+  display:inline-block;padding:5px 14px;border-radius:999px;
+  font-size:12px;font-weight:800;color:#fff;letter-spacing:.02em;white-space:nowrap;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.3);
+}
+.boost-item.vip .boost-tier{background:linear-gradient(135deg,#60a5fa,#3b82f6)}
+.boost-item.svip .boost-tier{background:linear-gradient(135deg,#fcd34d,#f59e0b);color:#451a03}
+.boost-quotas{display:flex;justify-content:center;gap:24px;margin-top:16px}
+.boost-quota{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0}
+.boost-quota strong{font-size:26px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.boost-item.vip .boost-quota strong{color:#93c5fd}
+.boost-item.svip .boost-quota strong{color:#fcd34d}
+.boost-quota span{font-size:12px;color:var(--muted);white-space:nowrap}
+.boost-note{
+  position:relative;display:flex;align-items:flex-start;gap:8px;
+  margin-bottom:22px;padding-top:16px;border-top:1px dashed rgba(255,255,255,.14);
+  font-size:12.5px;color:var(--muted);line-height:1.7;text-align:left;
+}
+.boost-note svg{width:14px;height:14px;flex:0 0 auto;margin-top:3px;color:var(--purple)}
+.boost-action{position:relative;display:flex;justify-content:center}
+.boost-action .btn{min-width:220px}
+
+/* 申请弹窗内表单 */
+.boost-form{display:flex;flex-direction:column;gap:18px}
+.boost-field{display:flex;flex-direction:column;gap:10px}
+.boost-label{font-size:13.5px;font-weight:700;color:var(--ink)}
+.boost-options{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.boost-option{
+  position:relative;display:flex;flex-direction:column;gap:4px;
+  padding:16px 15px;border-radius:var(--r-md);cursor:pointer;
+  background:rgba(255,255,255,.045);border:1.5px solid var(--card-border);
+  transition:border-color .35s var(--ease-smooth),background-color .35s var(--ease-smooth),transform .4s var(--ease-spring);
+}
+.boost-option input{position:absolute;opacity:0;width:1px;height:1px;pointer-events:none}
+.boost-option .bo-t{font-size:14px;font-weight:700;color:var(--ink)}
+.boost-option .bo-d{font-size:12px;color:var(--muted);line-height:1.5}
+.boost-option.is-checked{
+  border-color:rgba(167,139,250,.75);
+  background:linear-gradient(150deg,rgba(124,58,237,.24),rgba(96,165,250,.14));
+}
+.boost-option.is-checked .bo-t{color:#c4b5fd}
+.boost-input{
+  width:100%;padding:14px 16px;border-radius:var(--r-md);
+  background:rgba(255,255,255,.05);border:1.5px solid var(--card-border);
+  color:var(--ink);font-family:inherit;font-size:15px;
+  -webkit-appearance:none;appearance:none;
+  transition:border-color .35s,background-color .35s;
+}
+.boost-input::placeholder{color:#6b7490}
+.boost-input:focus{outline:none;border-color:rgba(96,165,250,.7);background:rgba(96,165,250,.09)}
+.boost-submit{width:100%}
+.boost-hint{margin-top:-6px;font-size:12px;color:var(--muted);line-height:1.65;text-align:center}
+.boost-success{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;padding:26px 8px 10px}
+.boost-success .ok-icon{
+  width:62px;height:62px;border-radius:50%;display:grid;place-items:center;color:#fff;
+  background:linear-gradient(135deg,#22c55e,#15803d);
+  box-shadow:0 16px 34px -10px rgba(34,197,94,.6),inset 0 1px 0 rgba(255,255,255,.35);
+  margin-bottom:6px;
+}
+.boost-success .ok-icon svg{width:28px;height:28px}
+.boost-success h4{font-size:17px;font-weight:800;color:var(--ink)}
+.boost-success p{font-size:13.5px;color:var(--muted);line-height:1.75}
+.boost-success p strong{color:var(--ink);font-weight:700}
+.boost-success-tip{margin-top:4px;font-size:12.5px}
+.boost-success .btn{margin-top:14px;min-width:150px}
+.modal-card-sm{max-width:520px}
+.modal-title-icon.boost-icon{background:linear-gradient(135deg,#8b5cf6,#d946ef)}
+
 /* ===================== Footer ===================== */
 footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);color:#8e99b6;padding-top:74px}
 .footer-grid{display:grid;grid-template-columns:1.6fr 1fr 1fr 1.2fr;gap:40px;padding-bottom:50px}
@@ -674,6 +774,180 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
       radial-gradient(ellipse 34% 34% at 10% 16%,rgba(37,99,235,.16) 0%,transparent 60%);
   }
 }
+
+/* ============================================================
+   移动端 UI 优化（覆盖上方规则，必须放在最后）
+   ============================================================ */
+@media (max-width:900px){
+  .nav-links{
+    max-height:calc(100vh - 110px);
+    max-height:calc(100dvh - 110px);
+    overflow-y:auto;
+    overscroll-behavior:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+}
+
+@media (max-width:768px){
+  .container{padding-inline:16px}
+  section[id]{scroll-margin-top:78px}
+
+  .section{padding:62px 0}
+  .section-head{margin-bottom:32px}
+  .eyebrow{font-size:12px;padding:6px 15px;margin-bottom:13px}
+  .section-head h2{font-size:clamp(21px,6vw,29px);line-height:1.3}
+  .section-head p{font-size:13.5px;margin-top:11px;line-height:1.75}
+
+  /* Hero */
+  .hero{padding:114px 0 76px;min-height:auto}
+  .hero-inner{gap:0}
+  .hero-tag{font-size:12.5px;padding:8px 16px;margin-bottom:20px;gap:6px}
+  .hero h1{font-size:clamp(28px,8vw,40px);line-height:1.18}
+  .hero-sub{margin-top:16px;font-size:14.5px;line-height:1.75}
+  .hero-sub br{display:none}
+  .hero-actions{margin-top:28px;gap:11px;flex-direction:column}
+  .hero-actions .btn{width:100%}
+  .hero-stats{
+    margin-top:34px;padding-top:22px;
+    flex-wrap:nowrap;justify-content:space-between;gap:8px;
+  }
+  .hero-stats div{flex:1 1 auto;min-width:0}
+  .hero-stats strong{font-size:clamp(19px,5.8vw,25px)}
+  .hero-stats span{font-size:11px;margin-top:2px;white-space:nowrap}
+
+  /* 公告 */
+  .notice{padding:16px;gap:11px;margin-bottom:28px;border-radius:var(--r-md)}
+  .notice-icon{width:32px;height:32px;border-radius:10px}
+  .notice-icon svg{width:16px;height:16px}
+  .notice-txt strong{font-size:13.5px;line-height:1.5}
+  .notice-txt span{font-size:12.5px;line-height:1.7}
+
+  /* 套餐 */
+  .plans-grid{gap:20px}
+  .plan-card{padding:28px 22px;border-radius:var(--r-lg)}
+  .plan-name{font-size:14px}
+  .plan-price{font-size:42px;margin-top:12px}
+  .plan-price .cur{font-size:20px}
+  .plan-price small{font-size:13.5px}
+  .price-old{font-size:15px}
+  .plan-desc{min-height:0;font-size:13.5px;margin-top:10px;line-height:1.65}
+  .plan-features{margin-top:20px;gap:11px}
+  .plan-features li{font-size:13.5px;padding-left:27px}
+  .plan-features li::before{width:18px;height:18px;font-size:10px;top:3px}
+  .qos-meter{margin-top:16px}
+  .qos-meter-head{font-size:12px}
+  .plan-badge{font-size:11.5px;padding:6px 16px;top:-12px}
+
+  /* QoS 对比 */
+  .qos-compare{padding:20px 14px 12px;margin-top:26px;border-radius:var(--r-lg)}
+  .qos-compare-head h3{font-size:15.5px}
+  .qos-compare-head p{font-size:12.5px;line-height:1.7}
+  .qos-table{
+    margin-top:14px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    overscroll-behavior-x:contain;
+  }
+  .qos-row{
+    min-width:330px;grid-template-columns:1.45fr .85fr .85fr .85fr;
+    gap:4px;padding:10px 2px;font-size:12px;
+  }
+  .qos-row .qos-cell:first-child{font-size:11.5px}
+  .qos-row-head{font-size:11px;letter-spacing:.03em}
+  .qos-cell em{font-size:10.5px}
+  .lv i{width:5px;height:5px}
+
+  /* 协议入口 */
+  .agreement-wrap{margin-top:26px}
+  .plan-agreement{padding:12px 14px;gap:10px;font-size:12px;border-radius:var(--r-md)}
+  .plan-agreement .doc-icon{width:30px;height:30px;border-radius:9px}
+  .plan-agreement .doc-icon svg{width:14px;height:14px}
+  .plan-agreement .agr-arrow svg{width:13px;height:13px}
+
+  /* 会员说明 */
+  .member-note{
+    margin-top:26px;padding:16px 18px;font-size:13px;line-height:1.75;
+    gap:9px;border-radius:var(--r-md);
+  }
+  .member-note svg{width:17px;height:17px}
+
+  /* 权益 / 特性 */
+  .benefit-grid{gap:20px}
+  .benefit-card{padding:26px 22px 24px;border-radius:var(--r-lg)}
+  .benefit-title{font-size:18px}
+  .benefit-title svg{width:20px;height:20px}
+  .benefit-tag{font-size:11px;padding:4px 11px}
+  .benefit-price{font-size:13px;margin-bottom:18px}
+  .benefit-price strong{font-size:18px}
+  .benefit-list{gap:10px}
+  .benefit-list li{font-size:13.5px;padding-left:26px}
+  .benefit-list li::before{width:18px;height:18px;font-size:10px;top:3px}
+  .benefit-foot{font-size:12px;margin-top:18px;padding-top:14px}
+
+  .feature-grid{gap:18px}
+  .feature-card{padding:26px 22px;border-radius:var(--r-lg)}
+  .feature-icon{width:48px;height:48px;margin-bottom:16px;border-radius:16px}
+  .feature-icon svg{width:23px;height:23px}
+  .feature-card h3{font-size:16px;margin-bottom:8px}
+  .feature-card p{font-size:13.5px;line-height:1.72}
+
+  /* 游戏加速 */
+  .boost-card{margin-top:24px;padding:26px 20px 22px;border-radius:var(--r-lg)}
+  .boost-head{margin-bottom:20px}
+  .boost-head h3{font-size:17px;gap:7px}
+  .boost-head h3 svg{width:18px;height:18px}
+  .boost-head p{font-size:13px;margin-top:8px;line-height:1.7}
+  .boost-grid{gap:12px;margin-bottom:18px}
+  .boost-item{padding:18px 12px;border-radius:var(--r-md)}
+  .boost-tier{font-size:11px;padding:4px 11px}
+  .boost-quotas{gap:16px;margin-top:14px}
+  .boost-quota strong{font-size:23px}
+  .boost-quota span{font-size:11px}
+  .boost-note{font-size:11.5px;margin-bottom:18px;padding-top:12px;gap:6px}
+  .boost-note svg{width:13px;height:13px}
+  .boost-action .btn{width:100%;min-width:0}
+
+  /* 弹窗 */
+  .modal{padding:12px}
+  .modal-card{max-height:86vh;max-height:86dvh;border-radius:var(--r-lg)}
+  .modal-head{padding:16px 18px;gap:12px}
+  .modal-title-icon{width:36px;height:36px;border-radius:11px}
+  .modal-title-icon svg{width:17px;height:17px}
+  .modal-title-wrap h3{font-size:15px}
+  .modal-title-wrap p{font-size:11.5px}
+  .modal-close{width:36px;height:36px}
+  .modal-body{padding:20px 18px 24px;font-size:14px;line-height:1.8}
+  .modal-foot{padding:12px 18px 16px}
+  .boost-form{gap:16px}
+  .boost-options{grid-template-columns:1fr;gap:10px}
+  .boost-option{padding:14px}
+  .boost-input{padding:13px 14px;font-size:16px} /* 16px 防止 iOS 聚焦缩放 */
+  .boost-success{padding:22px 4px 6px}
+
+  /* 底部 */
+  footer{padding-top:52px}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:26px 20px;padding-bottom:32px}
+  .footer-brand{grid-column:1 / -1}
+  .footer-brand p{max-width:none;margin-top:14px;font-size:13px}
+  .footer-col h4{font-size:14px;margin-bottom:14px}
+  .footer-col a,.footer-col li{font-size:13px;margin-bottom:9px}
+  .footer-bottom{
+    padding:20px 0 calc(20px + env(safe-area-inset-bottom));
+    font-size:11.5px;flex-direction:column;align-items:center;gap:6px;text-align:center;
+  }
+}
+
+@media (max-width:400px){
+  .container{padding-inline:14px}
+  .hero h1{font-size:clamp(25px,8.4vw,32px)}
+  .hero-stats span{font-size:10px}
+  .plan-card{padding:26px 18px}
+  .benefit-card,.feature-card{padding:24px 18px}
+  .boost-grid{grid-template-columns:1fr}
+  .boost-quotas{gap:30px}
+  .footer-grid{grid-template-columns:1fr}
+  .footer-brand{grid-column:auto}
+  .qos-row{min-width:300px;font-size:11.5px}
+}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
   html{scroll-behavior:auto}
@@ -807,7 +1081,7 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
           <ul class="plan-features">
             <li>共享带宽池 80 Mbps</li>
             <li>同时在线 1 台设备</li>
-            <li class="gift">内含 VIP 权益（游戏加速 / 优先级提升）</li>
+            <li class="gift">内含 VIP 权益（含游戏加速申请）</li>
             <li>宿舍 WiFi 直接连接</li>
             <li>开通后即可使用</li>
           </ul>
@@ -829,7 +1103,7 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
             <ul class="plan-features">
               <li>共享带宽池 100 Mbps</li>
               <li>同时在线 1 台设备</li>
-              <li class="gift">内含 SVIP 权益（含 VIP 全部权益）</li>
+              <li class="gift">内含 SVIP 权益（含尊享加速申请）</li>
               <li>最高优先级 QoS 调度</li>
               <li>自定义 SSID（网络名称）</li>
               <li>宿舍 WiFi 直接连接</li>
@@ -951,6 +1225,7 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
           <div class="benefit-price">豪华套餐 / 升级套餐 <strong>内含</strong></div>
           <ul class="benefit-list">
             <li>游戏加速专线，延迟更低</li>
+            <li>可申请「会员加速」：每日 1 次 · 每次 1 小时</li>
             <li>网络优先级提升，高峰更稳</li>
             <li>卡顿优先处理</li>
             <li>QoS 加权调度</li>
@@ -973,12 +1248,59 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
           <div class="benefit-price">升级套餐 <strong>内含</strong></div>
           <ul class="benefit-list">
             <li>包含 VIP 权益全部内容</li>
+            <li>可申请「尊享加速」：每日 2 次 · 每次 1 小时</li>
             <li>网络最高优先级调度</li>
             <li>高峰时段带宽保障</li>
             <li>自定义 SSID（网络名称）</li>
           </ul>
           <div class="benefit-foot">开通「<b>升级套餐</b>」即自动享有</div>
         </div>
+      </div>
+
+      <!-- 游戏加速申请 -->
+      <div class="boost-card reveal">
+        <div class="boost-head">
+          <h3>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/>
+            </svg>
+            申请游戏加速
+          </h3>
+          <p>开通对应套餐后即可申请游戏加速通道。VIP 会员可申请「会员加速」，SVIP 会员可申请「尊享加速」。</p>
+        </div>
+
+        <div class="boost-grid">
+          <div class="boost-item vip">
+            <span class="boost-tier">VIP · 会员加速</span>
+            <div class="boost-quotas">
+              <div class="boost-quota"><strong>1</strong><span>次 / 天</span></div>
+              <div class="boost-quota"><strong>1</strong><span>小时 / 次</span></div>
+            </div>
+          </div>
+          <div class="boost-item svip">
+            <span class="boost-tier">SVIP · 尊享加速</span>
+            <div class="boost-quotas">
+              <div class="boost-quota"><strong>2</strong><span>次 / 天</span></div>
+              <div class="boost-quota"><strong>1</strong><span>小时 / 次</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="boost-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 16v-4"/>
+            <path d="M12 8h.01"/>
+          </svg>
+          <span>单日累计上限：VIP 1 小时 / SVIP 2 小时。加速按次申请，当日未用完的时长不累计到次日。</span>
+        </div>
+
+<div class="boost-action">
+  <a class="btn btn-grad btn-sm"
+     href="https://11871mn1dm963.vicp.fun"
+     target="_blank"
+     rel="noopener noreferrer">申请游戏加速</a>
+</div>
       </div>
     </div>
   </section>
@@ -1088,6 +1410,7 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
   </div>
 </footer>
 
+<!-- ==================== 服务协议弹窗 ==================== -->
 <div class="modal" id="agreementModal" aria-hidden="true">
   <div class="modal-overlay" data-close-agreement></div>
 
@@ -1124,6 +1447,62 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
 
     <div class="modal-foot">
       <button type="button" class="btn btn-grad btn-sm" data-close-agreement>我已阅读并同意</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 游戏加速申请弹窗 ==================== -->
+<div class="modal" id="boostModal" aria-hidden="true">
+  <div class="modal-overlay" data-close-boost></div>
+
+  <div class="modal-card modal-card-sm" role="dialog" aria-modal="true" aria-labelledby="boostTitle">
+    <div class="modal-head">
+      <div class="modal-title-wrap">
+        <span class="modal-title-icon boost-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M13 2 4.5 13.5H11L10 22l8.5-11.5H12L13 2z"/>
+          </svg>
+        </span>
+        <div>
+          <h3 id="boostTitle">申请游戏加速</h3>
+          <p>选择加速类型后提交申请</p>
+        </div>
+      </div>
+      <button type="button" class="modal-close" data-close-boost aria-label="关闭">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body" id="boostBody">
+      <form class="boost-form" id="boostForm" novalidate>
+        <div class="boost-field">
+          <span class="boost-label">加速类型</span>
+          <div class="boost-options">
+            <label class="boost-option is-checked">
+              <input type="radio" name="boostType" value="vip" checked />
+              <span class="bo-t">VIP · 会员加速</span>
+              <span class="bo-d">每日 1 次 · 每次 1 小时</span>
+            </label>
+            <label class="boost-option">
+              <input type="radio" name="boostType" value="svip" />
+              <span class="bo-t">SVIP · 尊享加速</span>
+              <span class="bo-d">每日 2 次 · 每次 1 小时</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="boost-field">
+          <label class="boost-label" for="boostContact">联系方式（QQ / 微信）</label>
+          <input class="boost-input" id="boostContact" name="boostContact" type="text"
+                 autocomplete="off" placeholder="方便管理员联系你开通加速" required />
+        </div>
+
+        <button type="submit" class="btn btn-grad boost-submit">提交申请</button>
+        <p class="boost-hint">提交后请在宿舍 WiFi 下等待管理员处理，通常几分钟内生效。</p>
+      </form>
     </div>
   </div>
 </div>
@@ -1286,21 +1665,121 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
     });
   }
 
+  /* ==================== HTML 转义 ==================== */
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  /* ==================== 游戏加速申请 ==================== */
+  var boostModal = document.getElementById('boostModal');
+  var boostBody = document.getElementById('boostBody');
+  var boostFormHTML = boostBody ? boostBody.innerHTML : '';
+  var boostLastFocused = null;
+
+  var BOOST_INFO = {
+    vip:  { name: 'VIP 会员加速', rule: '每日 1 次 · 每次 1 小时' },
+    svip: { name: 'SVIP 尊享加速', rule: '每日 2 次 · 每次 1 小时（每日共 2 小时）' }
+  };
+
+  function syncBoostOptions() {
+    if (!boostBody) return;
+    boostBody.querySelectorAll('.boost-option').forEach(function (opt) {
+      var input = opt.querySelector('input');
+      opt.classList.toggle('is-checked', !!(input && input.checked));
+    });
+  }
+
+  function openBoostModal() {
+    if (!boostModal) return;
+    boostLastFocused = document.activeElement;
+    boostModal.classList.add('open');
+    boostModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    syncBoostOptions();
+    window.setTimeout(function () {
+      var target = boostModal.querySelector('.boost-option.is-checked input') ||
+                   boostModal.querySelector('.boost-input') ||
+                   boostModal.querySelector('.modal-close');
+      if (target && target.focus) target.focus({ preventScroll: true });
+    }, 90);
+  }
+
+  function closeBoostModal() {
+    if (!boostModal || !boostModal.classList.contains('open')) return;
+    boostModal.classList.remove('open');
+    boostModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    window.setTimeout(function () {
+      if (boostBody) boostBody.innerHTML = boostFormHTML;
+      syncBoostOptions();
+    }, 430);
+    if (boostLastFocused && typeof boostLastFocused.focus === 'function') {
+      boostLastFocused.focus({ preventScroll: true });
+    }
+  }
+
+  document.querySelectorAll('[data-open-boost]').forEach(function (btn) {
+    btn.addEventListener('click', openBoostModal);
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!e.target || !e.target.closest) return;
+    if (e.target.closest('[data-close-boost]')) closeBoostModal();
+  });
+
+  if (boostBody) {
+    boostBody.addEventListener('change', function (e) {
+      if (e.target && e.target.name === 'boostType') syncBoostOptions();
+    });
+
+    boostBody.addEventListener('submit', function (e) {
+      if (!e.target || e.target.id !== 'boostForm') return;
+      e.preventDefault();
+
+      var data = new FormData(e.target);
+      var type = data.get('boostType') === 'svip' ? 'svip' : 'vip';
+      var contactEl = e.target.querySelector('#boostContact');
+      var contact = String(data.get('boostContact') || '').trim();
+
+      if (!contact) {
+        if (contactEl) {
+          contactEl.focus();
+          contactEl.style.borderColor = 'rgba(248,113,113,.8)';
+          window.setTimeout(function () { contactEl.style.borderColor = ''; }, 1600);
+        }
+        return;
+      }
+
+      var info = BOOST_INFO[type];
+
+      boostBody.innerHTML =
+        '<div class="boost-success">' +
+          '<div class="ok-icon">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round">' +
+              '<polyline points="20 6 9 17 4 12"/>' +
+            '</svg>' +
+          '</div>' +
+          '<h4>申请已提交</h4>' +
+          '<p>加速类型：<strong>' + info.name + '</strong></p>' +
+          '<p>时长规则：<strong>' + info.rule + '</strong></p>' +
+          '<p>联系方式：<strong>' + escapeHtml(contact) + '</strong></p>' +
+          '<p class="boost-success-tip">管理员会尽快为你开通，请在宿舍 WiFi 下等待加速生效。</p>' +
+          '<button type="button" class="btn btn-light btn-sm" data-close-boost>完成</button>' +
+        '</div>';
+    });
+  }
+
   /* ==================== 服务协议弹窗 ==================== */
   var AGREEMENT_URL = 'https://25gd1.github.io/504/1.txt';
   var modal = document.getElementById('agreementModal');
   var modalBody = document.getElementById('agreementBody');
   var agreementLoaded = false;
   var lastFocused = null;
-
-  function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '"')
-      .replace(/'/g, '&#39;');
-  }
 
   function renderAgreement(text) {
     var lines = String(text).replace(/\r\n?/g, '\n').split('\n');
@@ -1359,7 +1838,7 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
     if (!agreementLoaded) loadAgreement();
     window.setTimeout(function () {
       var closeBtn = modal.querySelector('.modal-close');
-      if (closeBtn) closeBtn.focus();
+      if (closeBtn) closeBtn.focus({ preventScroll: true });
     }, 80);
   }
 
@@ -1368,7 +1847,7 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
     if (lastFocused && typeof lastFocused.focus === 'function') {
-      lastFocused.focus();
+      lastFocused.focus({ preventScroll: true });
     }
   }
 
@@ -1381,6 +1860,12 @@ footer{background:rgba(0,0,0,.4);border-top:1px solid rgba(255,255,255,.06);colo
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && modal.classList.contains('open')) {
       closeAgreement();
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && boostModal && boostModal.classList.contains('open')) {
+      closeBoostModal();
     }
   });
 
