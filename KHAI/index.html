@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>可豪AI · KH-AI — 通用人工智能</title>
+<meta name="description" content="可豪AI（KH-AI）：98万亿参数 · 自适应稀疏注意力 · CUA自主成长架构，重新定义智能。">
+<style>
+  :root{
+    --bg:#05070d;
+    --bg-2:#080b14;
+    --panel:rgba(255,255,255,.045);
+    --panel-hi:rgba(255,255,255,.085);
+    --line:rgba(120,180,255,.16);
+    --line-hi:rgba(120,180,255,.32);
+    --blue:#4da3ff;
+    --purple:#9d6bff;
+    --gold:#e8c56a;
+    --text:#e9eff8;
+    --muted:#8fa3bd;
+    --muted-hi:#a9c2df;
+    --silk:cubic-bezier(.22,1,.36,1);
+    --radius:18px;
+    --max-w:1320px;
+    --shadow-sm:0 4px 18px rgba(0,0,0,.28);
+    --shadow-md:0 14px 44px rgba(0,0,0,.42);
+    --shadow-lg:0 28px 80px rgba(0,0,0,.5);
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,-apple-system,sans-serif;
+    overflow-x:hidden;
+    line-height:1.65;
+    min-height:100vh;
+  }
+  body.modal-open{overflow:hidden}
+  ::selection{background:rgba(77,163,255,.35)}
+  a:focus-visible,button:focus-visible{
+    outline:2px solid var(--blue);outline-offset:3px;border-radius:6px;
+  }
+
+  /* ===== 背景层 ===== */
+  #neural{position:fixed;inset:0;z-index:0;pointer-events:none}
+  .aurora{
+    position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(60% 45% at 70% -10%, rgba(77,163,255,.15), transparent 62%),
+      radial-gradient(50% 40% at 15% 25%, rgba(157,107,255,.11), transparent 62%),
+      radial-gradient(45% 40% at 85% 80%, rgba(232,197,106,.07), transparent 62%);
+    filter:blur(10px);
+    animation:auroraShift 18s ease-in-out infinite alternate;
+  }
+  @keyframes auroraShift{from{opacity:.85;transform:scale(1)}to{opacity:1;transform:scale(1.06)}}
+  .grain{
+    position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.6'/%3E%3C/svg%3E");
+  }
+  .cursor-glow{
+    position:fixed;z-index:2;width:520px;height:520px;border-radius:50%;
+    pointer-events:none;transform:translate(-50%,-50%);
+    background:radial-gradient(circle, rgba(77,163,255,.07), transparent 65%);
+    mix-blend-mode:screen;transition:opacity .4s;
+  }
+  @media (hover:none),(max-width:768px){.cursor-glow{display:none}}
+
+  /* ===== 顶部进度条 ===== */
+  #progress{
+    position:fixed;top:0;left:0;height:2px;width:100%;z-index:100;
+    background:linear-gradient(90deg,var(--blue),var(--purple),var(--gold));
+    transform-origin:0 50%;transform:scaleX(0);
+  }
+
+  /* ===== 导航 ===== */
+  nav{
+    position:fixed;top:0;left:0;right:0;z-index:99;
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px 6vw;transition:all .6s var(--silk);
+  }
+  nav.scrolled{
+    background:rgba(6,9,17,.78);backdrop-filter:blur(18px) saturate(140%);
+    border-bottom:1px solid var(--line);padding:13px 6vw;
+    box-shadow:0 8px 32px rgba(0,0,0,.28);
+  }
+  .nav-inner{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:var(--max-w);margin:0 auto;gap:20px}
+  .logo{display:flex;align-items:center;gap:12px;font-weight:700;font-size:19px;letter-spacing:1px;text-decoration:none;color:var(--text);white-space:nowrap}
+  .logo-mark{
+    width:34px;height:34px;border-radius:10px;position:relative;flex:none;
+    background:conic-gradient(from 0deg,var(--blue),var(--purple),var(--gold),var(--blue));
+    animation:spin 8s linear infinite;
+    box-shadow:0 0 24px rgba(77,163,255,.45);
+  }
+  .logo-mark::after{content:"";position:absolute;inset:5px;border-radius:7px;background:var(--bg)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .logo .tag{color:var(--muted);font-size:12px;letter-spacing:2px;font-weight:500}
+  .nav-links{display:flex;gap:30px;align-items:center}
+  .nav-links a{
+    color:var(--muted);text-decoration:none;font-size:14.5px;letter-spacing:.5px;
+    transition:color .4s;position:relative;white-space:nowrap;
+  }
+  .nav-links a::after{
+    content:"";position:absolute;left:0;bottom:-6px;height:1.5px;width:0;
+    background:linear-gradient(90deg,var(--blue),var(--gold));
+    transition:width .5s var(--silk);
+  }
+  .nav-links a:hover{color:var(--text)}
+  .nav-links a:hover::after{width:100%}
+
+  /* 汉堡菜单 */
+  .burger{display:none;background:none;border:0;cursor:pointer;padding:8px;flex-direction:column;gap:5px}
+  .burger span{display:block;width:24px;height:1.6px;background:var(--text);transition:all .4s var(--silk)}
+  .burger.active span:nth-child(1){transform:translateY(6.6px) rotate(45deg)}
+  .burger.active span:nth-child(2){opacity:0}
+  .burger.active span:nth-child(3){transform:translateY(-6.6px) rotate(-45deg)}
+  .mobile-menu{
+    position:fixed;inset:0;z-index:98;background:rgba(5,7,13,.96);backdrop-filter:blur(20px);
+    display:flex;flex-direction:column;justify-content:center;align-items:center;gap:26px;
+    opacity:0;pointer-events:none;transition:opacity .45s var(--silk);
+  }
+  .mobile-menu.open{opacity:1;pointer-events:auto}
+  .mobile-menu a{color:var(--text);text-decoration:none;font-size:22px;letter-spacing:3px;font-weight:600}
+
+  /* ===== 按钮 ===== */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:10px;
+    padding:14px 32px;border-radius:999px;font-size:15px;letter-spacing:1px;
+    text-decoration:none;cursor:pointer;border:1px solid transparent;
+    transition:all .5s var(--silk);white-space:nowrap;font-family:inherit;
+  }
+  .btn-primary{
+    color:#04070f;font-weight:700;
+    background:linear-gradient(120deg,var(--blue),var(--purple) 60%,var(--gold));
+    background-size:180% auto;
+    box-shadow:0 8px 32px rgba(77,163,255,.32);
+  }
+  .btn-primary:hover{background-position:right center;transform:translateY(-3px);box-shadow:0 14px 44px rgba(157,107,255,.45)}
+  .btn-ghost{color:var(--text);border-color:var(--line-hi);background:var(--panel);backdrop-filter:blur(8px)}
+  .btn-ghost:hover{border-color:rgba(120,180,255,.55);background:var(--panel-hi);transform:translateY(-3px)}
+  .btn-sm{padding:9px 22px;font-size:13.5px}
+
+  /* ===== Hero ===== */
+  .hero{
+    position:relative;z-index:3;min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    text-align:center;padding:140px 6vw 100px;max-width:var(--max-w);margin:0 auto;
+  }
+  .badge{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:9px 22px;border-radius:999px;font-size:13px;letter-spacing:2px;
+    color:#bcd6ff;background:var(--panel);border:1px solid var(--line);
+    backdrop-filter:blur(10px);
+    animation:fadeUp 1s var(--silk) both .1s;white-space:nowrap;
+    max-width:100%;
+  }
+  .badge .dot{width:8px;height:8px;border-radius:50%;background:#41e296;box-shadow:0 0 12px #41e296;flex:none;animation:pulse 2s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  .hero h1{
+    margin:34px 0 8px;font-size:clamp(38px,7vw,92px);
+    font-weight:800;letter-spacing:clamp(2px,0.4vw,4px);line-height:1.18;
+    animation:fadeUp 1.1s var(--silk) both .25s;
+    text-wrap:balance;
+  }
+  .grad{
+    background:linear-gradient(110deg,#7db4ff 5%,#a97bff 40%,var(--gold) 70%,#7db4ff 95%);
+    background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;
+    animation:shine 8s linear infinite;
+  }
+  @keyframes shine{to{background-position:220% center}}
+  .hero .sub{
+    max-width:720px;margin:22px auto 0;color:var(--muted-hi);
+    font-size:clamp(15px,1.5vw,18px);letter-spacing:1px;line-height:1.75;
+    animation:fadeUp 1.1s var(--silk) both .45s;
+  }
+  .hero .sub b{color:#cfe3ff;font-weight:600}
+  .hero-cta{margin-top:46px;display:flex;gap:18px;flex-wrap:wrap;justify-content:center;animation:fadeUp 1.1s var(--silk) both .65s}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(36px)}to{opacity:1;transform:none}}
+
+  /* 漂浮标签 */
+  .chips{display:none;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:26px;animation:fadeUp 1.1s var(--silk) both .8s}
+  .chip{
+    position:absolute;z-index:2;padding:11px 20px;border-radius:14px;
+    font-size:13px;letter-spacing:1.5px;color:#bcd6ff;
+    background:rgba(10,15,28,.6);border:1px solid var(--line);
+    backdrop-filter:blur(12px);box-shadow:0 8px 40px rgba(0,0,0,.4);
+    animation:float 7s ease-in-out infinite;white-space:nowrap;
+  }
+  .chip span{color:var(--gold);font-weight:700}
+  .chip.c1{top:24%;left:8%}
+  .chip.c2{top:38%;right:7%;animation-delay:-2.5s}
+  .chip.c3{bottom:22%;left:12%;animation-delay:-4.5s}
+  @keyframes float{50%{transform:translateY(-16px)}}
+  /* 移动端 / 平板改为内联徽章 */
+  .chip-inline{
+    display:inline-flex;align-items:center;gap:6px;
+    padding:8px 16px;border-radius:999px;font-size:12.5px;letter-spacing:1px;
+    color:#bcd6ff;background:rgba(10,15,28,.6);border:1px solid var(--line);
+    backdrop-filter:blur(10px);
+  }
+  .chip-inline span{color:var(--gold);font-weight:700}
+  @media(max-width:1024px){
+    .chip{display:none}
+    .chips{display:flex}
+  }
+
+  .scroll-hint{
+    position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
+    color:var(--muted);font-size:12px;letter-spacing:3px;text-align:center;
+    animation:fadeUp 1s var(--silk) both 1.1s;
+  }
+  .scroll-hint::after{
+    content:"";display:block;width:1px;height:44px;margin:10px auto 0;
+    background:linear-gradient(180deg,var(--blue),transparent);
+    transform-origin:top;animation:dropLine 2.2s ease-in-out infinite;
+  }
+  @keyframes dropLine{
+    0%{transform:scaleY(0);transform-origin:top}
+    45%{transform:scaleY(1);transform-origin:top}
+    55%{transform:scaleY(1);transform-origin:bottom}
+    100%{transform:scaleY(0);transform-origin:bottom}
+  }
+  @media(max-height:680px){.scroll-hint{display:none}}
+
+  /* ===== 通用区块 ===== */
+  section{position:relative;z-index:3;padding:110px 6vw;max-width:var(--max-w);margin:0 auto}
+  .eyebrow{
+    font-size:13px;letter-spacing:6px;color:transparent;
+    background:linear-gradient(90deg,var(--blue),var(--gold));
+    -webkit-background-clip:text;background-clip:text;font-weight:700;
+  }
+  .sec-title{
+    font-size:clamp(28px,3.8vw,50px);font-weight:800;letter-spacing:2px;
+    margin:16px 0 14px;line-height:1.3;text-wrap:balance;
+  }
+  .sec-desc{color:var(--muted-hi);max-width:680px;font-size:16px;letter-spacing:.5px;line-height:1.8}
+  .divider{
+    height:1px;width:100%;margin:0;border:none;
+    background:linear-gradient(90deg,transparent,var(--line) 20%,var(--line) 80%,transparent);
+  }
+
+  /* ===== 数据带 ===== */
+  .stats{
+    padding:20px 6vw 90px;display:grid;grid-template-columns:repeat(4,1fr);gap:22px;
+    max-width:var(--max-w);margin:0 auto;position:relative;z-index:3;
+  }
+  .stat{
+    text-align:center;padding:38px 18px;border-radius:var(--radius);
+    background:var(--panel);border:1px solid var(--line);
+    backdrop-filter:blur(14px);position:relative;overflow:hidden;
+    transition:all .6s var(--silk);
+  }
+  .stat::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:1.5px;
+    background:linear-gradient(90deg,transparent,var(--blue),var(--gold),transparent);
+    transform:scaleX(0);transition:transform .7s var(--silk);
+  }
+  .stat:hover{transform:translateY(-6px);background:var(--panel-hi);box-shadow:var(--shadow-sm)}
+  .stat:hover::before{transform:scaleX(1)}
+  .stat .num{
+    font-size:clamp(30px,3.4vw,48px);font-weight:800;letter-spacing:1px;
+    background:linear-gradient(180deg,#fff,#9cc4ff);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    font-variant-numeric:tabular-nums;
+  }
+  .stat .unit{font-size:15px;color:var(--gold);font-weight:600;letter-spacing:2px;margin-left:6px}
+  .stat .label{margin-top:10px;color:var(--muted);font-size:13.5px;letter-spacing:2px}
+
+  /* ===== 技术卡片 ===== */
+  .tech-grid{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:24px;
+    margin:64px 0 0;
+  }
+  .card{
+    padding:40px 36px;border-radius:var(--radius);
+    background:var(--panel);border:1px solid var(--line);
+    backdrop-filter:blur(14px);position:relative;overflow:hidden;
+    transition:all .65s var(--silk);
+  }
+  .card::before{
+    content:"";position:absolute;top:0;left:0;height:100%;width:1.5px;
+    background:linear-gradient(180deg,var(--blue),var(--purple),transparent);
+    opacity:0;transition:opacity .6s;
+  }
+  .card:hover{transform:translateY(-8px);background:var(--panel-hi);border-color:var(--line-hi);box-shadow:var(--shadow-md)}
+  .card:hover::before{opacity:1}
+  .card .icon{
+    width:52px;height:52px;border-radius:14px;display:grid;place-items:center;
+    font-size:24px;margin-bottom:20px;
+    background:linear-gradient(135deg,rgba(77,163,255,.18),rgba(157,107,255,.18));
+    border:1px solid var(--line);
+  }
+  .card h3{font-size:20px;letter-spacing:1.5px;margin-bottom:12px;line-height:1.4}
+  .card h3 em{font-style:normal;color:var(--gold);font-size:12px;letter-spacing:3px;display:block;margin-bottom:6px;opacity:.9}
+  .card p{color:var(--muted-hi);font-size:14.5px;letter-spacing:.4px;line-height:1.75}
+  .card .flow{
+    margin-top:18px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+    font-size:12.5px;color:#a9c6ef;letter-spacing:1px;
+  }
+  .card .flow i{
+    font-style:normal;padding:5px 13px;border-radius:999px;
+    background:rgba(77,163,255,.1);border:1px solid var(--line);white-space:nowrap;
+  }
+  .card .flow b{color:var(--gold)}
+
+  /* ===== 里程碑 ===== */
+  .timeline{max-width:880px;margin:70px 0 0;position:relative;padding-left:36px}
+  .timeline::before{
+    content:"";position:absolute;left:8px;top:6px;bottom:6px;width:1.5px;
+    background:linear-gradient(180deg,var(--blue),var(--purple),var(--gold));
+  }
+  .tl-item{position:relative;padding:0 0 48px 22px}
+  .tl-item:last-child{padding-bottom:8px}
+  .tl-item::before{
+    content:"";position:absolute;left:-34px;top:8px;width:13px;height:13px;border-radius:50%;
+    background:var(--bg);border:2.5px solid var(--blue);
+    box-shadow:0 0 14px rgba(77,163,255,.7);transition:all .5s;
+  }
+  .tl-item:hover::before{border-color:var(--gold);box-shadow:0 0 18px rgba(232,197,106,.8);transform:scale(1.25)}
+  .tl-item .year{font-size:14px;letter-spacing:4px;color:var(--gold);font-weight:700}
+  .tl-item h3{font-size:21px;letter-spacing:1.5px;margin:8px 0 10px}
+  .tl-item p{color:var(--muted-hi);font-size:14.5px;max-width:560px;line-height:1.75}
+
+  /* ===== 创始人 ===== */
+  .founder{text-align:center;max-width:860px;margin:0 auto}
+  .founder .avatar{
+    width:110px;height:110px;border-radius:50%;margin:0 auto 26px;
+    background:conic-gradient(from 30deg,var(--blue),var(--purple),var(--gold),var(--blue));
+    padding:3px;animation:spinSlow 14s linear infinite;
+    display:flex;align-items:center;justify-content:center;
+  }
+  @keyframes spinSlow{to{transform:rotate(360deg)}}
+  .founder .avatar-inner{
+    width:100%;height:100%;border-radius:50%;background:#0a0f1c;
+    font-size:34px;font-weight:800;color:#cfe3ff;
+    display:flex;align-items:center;justify-content:center;
+    line-height:1;padding-top:2px;
+  }
+  .founder h3{font-size:26px;letter-spacing:3px;margin-bottom:6px}
+  .founder .role{color:var(--muted);font-size:14px;letter-spacing:2px;margin-bottom:30px}
+  .founder blockquote{
+    font-size:clamp(19px,2.4vw,29px);font-weight:700;letter-spacing:2px;line-height:1.6;
+    background:linear-gradient(110deg,#cfe3ff,var(--gold));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .founder .bio{margin:24px auto 0;color:var(--muted-hi);font-size:15px;max-width:600px;line-height:1.8}
+
+  /* ===== 安全 ===== */
+  .safety-grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:22px;
+    margin:60px 0 0;
+  }
+  .safe{
+    padding:32px 28px;border-radius:var(--radius);
+    background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(12px);
+    transition:all .6s var(--silk);text-align:left;
+  }
+  .safe:hover{transform:translateY(-6px);border-color:rgba(232,197,106,.4);box-shadow:var(--shadow-sm)}
+  .safe h4{font-size:17px;letter-spacing:2px;margin-bottom:10px;color:#ffe1a0}
+  .safe p{color:var(--muted-hi);font-size:14px;line-height:1.75}
+
+  /* ===== CTA ===== */
+  .cta{text-align:center;padding:140px 6vw 150px}
+  .cta h2{font-size:clamp(30px,5vw,60px);font-weight:800;letter-spacing:4px;margin-bottom:20px;text-wrap:balance}
+  .cta p{color:var(--muted-hi);letter-spacing:1px;margin-bottom:44px}
+
+  /* ===== 页脚 ===== */
+  footer{
+    position:relative;z-index:3;border-top:1px solid var(--line);
+    padding:40px 6vw;display:flex;justify-content:space-between;align-items:center;
+    flex-wrap:wrap;gap:16px;color:var(--muted);font-size:13px;letter-spacing:1px;
+    background:rgba(5,7,13,.7);backdrop-filter:blur(10px);
+    max-width:100%;
+  }
+  footer .links{display:flex;gap:24px;flex-wrap:wrap}
+  footer a{color:var(--muted);text-decoration:none;transition:color .4s}
+  footer a:hover{color:var(--gold)}
+
+  /* ===== 滚动显影 ===== */
+  .reveal{opacity:0;transform:translateY(44px);transition:opacity 1s var(--silk),transform 1s var(--silk);transition-delay:var(--d,0s)}
+  .reveal.in{opacity:1;transform:none}
+
+  /* ===== 弹窗 ===== */
+  .modal-backdrop{
+    position:fixed;inset:0;z-index:200;
+    background:rgba(3,6,13,.7);backdrop-filter:blur(8px);
+    display:flex;align-items:center;justify-content:center;padding:24px;
+    opacity:0;pointer-events:none;transition:opacity .35s var(--silk);
+  }
+  .modal-backdrop.show{opacity:1;pointer-events:auto}
+  .modal{
+    position:relative;width:100%;max-width:420px;
+    padding:44px 36px 36px;border-radius:22px;text-align:center;
+    background:linear-gradient(160deg,rgba(14,20,34,.96),rgba(8,12,22,.96));
+    border:1px solid var(--line-hi);
+    box-shadow:var(--shadow-lg),0 0 80px rgba(77,163,255,.15);
+    transform:translateY(24px) scale(.96);
+    transition:transform .4s var(--silk);
+  }
+  .modal-backdrop.show .modal{transform:translateY(0) scale(1)}
+  .modal-close{
+    position:absolute;top:14px;right:14px;width:34px;height:34px;
+    border-radius:50%;border:1px solid var(--line);background:var(--panel);
+    color:var(--muted);cursor:pointer;font-size:20px;line-height:1;
+    display:grid;place-items:center;transition:all .3s var(--silk);
+  }
+  .modal-close:hover{color:var(--text);background:var(--panel-hi);border-color:var(--line-hi);transform:rotate(90deg)}
+  .modal-icon{
+    width:66px;height:66px;border-radius:50%;margin:0 auto 22px;
+    display:grid;place-items:center;font-size:30px;
+    background:linear-gradient(135deg,rgba(77,163,255,.18),rgba(232,197,106,.18));
+    border:1px solid var(--line-hi);
+    box-shadow:0 0 32px rgba(77,163,255,.18);
+  }
+  .modal h3{
+    font-size:22px;letter-spacing:3px;margin-bottom:10px;font-weight:700;
+    background:linear-gradient(110deg,#cfe3ff,var(--gold));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .modal p{color:var(--muted-hi);font-size:14.5px;letter-spacing:1px;margin-bottom:28px;line-height:1.7}
+  .modal .btn{width:100%;padding:13px 24px;font-size:14.5px}
+
+  /* ===== 响应式 ===== */
+  /* 超大桌面 */
+  @media(min-width:1600px){
+    section,.hero,nav,.stats{padding-left:8vw;padding-right:8vw}
+    :root{--max-w:1440px}
+    .tech-grid{gap:28px}
+    .card{padding:46px 42px}
+  }
+  /* 平板 / 小桌面 */
+  @media(max-width:1024px){
+    .nav-links{gap:22px}
+    .nav-links a{font-size:13.5px}
+    .tech-grid{gap:20px}
+    .card{padding:32px 28px}
+    .stats{grid-template-columns:repeat(2,1fr);gap:16px}
+    .safety-grid{grid-template-columns:1fr;gap:16px}
+    section{padding:88px 6vw}
+    .cta{padding:110px 6vw 120px}
+    .timeline{padding-left:28px}
+    .tl-item::before{left:-26px}
+    .tl-item{padding-left:14px}
+  }
+  /* 移动端 */
+  @media(max-width:768px){
+    .nav-links{display:none}
+    .burger{display:flex}
+    .btn-sm{padding:8px 18px;font-size:12.5px}
+    .hero{padding:110px 6vw 80px}
+    .hero h1{letter-spacing:2px}
+    .badge{font-size:11.5px;padding:7px 16px;letter-spacing:1.5px}
+    .badge .txt{display:none}
+    .stats{grid-template-columns:repeat(2,1fr);gap:14px;padding:16px 6vw 70px}
+    .stat{padding:26px 14px}
+    .stat .num{font-size:26px}
+    .stat .unit{font-size:12px}
+    .stat .label{font-size:11.5px;letter-spacing:1px}
+    .tech-grid{grid-template-columns:1fr;margin-top:44px}
+    .card{padding:28px 24px}
+    .card h3{font-size:18px}
+    .timeline{padding-left:24px;margin-top:44px}
+    .tl-item::before{left:-22px;width:11px;height:11px}
+    .tl-item{padding-left:12px;padding-bottom:36px}
+    .tl-item h3{font-size:18px}
+    .founder .avatar{width:92px;height:92px}
+    .founder .avatar-inner{font-size:28px}
+    .founder h3{font-size:22px}
+    .founder blockquote{font-size:19px;letter-spacing:1.5px}
+    .cta{padding:100px 6vw 110px}
+    .cta h2{letter-spacing:2px}
+    .btn{padding:13px 26px;font-size:14px}
+    footer{flex-direction:column;text-align:center;gap:14px}
+    footer .links{justify-content:center}
+    .modal{padding:36px 24px 28px}
+    .modal h3{font-size:19px;letter-spacing:2px}
+    .scroll-hint{bottom:20px}
+  }
+  @media(max-width:420px){
+    .hero-cta{gap:12px}
+    .btn{padding:12px 20px;font-size:13.5px;width:100%}
+    .stats{grid-template-columns:1fr}
+    .sec-desc{font-size:14.5px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation:none!important;transition:none!important}
+    html{scroll-behavior:auto}
+    .reveal{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="neural"></canvas>
+<div class="aurora"></div>
+<div class="grain"></div>
+<div class="cursor-glow" id="glow"></div>
+<div id="progress"></div>
+
+<nav id="nav">
+  <div class="nav-inner">
+    <a class="logo" href="#"><div class="logo-mark"></div>可豪AI <span class="tag">KH-AI</span></a>
+    <div class="nav-links">
+      <a href="#tech">核心技术</a>
+      <a href="#milestones">里程碑</a>
+      <a href="#safety">安全与对齐</a>
+      <a href="#founder">创始人</a>
+    </div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <button class="btn btn-primary btn-sm" data-modal-trigger>申请 API</button>
+      <button class="burger" id="burger" aria-label="打开菜单">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</nav>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#tech">核心技术</a>
+  <a href="#milestones">里程碑</a>
+  <a href="#safety">安全与对齐</a>
+  <a href="#founder">创始人</a>
+  <button class="btn btn-primary" data-modal-trigger style="margin-top:16px">申请 API</button>
+</div>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="chip c1"><span>98万亿</span> 参数总量</div>
+  <div class="chip c2">自适应 <span>稀疏注意力</span></div>
+  <div class="chip c3"><span>CUA</span> 自主成长架构</div>
+
+  <div class="badge"><span class="dot"></span><span class="txt">KH-1 通用人工智能体 · 部分API现已开放</span><span style="display:none" class="txt-xs">KH-1 · API 已开放</span></div>
+  <h1>智能，从此<span class="grad">自主生长</span></h1>
+  <p class="sub">
+    可豪AI（KH-AI）—— 首个通过 <b>CUA「感知 · 试错 · 反思」</b> 架构实现持续自主学习的通用人工智能。<br>
+    不背诵世界，而是<b>像儿童一样认识世界</b>。
+  </p>
+  <div class="chips">
+    <span class="chip-inline"><span>98万亿</span> 参数</span>
+    <span class="chip-inline">自适应 <span>稀疏注意力</span></span>
+    <span class="chip-inline"><span>CUA</span> 自主成长</span>
+  </div>
+  <div class="hero-cta">
+    <button class="btn btn-primary" data-modal-trigger>申请 API 使用资格</button>
+    <a class="btn btn-ghost" href="#tech">了解核心技术</a>
+  </div>
+  <div class="scroll-hint">SCROLL</div>
+</header>
+
+<!-- ============ 数据带 ============ -->
+<div class="stats">
+  <div class="stat reveal"><div><span class="num" data-count="98">0</span><span class="unit">万亿</span></div><div class="label">总参数规模</div></div>
+  <div class="stat reveal" style="--d:.1s"><div><span class="num" data-count="9.8" data-decimal="1">0</span><span class="unit">万亿</span></div><div class="label">单次激活参数</div></div>
+  <div class="stat reveal" style="--d:.2s"><div><span class="num" data-count="10" data-prefix="1/">0</span><span class="unit">同类成本</span></div><div class="label">训练成本对比</div></div>
+  <div class="stat reveal" style="--d:.3s"><div><span class="num" data-count="40" data-prefix="-">0</span><span class="unit">%</span></div><div class="label">应用端能耗降低</div></div>
+</div>
+
+<!-- ============ AGI 宣言 ============ -->
+<section id="vision" style="text-align:center">
+  <div class="reveal">
+    <div class="eyebrow">AGI MANIFESTO</div>
+    <h2 class="sec-title">真正的通用，是<span class="grad">无界迁移</span></h2>
+    <p class="sec-desc" style="margin:0 auto">
+      国际独立评测机构 GAI-Bench 的跨域推理测试中，可豪AI 成为历史上首个综合得分超越人类专家的AI系统——
+      它能在 <b style="color:#cfe3ff">一小时</b> 内自学一个陌生领域，并将洞察自由迁移至另一领域，无需任何重新训练。
+    </p>
+  </div>
+</section>
+
+<!-- ============ 核心技术 ============ -->
+<section id="tech">
+  <div class="reveal">
+    <div class="eyebrow">CORE TECHNOLOGY</div>
+    <h2 class="sec-title">三大支柱，构筑<span class="grad">通用智能</span></h2>
+    <p class="sec-desc">容量、注意力与学习机制的三重突破，让「通用」第一次成为工程现实。</p>
+  </div>
+  <div class="tech-grid">
+    <div class="card reveal">
+      <div class="icon">🧠</div>
+      <h3><em>ARCHITECTURE</em>CUA 自主成长架构</h3>
+      <p>不依赖海量标注数据，通过持续与环境交互构建世界模型。经验在线写入、每天自主进化——它不是静态的知识库，而是活着的智能体。</p>
+      <div class="flow"><i>感知</i><b>→</b><i>试错</i><b>→</b><i>反思</i><b>→</b><i>成长</i></div>
+    </div>
+    <div class="card reveal" style="--d:.12s">
+      <div class="icon">⚡</div>
+      <h3><em>ATTENTION</em>自适应稀疏注意力</h3>
+      <p>全新原创机制：动态评估每个 token 的重要性，在减少跳过数量的同时实现更强的智能表现。百万级上下文，效率与智能首次同向而行。</p>
+      <div class="flow"><i>重要性评估</i><b>→</b><i>精准聚焦</i><b>→</b><i>无损跳读</i></div>
+    </div>
+    <div class="card reveal" style="--d:.24s">
+      <div class="icon">🛡</div>
+      <h3><em>ALIGNMENT</em>价值对齐层</h3>
+      <p>内置人类价值观约束，每一次输出前进行自我审视。「技术越强大，谦卑就要越深」——对齐不是补丁，而是与能力同步生长的本能。</p>
+      <div class="flow"><i>意图理解</i><b>→</b><i>价值审视</i><b>→</b><i>安全输出</i></div>
+    </div>
+    <div class="card reveal" style="--d:.36s">
+      <div class="icon">🔒</div>
+      <h3><em>SAFEGUARD</em>三级熔断机制</h3>
+      <p>行为越界即时拦截、能力异常自动降载、关键操作人工复核。由全球AI安全顾问委员会独立监督，能力越大，约束越深。</p>
+      <div class="flow"><i>实时拦截</i><b>→</b><i>自动降载</i><b>→</b><i>人工复核</i></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ============ 里程碑 ============ -->
+<section id="milestones">
+  <div class="reveal">
+    <div class="eyebrow">MILESTONES</div>
+    <h2 class="sec-title">通往<span class="grad">AGI 之路</span></h2>
+  </div>
+  <div class="timeline">
+    <div class="tl-item reveal">
+      <div class="year">2021</div>
+      <h3>理论诞生</h3>
+      <p>尹可豪提出 CUA 架构，在全球竞相堆砌参数时，选择了一条截然不同的路：让机器像儿童一样「感知—试错—反思」。</p>
+    </div>
+    <div class="tl-item reveal" style="--d:.1s">
+      <div class="year">2023</div>
+      <h3>工程落地</h3>
+      <p>实验室完成架构验证，训练成本仅为同类十分之一——理论穿过「死亡之谷」，第一次真正跑了起来。</p>
+    </div>
+    <div class="tl-item reveal" style="--d:.2s">
+      <div class="year">2025</div>
+      <h3>第三方验证</h3>
+      <p>国际独立评测机构 GAI-Bench 公布结果：跨域推理综合得分超越人类专家，史上首次。</p>
+    </div>
+    <div class="tl-item reveal" style="--d:.3s">
+      <div class="year">2026</div>
+      <h3>AGI 元年</h3>
+      <p>可豪AI 正式发布，部分 API 开放使用；面向科研机构的全面接口将于明年开放。历史，从此翻开新的一页。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 创始人 ============ -->
+<section id="founder">
+  <div class="founder reveal">
+    <div class="avatar"><div class="avatar-inner">尹</div></div>
+    <h3>尹可豪</h3>
+    <div class="role">可豪AI 创始人 · 首席科学家</div>
+    <blockquote>“技术越强大，谦卑就要越深。”</blockquote>
+    <p class="bio">
+      16岁，脑科学与机器学习交叉背景。当整个行业在算力的军备竞赛中狂奔时，
+      他选择向人脑学习智能的本质——如今，世界称他为「这个时代的图灵」。
+    </p>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- ============ 安全 ============ -->
+<section id="safety" style="text-align:center">
+  <div class="reveal">
+    <div class="eyebrow">SAFETY &amp; ALIGNMENT</div>
+    <h2 class="sec-title">以敬畏之心，<span class="grad">驾驭通用智能</span></h2>
+  </div>
+  <div class="safety-grid">
+    <div class="safe reveal"><h4>全球安全顾问委员会</h4><p>由跨学科独立专家组成，对模型能力边界与部署策略行使外部监督权。</p></div>
+    <div class="safe reveal" style="--d:.12s"><h4>能力 — 约束同步</h4><p>每一次能力升级，对齐机制同步迭代。安全不是滞后补丁，而是与智能共生的一等公民。</p></div>
+    <div class="safe reveal" style="--d:.24s"><h4>渐进式开放</h4><p>有限API → 科研开放 → 全面商用，阶梯式释放能力，让社会消化速度跟上技术速度。</p></div>
+  </div>
+</section>
+
+<!-- ============ CTA ============ -->
+<section class="cta" id="cta">
+  <div class="reveal">
+    <h2>与 AGI，<span class="grad">从此对话</span></h2>
+    <p>部分 API 现已开放 · 科研机构接口即将全面开放</p>
+    <button class="btn btn-primary" data-modal-trigger>申请 API 使用资格 →</button>
+  </div>
+</section>
+
+<footer>
+  <div>© 2026 可豪AI · KH-AI — 让智能向善</div>
+  <div class="links">
+    <a href="#tech">技术</a><a href="#milestones">里程碑</a><a href="#safety">安全</a><a href="#founder">关于</a>
+  </div>
+</footer>
+
+<!-- ============ API 申请弹窗 ============ -->
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal">
+    <button class="modal-close" id="modalClose" aria-label="关闭">✕</button>
+    <div class="modal-icon">⏳</div>
+    <h3 id="modalTitle">名额暂无</h3>
+    <p>请等待开放</p>
+    <button class="btn btn-primary" id="modalOk">好的，知道了</button>
+  </div>
+</div>
+
+<script>
+/* ========== 神经网络粒子背景 ========== */
+const canvas = document.getElementById('neural');
+const ctx = canvas.getContext('2d');
+let W, H, pts = [];
+const mouse = {x:null, y:null};
+
+function resize(){
+  W = canvas.width = innerWidth;
+  H = canvas.height = innerHeight;
+  const n = Math.min(90, Math.floor(W * H / 16000));
+  pts = Array.from({length:n}, () => ({
+    x: Math.random()*W, y: Math.random()*H,
+    vx: (Math.random()-.5)*.35, vy: (Math.random()-.5)*.35,
+    r: Math.random()*1.6 + .6
+  }));
+}
+resize();
+addEventListener('resize', resize);
+addEventListener('mousemove', e => { mouse.x = e.clientX; mouse.y = e.clientY; });
+addEventListener('mouseleave', () => { mouse.x = null; mouse.y = null; });
+
+(function draw(){
+  ctx.clearRect(0,0,W,H);
+  for(const p of pts){
+    if(mouse.x !== null){
+      const dx = mouse.x - p.x, dy = mouse.y - p.y, d = Math.hypot(dx,dy);
+      if(d < 220 && d > 50){ p.vx += dx/d*.008; p.vy += dy/d*.008; }
+    }
+    p.vx *= .995; p.vy *= .995;
+    p.x += p.vx; p.y += p.vy;
+    if(p.x < 0 || p.x > W) p.vx *= -1;
+    if(p.y < 0 || p.y > H) p.vy *= -1;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(120,180,255,.55)';
+    ctx.fill();
+  }
+  for(let i = 0; i < pts.length; i++){
+    for(let j = i+1; j < pts.length; j++){
+      const a = pts[i], b = pts[j];
+      const d = Math.hypot(a.x-b.x, a.y-b.y);
+      if(d < 150){
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+        ctx.strokeStyle = `rgba(90,150,255,${(1-d/150)*.22})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+    }
+  }
+  requestAnimationFrame(draw);
+})();
+
+/* ========== 滚动显影 ========== */
+const io = new IntersectionObserver(entries => {
+  entries.forEach(en => {
+    if(en.isIntersecting){
+      en.target.classList.add('in');
+      en.target.querySelectorAll('.num[data-count]').forEach(animateCount);
+      io.unobserve(en.target);
+    }
+  });
+}, {threshold:.18});
+document.querySelectorAll('.reveal, .stat').forEach(el => io.observe(el));
+
+/* ========== 数字滚动 ========== */
+function animateCount(el){
+  const target = parseFloat(el.dataset.count);
+  const decimal = parseInt(el.dataset.decimal || 0);
+  const prefix = el.dataset.prefix || '';
+  const dur = 1900, start = performance.now();
+  (function tick(now){
+    const t = Math.min((now - start) / dur, 1);
+    const eased = 1 - Math.pow(1 - t, 4);
+    el.textContent = prefix + (target * eased).toFixed(decimal);
+    if(t < 1) requestAnimationFrame(tick);
+  })(start);
+}
+
+/* ========== 导航 & 进度条 ========== */
+const nav = document.getElementById('nav');
+const bar = document.getElementById('progress');
+addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const p = h.scrollTop / (h.scrollHeight - h.clientHeight);
+  bar.style.transform = `scaleX(${p})`;
+  nav.classList.toggle('scrolled', h.scrollTop > 40);
+}, {passive:true});
+
+/* ========== 光标光晕 ========== */
+const glow = document.getElementById('glow');
+addEventListener('mousemove', e => {
+  glow.style.left = e.clientX + 'px';
+  glow.style.top = e.clientY + 'px';
+});
+
+/* ========== 移动端汉堡菜单 ========== */
+const burger = document.getElementById('burger');
+const mobileMenu = document.getElementById('mobileMenu');
+burger.addEventListener('click', () => {
+  burger.classList.toggle('active');
+  mobileMenu.classList.toggle('open');
+});
+mobileMenu.querySelectorAll('a, button').forEach(el => {
+  el.addEventListener('click', () => {
+    burger.classList.remove('active');
+    mobileMenu.classList.remove('open');
+  });
+});
+
+/* ========== API 申请弹窗 ========== */
+const modalBackdrop = document.getElementById('modalBackdrop');
+const modalClose = document.getElementById('modalClose');
+const modalOk = document.getElementById('modalOk');
+
+function openModal(){
+  modalBackdrop.classList.add('show');
+  document.body.classList.add('modal-open');
+  modalOk.focus();
+}
+function closeModal(){
+  modalBackdrop.classList.remove('show');
+  document.body.classList.remove('modal-open');
+}
+document.querySelectorAll('[data-modal-trigger]').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.preventDefault();
+    openModal();
+  });
+});
+modalClose.addEventListener('click', closeModal);
+modalOk.addEventListener('click', closeModal);
+modalBackdrop.addEventListener('click', e => {
+  if(e.target === modalBackdrop) closeModal();
+});
+addEventListener('keydown', e => {
+  if(e.key === 'Escape' && modalBackdrop.classList.contains('show')) closeModal();
+});
+</script>
+</body>
+</html>
