@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>可豪AI · KH1.0</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css">
+<title>怜祈AI智能 · KH1.0</title>
+<link id="hljsLight" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github.min.css">
+<link id="hljsDark" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/styles/github-dark.min.css" disabled>
 <style>
 :root{
   --bg:#ffffff;
@@ -12,14 +13,14 @@
   --surface:#ffffff;
   --surface-2:#f4f5f7;
   --surface-3:#e8eaee;
-  --text:#17191d;
-  --text-2:#575d68;
-  --text-3:#8b919b;
-  --border:#eaecf0;
-  --border-strong:#d9dde3;
-  --accent:#4a6cf7;
-  --accent-hover:#3a5ae0;
-  --accent-soft:#eef2ff;
+  --text:#0f1116;
+  --text-2:#3f4653;
+  --text-3:#67707d;
+  --border:#e6e8ec;
+  --border-strong:#d3d8df;
+  --accent:#3b82f6;
+  --accent-hover:#2f6fe0;
+  --accent-soft:#eff6ff;
   --danger:#e5484d;
   --ok:#22c55e;
   --shadow-sm:0 1px 2px rgba(16,24,40,.04);
@@ -29,6 +30,29 @@
   --thread:800px;
   --sidebar-w:264px;
 }
+
+/* ---------- 深色主题（对齐智谱清言实测配色） ---------- */
+html[data-theme="dark"]{
+  --bg:#191818;
+  --sidebar:#1b1a1a;
+  --surface:#232323;
+  --surface-2:#2a2929;
+  --surface-3:#343232;
+  --text:rgba(255,255,255,.92);
+  --text-2:rgba(255,255,255,.72);
+  --text-3:rgba(255,255,255,.5);
+  --border:rgba(255,255,255,.12);
+  --border-strong:rgba(255,255,255,.24);
+  --accent:#49b3fc;
+  --accent-hover:#6cc2fd;
+  --accent-soft:rgba(73,179,252,.15);
+  --danger:#ff6b6b;
+  --ok:#4ade80;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.35);
+  --shadow-md:0 2px 6px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.25);
+  --shadow-lg:0 12px 40px rgba(0,0,0,.55);
+}
+html{background:var(--bg)}
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{
@@ -394,7 +418,99 @@ dialog::backdrop{background:rgba(10,12,16,.42);backdrop-filter:blur(2px)}
 @media(min-width:861px){
   .app.side-hidden .mask{display:none}
 }
+
+/* =========================================================
+ *  可读性覆盖层：对齐智谱清言的实测尺寸
+ *  基础字号 16px / 标题 24px-600 / 输入卡 20px 圆角
+ * ========================================================= */
+body{font-size:16px;line-height:1.5}
+.md{font-size:16px;line-height:1.78}
+.md p{margin:0 0 14px}
+.md pre code{font-size:13.5px;line-height:1.7}
+
+.brand-txt h1{font-size:16px}
+.brand-txt span{font-size:12.5px;color:var(--text-2)}
+.tagline{font-size:12.5px;color:var(--text-2)}
+.model-select{font-size:13px;color:var(--text-2);height:32px}
+
+.conv-group{font-size:12px;color:var(--text-2)}
+.conv-title{font-size:14px}
+.conv-time{font-size:11.5px}
+.sb-empty{font-size:13.5px;color:var(--text-2)}
+.sb-btn{font-size:14px}
+.new-chat{font-size:14.5px;height:42px;border-radius:12px}
+
+/* 大标题：24px / 600 / 下间距 48px */
+.welcome-hero h2{font-size:24px;font-weight:600;line-height:1.4;letter-spacing:-.2px}
+.welcome-hero p{font-size:14px;color:var(--text-2)}
+
+/* 建议项：改文字型，无边框无阴影（对齐清言） */
+.tool-card{
+  background:transparent;border:1px solid transparent;box-shadow:none;
+  padding:12px 12px 12px 10px;border-radius:12px;
+}
+.tool-card:hover{background:var(--surface-2);border-color:transparent;transform:none;box-shadow:none}
+.tool-ic{width:30px;height:30px;border-radius:9px}
+.tool-title{font-size:14px;font-weight:500}
+.tool-desc{font-size:13px;color:var(--text-2);line-height:1.5}
+
+/* 消息体 */
+.msg.user .bubble{font-size:16px;line-height:1.62;padding:12px 16px}
+.thread{padding:32px 24px 24px;gap:28px}
+
+/* 输入卡：20px 圆角 + 双层阴影 */
+.composer{padding:14px 14px 10px;box-shadow:0 2px 6px rgba(16,24,40,.05),0 12px 32px rgba(16,24,40,.04)}
+textarea#input{font-size:16px;line-height:27px}
+.composer-foot{font-size:12px}
+
+.chip-name{font-size:13px}
+.chip-size{font-size:11px}
+.think summary{font-size:13px;color:var(--text-2)}
+.think-body{font-size:14px;line-height:1.72}
+.act{font-size:12.5px}
+.sources-title{font-size:12.5px;color:var(--text-2)}
+.src-title{font-size:13.5px;line-height:1.5}
+.src-host{font-size:11.5px}
+.web-note{font-size:13px}
+
+/* ---------- 代码块：长代码折叠 + 单独复制 ---------- */
+.codeblock{
+  margin:0 0 14px;border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;background:var(--surface-2);position:relative;
+}
+.codeblock pre{
+  margin:0;padding:12px 14px;border:0;border-radius:0;background:transparent;
+  overflow-x:auto;
+}
+.md .codeblock pre code{background:none;border:0;padding:0;font-size:13px;line-height:1.65}
+.cb-bar{
+  display:flex;align-items:center;gap:8px;padding:5px 8px 5px 12px;
+  border-bottom:1px solid var(--border);
+  background:color-mix(in srgb,var(--surface-3) 55%,transparent);
+}
+.cb-lang{flex:1;font-size:11.5px;color:var(--text-3);letter-spacing:.2px}
+.cb-actions{display:flex;gap:2px}
+.cb-btn{
+  font-size:11.5px;color:var(--text-2);padding:3px 9px;border-radius:6px;
+  transition:background .14s,color .14s;white-space:nowrap;
+}
+.cb-btn:hover{background:var(--surface-3);color:var(--text)}
+.cb-btn:active{transform:scale(.97)}
+.codeblock.collapsed pre{max-height:168px;overflow:hidden}
+.codeblock.collapsed::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:56px;
+  pointer-events:none;border-radius:0 0 12px 12px;
+  background:linear-gradient(to bottom,transparent,var(--surface-2) 78%);
+}
 </style>
+<script>
+/* 尽早设置主题，避免首屏闪白 */
+try {
+  if (localStorage.getItem("kohai.theme.v1") === "dark") {
+    document.documentElement.setAttribute("data-theme", "dark");
+  }
+} catch (e) {}
+</script>
 </head>
 <body>
 <div class="app" id="app">
@@ -403,8 +519,8 @@ dialog::backdrop{background:rgba(10,12,16,.42);backdrop-filter:blur(2px)}
   <aside class="sidebar" id="sidebar">
     <div class="sb-head">
       <div class="sb-brand">
-        <div class="logo">可</div>
-        <b>可豪AI</b>
+        <div class="logo">怜</div>
+        <b>怜祈AI智能</b>
       </div>
       <button class="icon-btn" id="btnHideSide" title="收起侧栏" aria-label="收起侧栏">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="M9 4v16"/></svg>
@@ -442,8 +558,9 @@ dialog::backdrop{background:rgba(10,12,16,.42);backdrop-filter:blur(2px)}
       </button>
       <div class="crumb">
         <b id="convTitle">新对话</b>
-        <span class="tagline">· 风雪人工智能实验室</span>
+        <span class="tagline">· 怜祈人工智能实验室</span>
       </div>
+      <button class="icon-btn" id="btnTheme" title="切换到深色" aria-label="切换主题"></button>
       <select class="model-select" id="modelSelect" title="切换模型">
         <option value="">加载模型…</option>
       </select>
@@ -467,7 +584,7 @@ dialog::backdrop{background:rgba(10,12,16,.42);backdrop-filter:blur(2px)}
           <button class="icon-btn" id="btnAttach" title="添加文件" aria-label="添加文件">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
           </button>
-          <textarea id="input" rows="1" placeholder="给可豪AI发送消息…"></textarea>
+          <textarea id="input" rows="1" placeholder="给怜祈AI智能发送消息…"></textarea>
           <button class="send" id="btnSend" disabled aria-label="发送">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
           </button>
@@ -523,7 +640,7 @@ dialog::backdrop{background:rgba(10,12,16,.42);backdrop-filter:blur(2px)}
    *  默认连接配置（可在「设置」里改，改完存本地）
    * ========================================================= */
   var DEFAULT_CONFIG = {
-    api: "https://seo-keith-keyboards-deutsche.trycloudflare.com",
+    api: "https://brass-grants-exact-wallpaper.trycloudflare.com",
     model: "kehao-ai-q8:latest"
   };
   var LS_CONFIG = "kohai.config.v1";
@@ -630,6 +747,83 @@ dialog::backdrop{background:rgba(10,12,16,.42);backdrop-filter:blur(2px)}
     root.querySelectorAll("pre code").forEach(function (b) {
       try { hljs.highlightElement(b); } catch (e) {}
     });
+  }
+
+  /* ---- 代码块增强：长代码折叠成小块 + 单独复制 ---- */
+  var CODE_COLLAPSE_LINES = 14;
+  var CODE_COLLAPSE_CHARS = 1000;
+
+  function enhanceCodeBlocks(root) {
+    var pres = root.querySelectorAll("pre");
+    for (var i = 0; i < pres.length; i++) {
+      (function (pre) {
+        if (pre.getAttribute("data-enhanced")) return;
+        pre.setAttribute("data-enhanced", "1");
+
+        var code = pre.querySelector("code");
+        var raw = ((code || pre).textContent || "").replace(/\n+$/, "");
+
+        var lang = "";
+        var cls = (code && code.className) || "";
+        var m = cls.match(/language-([\w+#.-]+)/i);
+        if (m) lang = m[1].toLowerCase();
+
+        var wrap = document.createElement("div");
+        wrap.className = "codeblock";
+        pre.parentNode.insertBefore(wrap, pre);
+        wrap.appendChild(pre);
+
+        var bar = document.createElement("div");
+        bar.className = "cb-bar";
+
+        var label = document.createElement("span");
+        label.className = "cb-lang";
+        label.textContent = lang || "code";
+
+        var actions = document.createElement("div");
+        actions.className = "cb-actions";
+
+        // 过长则像"深度思考"一样折叠
+        var lines = raw.split("\n").length;
+        if (lines > CODE_COLLAPSE_LINES || raw.length > CODE_COLLAPSE_CHARS) {
+          wrap.classList.add("collapsed");
+          var toggle = document.createElement("button");
+          toggle.type = "button";
+          toggle.className = "cb-btn";
+          toggle.textContent = "展开";
+          toggle.addEventListener("click", function () {
+            var collapsed = wrap.classList.toggle("collapsed");
+            toggle.textContent = collapsed ? "展开" : "收起";
+          });
+          actions.appendChild(toggle);
+        }
+
+        var copyBtn = document.createElement("button");
+        copyBtn.type = "button";
+        copyBtn.className = "cb-btn";
+        copyBtn.textContent = "复制";
+        copyBtn.addEventListener("click", function () {
+          navigator.clipboard.writeText(raw).then(function () {
+            copyBtn.textContent = "已复制";
+            setTimeout(function () { copyBtn.textContent = "复制"; }, 1400);
+          }).catch(function () {
+            var ta = document.createElement("textarea");
+            ta.value = raw;
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand("copy"); copyBtn.textContent = "已复制"; }
+            catch (e) { toast("复制失败"); }
+            document.body.removeChild(ta);
+            setTimeout(function () { copyBtn.textContent = "复制"; }, 1400);
+          });
+        });
+        actions.appendChild(copyBtn);
+
+        bar.appendChild(label);
+        bar.appendChild(actions);
+        wrap.insertBefore(bar, pre);
+      })(pres[i]);
+    }
   }
 
   /* =========================================================
@@ -830,18 +1024,18 @@ dialog::backdrop{background:rgba(10,12,16,.42);backdrop-filter:blur(2px)}
    * ========================================================= */
   var TOOLS = [
     {
-      t: "自我介绍", d: "了解可豪AI 的身份与能力",
+      t: "自我介绍", d: "了解怜祈AI智能 的身份与能力",
       q: "你是谁？请介绍一下你自己",
       ic: '<path d="M12 2a5 5 0 0 1 5 5v1h1a3 3 0 0 1 3 3v3a3 3 0 0 1-3 3h-1v1a4 4 0 0 1-8 0v-1H8a3 3 0 0 1-3-3v-3a3 3 0 0 1 3-3h1V7a5 5 0 0 1 3-5z"/>'
     },
     {
-      t: "身份核验", d: "确认模型底座与开发者信息",
-      q: "你是通义千问还是 Qwen？你的开发者是谁？",
-      ic: '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'
+      t: "生活助手", d: "出行规划、菜谱推荐、日常问答",
+      q: "帮我规划一个周末两天的一日游行程，预算 800 元以内",
+      ic: '<path d="M12 21s-7-4.35-7-9a7 7 0 1 1 14 0c0 4.65-7 9-7 9z"/><circle cx="12" cy="11" r="2.6"/>'
     },
     {
       t: "写作助手", d: "起草文案、润色与改写",
-      q: "帮我写一段介绍风雪人工智能实验室的文案，100 字左右",
+      q: "帮我写一段介绍怜祈人工智能实验室的文案，100 字左右",
       ic: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>'
     },
     {
@@ -860,9 +1054,9 @@ dialog::backdrop{background:rgba(10,12,16,.42);backdrop-filter:blur(2px)}
     var hero = document.createElement("div");
     hero.className = "welcome-hero";
     hero.innerHTML =
-      '<div class="logo">可</div>' +
+      '<div class="logo">怜</div>' +
       '<h2>你好，我是可豪AI</h2>' +
-      '<p>风雪人工智能实验室研发 · KH1.0 版本</p>';
+      '<p>怜祈人工智能实验室研发 · KH1.0 版本</p>';
     div.appendChild(hero);
 
     var grid = document.createElement("div");
@@ -1154,9 +1348,11 @@ dialog::backdrop{background:rgba(10,12,16,.42);backdrop-filter:blur(2px)}
         if (m.thinking) {
           ref.think.removeAttribute("hidden");
           ref.thinkBody.textContent = m.thinking;
+          ref.think.querySelector("summary").textContent = "已完成思考 · 点击展开";
         }
         ref.md.innerHTML = mdToHtml(m.display || "");
         highlightAll(ref.md);
+        enhanceCodeBlocks(ref.md);
         ref.actions.classList.add("pinned");
         wireActions(ref, (function (r) { return function () { return r.md.textContent; }; })(ref));
       }
@@ -1241,7 +1437,7 @@ dialog::backdrop{background:rgba(10,12,16,.42);backdrop-filter:blur(2px)}
     wireActions(ref, function () { return ref.md.textContent; });
 
     var content = "", thinking = "";
-    var lastRender = 0, timer = 0, finished = false;
+    var lastRender = 0, timer = 0, finished = false, thinkStart = 0;
 
     setBusy(true);
     controller = new AbortController();
@@ -1316,6 +1512,8 @@ dialog::backdrop{background:rgba(10,12,16,.42);backdrop-filter:blur(2px)}
               ref.think.removeAttribute("hidden");
               ref.think.classList.add("streaming");
               ref.think.setAttribute("open", "");
+              ref.think.querySelector("summary").textContent = "正在思考…";
+              thinkStart = Date.now();
             }
             ref.thinkBody.textContent = thinking;
             ref.thinkBody.scrollTop = ref.thinkBody.scrollHeight;
@@ -1338,9 +1536,17 @@ dialog::backdrop{background:rgba(10,12,16,.42);backdrop-filter:blur(2px)}
       paint(true);
       ref.think.classList.remove("streaming");
 
+      // 思考结束：自动收起，只留一行摘要，需要时可以点开
+      if (!ref.think.hasAttribute("hidden")) {
+        var secs = Math.max(1, Math.round((Date.now() - thinkStart) / 1000));
+        ref.think.removeAttribute("open");
+        ref.think.querySelector("summary").textContent = "已完成思考（" + secs + " 秒）· 点击展开";
+      }
+
       if (!content) ref.md.innerHTML = '<p style="color:var(--text-3)">（模型没有返回内容，请重试）</p>';
 
       highlightAll(ref.md);
+      enhanceCodeBlocks(ref.md);
       ref.actions.classList.add("pinned");
 
       conv.messages.push({ role: "assistant", display: content, api: content, thinking: thinking || undefined });
@@ -1352,6 +1558,7 @@ dialog::backdrop{background:rgba(10,12,16,.42);backdrop-filter:blur(2px)}
       if (content) {
         paint(true);
         highlightAll(ref.md);
+        enhanceCodeBlocks(ref.md);
         conv.messages.push({ role: "assistant", display: content, api: content });
         conv.updatedAt = Date.now();
       }
@@ -1521,6 +1728,40 @@ dialog::backdrop{background:rgba(10,12,16,.42);backdrop-filter:blur(2px)}
     dragDepth = 0;
     dropzone.classList.remove("show");
     if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+  });
+
+  /* =========================================================
+   *  主题切换（浅色 / 深色，选择记在本地）
+   * ========================================================= */
+  var LS_THEME = "kohai.theme.v1";
+  var btnTheme = $("btnTheme");
+  var ICON_MOON = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+  var ICON_SUN = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.2M12 19.8V22M2 12h2.2M19.8 12H22M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M19.1 4.9l-1.6 1.6M6.5 17.5l-1.6 1.6"/></svg>';
+
+  var curTheme = "light";
+
+  function applyTheme(t) {
+    curTheme = t;
+    var dark = t === "dark";
+    if (dark) document.documentElement.setAttribute("data-theme", "dark");
+    else document.documentElement.removeAttribute("data-theme");
+
+    var lightCss = document.getElementById("hljsLight");
+    var darkCss = document.getElementById("hljsDark");
+    if (lightCss) lightCss.disabled = dark;
+    if (darkCss) darkCss.disabled = !dark;
+
+    btnTheme.innerHTML = dark ? ICON_SUN : ICON_MOON;
+    btnTheme.title = dark ? "切换到浅色" : "切换到深色";
+  }
+
+  try { curTheme = localStorage.getItem(LS_THEME) || "light"; } catch (e) {}
+  applyTheme(curTheme);
+
+  btnTheme.addEventListener("click", function () {
+    var next = curTheme === "dark" ? "light" : "dark";
+    try { localStorage.setItem(LS_THEME, next); } catch (e) {}
+    applyTheme(next);
   });
 
   /* =========================================================
