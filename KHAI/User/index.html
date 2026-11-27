@@ -65,6 +65,10 @@ textarea{font-family:inherit}
 
 /* ================= 整体骨架 ================= */
 .app{height:100dvh;display:flex;overflow:hidden}
+/* 软键盘弹起时用 visual viewport 高度，避免布局被顶乱 */
+@supports (height: 100svh){
+  .app{height:100svh}
+}
 
 /* ================= 侧边栏 ================= */
 .sidebar{
@@ -257,6 +261,23 @@ textarea{font-family:inherit}
 .md th{background:var(--surface-2);font-weight:600}
 .md img{max-width:100%;border-radius:var(--r-sm)}
 
+/* ---------- 数学公式 ---------- */
+.md mjx-container{
+  font-size:1.02em !important;
+  overflow-x:auto;overflow-y:hidden;max-width:100%;
+}
+.md mjx-container[display="true"]{
+  display:block;margin:14px 0;padding:2px 0;
+  text-align:center;
+}
+.md mjx-container svg{max-width:100%;height:auto}
+.md mjx-container::-webkit-scrollbar{height:5px}
+.md mjx-container::-webkit-scrollbar-thumb{background:var(--surface-3);border-radius:99px}
+
+/* 上标下标（非公式场景） */
+.md sub,.md sup{font-size:.76em;line-height:0}
+.md .katex{font-size:1.02em}
+
 .msg-actions{display:flex;gap:6px;margin-top:8px;opacity:0;transition:opacity .18s}
 .msg.assistant:hover .msg-actions,.msg-actions.pinned{opacity:1}
 .act{
@@ -417,6 +438,69 @@ dialog::backdrop{background:rgba(10,12,16,.42);backdrop-filter:blur(2px)}
 }
 @media(min-width:861px){
   .app.side-hidden .mask{display:none}
+}
+
+/* =========================================================
+ *  手机端专项优化
+ * ========================================================= */
+@media(max-width:860px){
+  /* 输入框字号必须 ≥16px，否则 iOS 聚焦时会自动放大页面 */
+  textarea#input{font-size:16px !important}
+
+  /* 输入区底部留出安全区，避免被 iPhone 底部横条遮挡 */
+  .composer-wrap{
+    padding-left:12px;padding-right:12px;
+    padding-bottom:calc(12px + env(safe-area-inset-bottom, 0px));
+  }
+  .thread{padding:20px 14px 16px;gap:22px}
+  .topbar{padding:0 12px;height:54px}
+
+  /* 顶部栏元素收紧，给标题留空间 */
+  .icon-btn{width:32px;height:32px}
+  .model-select{max-width:130px;font-size:12px}
+  .crumb b{font-size:13px}
+  .tagline{display:none}
+
+  /* 用户气泡放宽，手机屏幕窄 */
+  .msg.user .bubble{max-width:88%;font-size:15.5px;padding:10px 14px}
+  .md{font-size:15.5px;line-height:1.72}
+
+  /* 欢迎页：手机上一列排布，卡片紧凑 */
+  .welcome{padding-top:3vh}
+  .welcome-hero{margin-bottom:20px}
+  .welcome-hero .logo{width:46px;height:46px;border-radius:13px;font-size:20px;margin-bottom:8px}
+  .welcome-hero h2{font-size:20px}
+  .welcome-hero p{font-size:13px}
+  .card-grid{grid-template-columns:1fr;gap:6px}
+  .tool-card{padding:10px 10px 10px 8px}
+  .tool-title{font-size:14px}
+  .tool-desc{font-size:12.5px}
+
+  /* 代码块在手机上更窄的行高，横向滚动可用 */
+  .md .codeblock pre{font-size:12px;line-height:1.6}
+  .codeblock.collapsed pre{max-height:130px}
+  .cb-btn{font-size:12px;padding:3px 10px}
+
+  /* 参考来源卡片压缩 */
+  .src-title{font-size:12.5px}
+  .src-host{font-size:10.5px}
+
+  /* 触摸设备取消 hover 残留效果 */
+  .tool-card:hover{background:transparent}
+  .msg-actions{opacity:1}
+
+  /* 回到底部按钮抬高，避免与输入框冲突 */
+  .jump{bottom:calc(120px + env(safe-area-inset-bottom, 0px))}
+}
+
+/* iOS Safari：聚焦输入框时不缩放（配合 16px 字号） */
+@supports (-webkit-touch-callout: none){
+  textarea#input{font-size:16px}
+}
+
+/* 触摸设备禁用双击缩放误触 */
+@media(hover:none){
+  *{-webkit-tap-highlight-color:transparent}
 }
 
 /* =========================================================
@@ -633,6 +717,25 @@ try {
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
 <script>
+window.MathJax = {
+  tex: {
+    inlineMath: [["$", "$"], ["\\(", "\\)"]],
+    displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+    processEscapes: true,
+    processEnvironments: true
+  },
+  options: {
+    skipHtmlTags: ["script", "noscript", "style", "textarea", "pre", "code"],
+    ignoreHtmlClass: "no-mathjax",
+    processHtmlClass: "math"
+  },
+  startup: {
+    typeset: false
+  }
+};
+</script>
+<script id="mathjax-src" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script>
 (function () {
   "use strict";
 
@@ -640,7 +743,7 @@ try {
    *  默认连接配置（可在「设置」里改，改完存本地）
    * ========================================================= */
   var DEFAULT_CONFIG = {
-    api: "https://deeper-cookies-curve-dental.trycloudflare.com",
+    api: "https://gazette-casual-specs-yours.trycloudflare.com",
     model: "kehao-ai-q8:latest"
   };
   var LS_CONFIG = "kohai.config.v1";
@@ -736,12 +839,113 @@ try {
       try {
         return DOMPurify.sanitize(marked.parse(text), {
           ADD_ATTR: ["target", "rel"],
+          // MathJax 需要保留 <math> 等标签；同时放行表格/上下标等常见排版标签
+          ADD_TAGS: ["math", "semantics", "annotation", "mrow", "mi", "mo", "mn", "msup",
+                     "msub", "mfrac", "msqrt", "mroot", "mtext", "mspace", "mtable",
+                     "mtr", "mtd", "munder", "mover", "munderover", "mmultiscripts",
+                     "mprescripts", "msubsup", "mstyle", "mphantom", "merror"],
           FORBID_TAGS: ["style", "iframe", "form", "input", "script"]
         });
       } catch (e) {}
     }
     return escapeHtml(text).replace(/\n/g, "<br>");
   }
+
+  /* 流式渲染专用：把尚未闭合的标记临时补齐，避免画面抖动 */
+  function stabilizePartial(text) {
+    var s = String(text || "");
+
+    // 1) 未闭合的代码围栏：补一个结束围栏，否则整段会被当成代码
+    var fences = (s.match(/```/g) || []).length;
+    if (fences % 2 === 1) s += "\n```";
+
+    // 2) 未闭合的 $$ 块：整段不显示，等闭合后一次性出现
+    var dollars = (s.match(/\$\$/g) || []).length;
+    if (dollars % 2 === 1) {
+      var openIdx = s.lastIndexOf("$$");
+      if (openIdx > 0) s = s.slice(0, openIdx);
+    }
+
+    // 3) 末尾还没闭合的单个 $：整段藏起来，等闭合后再显示
+    if (dollars % 2 === 0) {
+      var allDollars = (s.match(/\$/g) || []).length;
+      // dollars 统计的是 $$，单个 $ 的数量 = allDollars - dollars*2
+      var singleDollars = allDollars - dollars * 2;
+      if (singleDollars % 2 === 1) {
+        var lastDollar = s.lastIndexOf("$");
+        // 避免把 $$ 的第二个 $ 误当成开头
+        if (lastDollar > 0 && !(lastDollar > 0 && s.charAt(lastDollar - 1) === "$")) {
+          s = s.slice(0, lastDollar);
+        }
+      }
+    }
+
+    // 4) 未闭合的粗体：补上闭合符，保留内容
+    var bolds = (s.match(/\*\*/g) || []).length;
+    if (bolds % 2 === 1) s += "**";
+
+    // 5) 未闭合的行内代码：把这段不完整的反引号内容整个藏起来，
+    //    等闭合后自然显示。直接补反引号会把半个单词当成代码渲染。
+    var fenceTriples = (s.match(/```/g) || []).length;
+    var allTicks = (s.match(/`/g) || []).length;
+    var inlineTicks = allTicks - fenceTriples * 3;
+    if (inlineTicks > 0 && inlineTicks % 2 === 1) {
+      var lastTick = s.lastIndexOf("`");
+      if (lastTick > 0) s = s.slice(0, lastTick);
+    }
+
+    return s;
+  }
+
+  /* ---- 数学公式渲染 ---- */
+  var mjReady = false;
+  var mjQueue = [];
+
+  function hasMathSyntax(text) {
+    return /\$|\\\(|\\\[/.test(text);
+  }
+
+  function typesetMath(root, force) {
+    if (!root) return;
+    if (!window.MathJax || !window.MathJax.typesetPromise) {
+      if (mjQueue.indexOf(root) < 0) mjQueue.push(root);
+      return;
+    }
+    // 没有公式语法就不用浪费 CPU
+    if (!force && !hasMathSyntax(root.textContent || "")) {
+      root.removeAttribute("data-math-text");
+      return;
+    }
+    // 公式内容未变化则跳过（流式高频刷新时这是最大的一处开销）
+    var sig = (root.textContent || "").slice(0, 8000);
+    if (!force && root.getAttribute("data-math-text") === sig) return;
+    root.setAttribute("data-math-text", sig);
+
+    try {
+      var p = window.MathJax.typesetPromise([root]);
+      if (p && p.catch) p.catch(function () {});
+    } catch (e) {}
+  }
+
+  // MathJax 加载完成后，统一处理排队的节点
+  function onMathJaxReady() {
+    if (!window.MathJax || !window.MathJax.typesetPromise) return;
+    mjReady = true;
+    var list = mjQueue.slice();
+    mjQueue = [];
+    list.forEach(function (el) {
+      if (el && el.isConnected) {
+        try { window.MathJax.typesetPromise([el]).catch(function () {}); } catch (e) {}
+      }
+    });
+  }
+  var mjTimer = setInterval(function () {
+    if (window.MathJax && window.MathJax.startup && window.MathJax.startup.promise) {
+      clearInterval(mjTimer);
+      window.MathJax.startup.promise.then(onMathJaxReady).catch(function () {});
+    }
+  }, 200);
+  setTimeout(function () { clearInterval(mjTimer); }, 15000)
   function highlightAll(root) {
     if (!window.hljs) return;
     root.querySelectorAll("pre code").forEach(function (b) {
@@ -894,7 +1098,7 @@ try {
     saveStore();
     renderConvList();
     renderActive();
-    if (!silent) input.focus();
+    if (!silent && isDesktopPointer()) input.focus();
     return c;
   }
 
@@ -979,6 +1183,12 @@ try {
    *  侧栏开合
    * ========================================================= */
   function isMobile() { return window.matchMedia("(max-width: 860px)").matches; }
+
+  // 精确指针设备（鼠标/触控板）才自动聚焦输入框。
+  // 手机上聚焦会弹软键盘，把刚生成的回答挤出屏幕。
+  function isDesktopPointer() {
+    return window.matchMedia("(pointer: fine)").matches;
+  }
   function closeSideOnMobile() { if (isMobile()) app.classList.add("side-hidden"); }
 
   $("btnHideSide").addEventListener("click", function () { app.classList.add("side-hidden"); });
@@ -999,13 +1209,20 @@ try {
     if (force) autoFollow = true;
     if (!autoFollow) return;
 
-    selfScroll = true;
-    // 用 rAF 等布局完成后再滚，否则高度还没算出来会滚不到底
+    // 同一帧内只排一次滚动，避免打字机高频刷新时反复派发
+    if (scrollPending) return;
+    scrollPending = true;
+
     requestAnimationFrame(function () {
+      scrollPending = false;
+      if (!autoFollow) return;
+      selfScroll = true;
       scroller.scrollTop = scroller.scrollHeight;
       requestAnimationFrame(function () { selfScroll = false; });
     });
   }
+
+  var scrollPending = false;
 
   scroller.addEventListener("scroll", function () {
     // 只有非程序触发的滚动才算用户操作
@@ -1353,6 +1570,7 @@ try {
         ref.md.innerHTML = mdToHtml(m.display || "");
         highlightAll(ref.md);
         enhanceCodeBlocks(ref.md);
+        typesetMath(ref.md);
         ref.actions.classList.add("pinned");
         wireActions(ref, (function (r) { return function () { return r.md.textContent; }; })(ref));
       }
@@ -1437,26 +1655,72 @@ try {
     wireActions(ref, function () { return ref.md.textContent; });
 
     var content = "", thinking = "";
-    var lastRender = 0, timer = 0, finished = false, thinkStart = 0;
+    var thinkStart = 0;
+
+    // ---- 打字机缓冲：把突发到达的内容均匀吐出来 ----
+    var shown = "";          // 已经显示出来的正文
+    var targetLen = 0;       // 已接收到的总长度
+    var rafId = 0;
+    var finished = false;    // 上游流是否结束
+    var lastTick = 0;
 
     setBusy(true);
     controller = new AbortController();
 
-    function paint(final) {
-      if (final) {
-        finished = true;
-        if (timer) { clearTimeout(timer); timer = 0; }
-      }
-      if (finished && !final) return;
+    function renderNow(isFinal) {
+      var text = isFinal ? content : stabilizePartial(shown);
+      var html = mdToHtml(text);
+      ref.md.innerHTML = html + (isFinal ? "" : '<span class="caret"></span>');
 
-      var now = Date.now();
-      if (!final && now - lastRender < 70) {
-        if (!timer) timer = setTimeout(function () { timer = 0; paint(false); }, 70);
-        return;
-      }
-      lastRender = now;
-      ref.md.innerHTML = mdToHtml(content) + (final ? "" : '<span class="caret"></span>');
+      // 流式期间不排公式：残缺的 $...$ 会被 MathJax 编排出错误结果，
+      // 且会污染后续重排。公式统一在收尾时一次性排。
       toBottom();
+    }
+
+    function tick() {
+      rafId = 0;
+      var elapsed = Date.now() - lastTick;
+      lastTick = Date.now();
+
+      var remaining = targetLen - shown.length;
+      if (remaining > 0) {
+        // 自适应速度：积压越多吐得越快，保证不会落后太多
+        var rate;
+        if (remaining > 600) rate = Math.ceil(remaining / 3);
+        else if (remaining > 200) rate = 24;
+        else if (remaining > 60) rate = 10;
+        else rate = 3;
+
+        // 时间片内最多推进的字符数，防止大段跳变
+        var step = Math.min(remaining, Math.max(rate, Math.floor(elapsed / 16 * rate)));
+        shown = content.slice(0, shown.length + step);
+        renderNow(false);
+      }
+
+      if (!finished || shown.length < targetLen) {
+        rafId = requestAnimationFrame(tick);
+      } else if (finished) {
+        // 收尾：用完整内容重排一次
+        renderNow(true);
+        ref.think.classList.remove("streaming");
+        if (!ref.think.hasAttribute("hidden") && !ref.think.dataset.userOpened) {
+          var secs = Math.max(1, Math.round((Date.now() - thinkStart) / 1000));
+          ref.think.removeAttribute("open");
+          ref.think.querySelector("summary").textContent = "已完成思考（" + secs + " 秒）· 点击展开";
+        }
+        if (!content) ref.md.innerHTML = '<p style="color:var(--text-3)">（模型没有返回内容，请重试）</p>';
+        highlightAll(ref.md);
+        enhanceCodeBlocks(ref.md);
+        typesetMath(ref.md);
+        ref.actions.classList.add("pinned");
+      }
+    }
+
+    function ensureTicking() {
+      if (!rafId) {
+        lastTick = Date.now();
+        rafId = requestAnimationFrame(tick);
+      }
     }
 
     try {
@@ -1506,6 +1770,7 @@ try {
           if (obj.error) throw new Error(obj.error);
 
           var m = obj.message || {};
+
           if (m.thinking) {
             thinking += m.thinking;
             if (ref.think.hasAttribute("hidden")) {
@@ -1518,47 +1783,55 @@ try {
             ref.thinkBody.textContent = thinking;
             ref.thinkBody.scrollTop = ref.thinkBody.scrollHeight;
           }
+
           if (m.content) {
             content += m.content;
-            paint(false);
+            targetLen = content.length;
           }
         }
+
+        // 每批数据到达就唤醒打字机
+        ensureTicking();
       }
 
       var tail = buffer.trim();
       if (tail) {
         try {
           var o = JSON.parse(tail);
-          if (o.message && o.message.content) content += o.message.content;
+          if (o.message && o.message.content) {
+            content += o.message.content;
+            targetLen = content.length;
+          }
         } catch (e) {}
       }
 
-      paint(true);
-      ref.think.classList.remove("streaming");
+      finished = true;
+      ensureTicking();
 
-      // 思考结束：自动收起，只留一行摘要，需要时可以点开
-      if (!ref.think.hasAttribute("hidden")) {
-        var secs = Math.max(1, Math.round((Date.now() - thinkStart) / 1000));
-        ref.think.removeAttribute("open");
-        ref.think.querySelector("summary").textContent = "已完成思考（" + secs + " 秒）· 点击展开";
-      }
-
-      if (!content) ref.md.innerHTML = '<p style="color:var(--text-3)">（模型没有返回内容，请重试）</p>';
-
-      highlightAll(ref.md);
-      enhanceCodeBlocks(ref.md);
-      ref.actions.classList.add("pinned");
+      // 等打字机把剩余内容吐完再返回
+      await new Promise(function (resolve) {
+        var check = setInterval(function () {
+          if (shown.length >= targetLen) { clearInterval(check); resolve(); }
+        }, 30);
+        setTimeout(function () { clearInterval(check); resolve(); }, 4000);
+      });
 
       conv.messages.push({ role: "assistant", display: content, api: content, thinking: thinking || undefined });
       conv.updatedAt = Date.now();
       autoFollow = true;
 
     } catch (err) {
+      finished = true;
+      if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+
       var aborted = err && (err.name === "AbortError" || /abort/i.test(err.message || ""));
+
       if (content) {
-        paint(true);
+        shown = content;
+        renderNow(true);
         highlightAll(ref.md);
         enhanceCodeBlocks(ref.md);
+        typesetMath(ref.md);
         conv.messages.push({ role: "assistant", display: content, api: content });
         conv.updatedAt = Date.now();
       }
@@ -1568,7 +1841,7 @@ try {
       } else {
         var hint = "出错了：" + (err && err.message ? err.message : String(err));
         if (/Failed to fetch|NetworkError/i.test(hint)) {
-          hint = "连不上后端服务。请确认电脑上的 Ollama 和 cloudflared 都在运行，并在「设置」里检查隧道地址是否已更新。";
+          hint = "服务器繁忙，请稍后再试";
         }
         ref.md.innerHTML = '<p style="color:var(--danger)">' + escapeHtml(hint) + "</p>";
         setStatus("bad");
@@ -1578,7 +1851,8 @@ try {
       controller = null;
       updateSendState();
       autoGrow();
-      input.focus();
+      // 只在桌面端自动聚焦输入框；手机上聚焦会弹软键盘，把刚生成的回答顶走
+      if (isDesktopPointer()) input.focus();
     }
   }
 
@@ -1777,7 +2051,8 @@ try {
   syncWebBtn();
   updateSendState();
   checkStatus();
-  setTimeout(function () { input.focus(); }, 120);
+  // 页面加载不自动聚焦：手机会一打开就弹软键盘
+  if (isDesktopPointer()) setTimeout(function () { input.focus(); }, 120);
   setInterval(checkStatus, 60000);
 
   window.addEventListener("resize", function () {
